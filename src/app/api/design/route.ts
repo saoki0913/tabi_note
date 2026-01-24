@@ -344,6 +344,7 @@ const buildFullPrompt = (
   ].join("\n");
 };
 
+
 export async function POST(request: Request) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
@@ -371,8 +372,7 @@ export async function POST(request: Request) {
     rawMode === "page" ? "overview" : String(rawMode || "cover");
   const mode: DesignMode =
     normalizedMode in modeGuides ? (normalizedMode as DesignMode) : "cover";
-  const renderMode =
-    body.renderMode === "background" ? "background" : "full";
+  const renderMode = body.renderMode === "background" ? "background" : "full";
   const prompt =
     renderMode === "background"
       ? buildBackgroundPrompt(body.trip, mode)

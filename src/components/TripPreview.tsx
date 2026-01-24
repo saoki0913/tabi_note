@@ -195,6 +195,25 @@ export function TripPreview({ trip }: PreviewProps) {
     ? [...trip.design.pages].sort((a, b) => a.pageNumber - b.pageNumber)
     : null;
 
+  const assetUrl = (mode: DesignMode) => {
+    const legacyDesign = trip.design as
+      | (Trip["design"] & {
+          cover?: TripDesignImage;
+          page?: TripDesignImage;
+        })
+      | undefined;
+    const asset = legacyDesign?.assets?.[mode];
+    const legacyAsset =
+      asset || !legacyDesign
+        ? null
+        : mode === "cover"
+          ? legacyDesign.cover
+          : legacyDesign.page;
+    const resolvedAsset = asset ?? legacyAsset;
+    if (!resolvedAsset?.base64) return null;
+    return `data:${resolvedAsset.mimeType};base64,${resolvedAsset.base64}`;
+  };
+
   if (fullPages) {
     return (
       <div className="space-y-12">
@@ -216,24 +235,6 @@ export function TripPreview({ trip }: PreviewProps) {
       </div>
     );
   }
-  const assetUrl = (mode: DesignMode) => {
-    const legacyDesign = trip.design as
-      | (Trip["design"] & {
-          cover?: TripDesignImage;
-          page?: TripDesignImage;
-        })
-      | undefined;
-    const asset = legacyDesign?.assets?.[mode];
-    const legacyAsset =
-      asset || !legacyDesign
-        ? null
-        : mode === "cover"
-          ? legacyDesign.cover
-          : legacyDesign.page;
-    const resolvedAsset = asset ?? legacyAsset;
-    if (!resolvedAsset?.base64) return null;
-    return `data:${resolvedAsset.mimeType};base64,${resolvedAsset.base64}`;
-  };
 
   const coverStyle = buildBackgroundStyle(
     assetUrl("cover"),

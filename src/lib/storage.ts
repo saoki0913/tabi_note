@@ -54,6 +54,7 @@ const saveLocalTrip = (trip: Trip) => {
         format: entry.design.format ?? entry.formatType,
         renderMode,
         assets: {},
+        pages: [],
         updatedAt: entry.design.updatedAt,
       },
     };

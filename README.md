@@ -89,13 +89,15 @@ npm run dev
 ### Codex で再開する場合
 以下を Codex に指示してください（自律再開テンプレ）:
 ```
+
+tabi_note/outputはしおりの生成結果です。これの結果を読み込んで改善点を洗い出して、ユーザーの入力やスタイルの指定、gemini-3-pro-image-previewによる画像生成などを最大限適切にへんせできるように改善して。
+
 `tabi_note/.codex/commands/dev-continue.md` に従ってください。
 docs/SPEC.md・docs/WORKFLOW.md・README.md・TODO/FIXME・UI/UXの完成形(/Users/saoki/work/figma/tabi_note)を確認し、必要な機能を自律的に洗い出して実装してください。
 `.codex/skills` に追加したスキルの `SKILL.md` を確認し、該当するものは必ず適用してください。
 1タスクずつ小さく進め、完了/未完了の更新を継続してください。
 仕様・デザイン・運用ルールと矛盾がある場合は修正方針を提案し、判断が必要なときだけ質問してください。
 実行したコマンド（lint/build等）と未実行理由を明記してください。
-UI/UXの作成・改善には https://www.shokasonjuku.com/ux-psychologyを参考にすること。
 作業がすべて完了したら、最後に「次にやるとよいこと」を出力してください。
 ```
 

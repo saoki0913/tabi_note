@@ -17,7 +17,12 @@ import {
   Sparkles,
   Trash2,
 } from "lucide-react";
-import type { DesignMode, Trip, TripDesignPage } from "../types/trip";
+import type {
+  DesignMode,
+  Trip,
+  TripDesignImage,
+  TripDesignPage,
+} from "../types/trip";
 import { generateAiContent } from "../lib/ai";
 import { generateId, generateShareToken, storage } from "../lib/storage";
 import { PdfExport } from "./PdfExport";
@@ -81,7 +86,7 @@ export function TabiNoteApp() {
       day?: number;
       renderMode?: "background" | "full";
     },
-  ) => {
+  ): Promise<TripDesignImage> => {
     const tripPayload: Trip = {
       ...trip,
       design: undefined,
@@ -383,6 +388,7 @@ export function TabiNoteApp() {
       </motion.div>
     );
   };
+
 
   if (view === "home") {
     return (
@@ -760,11 +766,11 @@ export function TabiNoteApp() {
               )}
           </motion.div>
 
-          {showPdfExport && (
-            <div className="mb-8">
-              <PdfExport trip={currentTrip} />
-            </div>
-          )}
+            {showPdfExport && (
+              <div className="mb-8">
+                <PdfExport trip={currentTrip} />
+              </div>
+            )}
 
           <TripPreview trip={currentTrip} />
         </div>
