@@ -154,7 +154,11 @@ export function TripForm({
   isBusy,
   busyLabel,
 }: TripFormProps) {
-  const [trip, setTrip] = useState<Trip>(initialTrip || createBlankTrip());
+  const [trip, setTrip] = useState<Trip>(() =>
+    initialTrip
+      ? { ...initialTrip, formatType: initialTrip.formatType ?? "classic" }
+      : createBlankTrip(),
+  );
   const [currentStep, setCurrentStep] = useState(1);
   const [newMemberName, setNewMemberName] = useState("");
   const [newWantItem, setNewWantItem] = useState("");

@@ -7,12 +7,33 @@ type TripPayloadRow = {
   payload: Trip;
 };
 
+const normalizeTrip = (trip: Trip): Trip => {
+  const formatType = trip.formatType ?? "classic";
+  const design = trip.design
+    ? {
+        ...trip.design,
+        format: trip.design.format ?? formatType,
+        renderMode:
+          trip.design.renderMode ??
+          (trip.design.pages && trip.design.pages.length > 0
+            ? "full"
+            : "background"),
+      }
+    : trip.design;
+  return {
+    ...trip,
+    formatType,
+    design,
+  };
+};
+
 const getLocalTrips = (): Trip[] => {
   if (typeof window === "undefined") {
     return [];
   }
   const data = localStorage.getItem(STORAGE_KEY);
-  return data ? (JSON.parse(data) as Trip[]) : [];
+  const parsed = data ? (JSON.parse(data) as Trip[]) : [];
+  return parsed.map((trip) => normalizeTrip(trip));
 };
 
 const saveLocalTrip = (trip: Trip) => {
@@ -21,10 +42,17 @@ const saveLocalTrip = (trip: Trip) => {
   }
   const stripDesignForLocal = (entry: Trip): Trip => {
     if (!entry.design) return entry;
+    const renderMode =
+      entry.design.renderMode ??
+      (entry.design.pages && entry.design.pages.length > 0
+        ? "full"
+        : "background");
     return {
       ...entry,
       design: {
         style: entry.design.style,
+        format: entry.design.format ?? entry.formatType,
+        renderMode,
         assets: {},
         updatedAt: entry.design.updatedAt,
       },
@@ -76,7 +104,11 @@ export const storage = {
       return getLocalTrips();
     }
 
-    return (data as TripPayloadRow[] | null)?.map((row) => row.payload) ?? [];
+    return (
+      (data as TripPayloadRow[] | null)?.map((row) =>
+        normalizeTrip(row.payload),
+      ) ?? []
+    );
   },
 
   getTrip: async (id: string): Promise<Trip | null> => {
@@ -96,7 +128,8 @@ export const storage = {
       return getLocalTrips().find((trip) => trip.id === id) || null;
     }
 
-    return (data as TripPayloadRow | null)?.payload ?? null;
+    const payload = (data as TripPayloadRow | null)?.payload ?? null;
+    return payload ? normalizeTrip(payload) : null;
   },
 
   saveTrip: async (trip: Trip): Promise<Trip> => {
@@ -131,7 +164,8 @@ export const storage = {
       return nextTrip;
     }
 
-    return (data as TripPayloadRow | null)?.payload ?? nextTrip;
+    const payload = (data as TripPayloadRow | null)?.payload ?? nextTrip;
+    return normalizeTrip(payload);
   },
 
   deleteTrip: async (id: string): Promise<void> => {
@@ -165,7 +199,8 @@ export const storage = {
       return null;
     }
 
-    return (data as TripPayloadRow | null)?.payload ?? null;
+    const payload = (data as TripPayloadRow | null)?.payload ?? null;
+    return payload ? normalizeTrip(payload) : null;
   },
 };
 

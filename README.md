@@ -46,7 +46,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=<ANON_KEYを貼る>
 SUPABASE_SERVICE_ROLE_KEY=<SERVICE_ROLE_KEYを貼る>
 DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres
 GEMINI_API_KEY=<GEMINI_API_KEYを貼る>
-GEMINI_IMAGE_MODEL=gemini-3-p-preview
+GEMINI_IMAGE_MODEL=gemini-3-pro-image-preview
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 

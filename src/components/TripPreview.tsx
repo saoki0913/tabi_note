@@ -58,6 +58,46 @@ const templateThemes: Record<TemplateType, Theme> = {
     line: "#93c5fd",
     paper: "#f8fafc",
   },
+  retro: {
+    ink: "#3f2f1e",
+    muted: "#7c6a58",
+    accent: "#b45309",
+    accentSoft: "#fde68a",
+    line: "#f59e0b",
+    paper: "#fff7ed",
+  },
+  romantic: {
+    ink: "#4b2c38",
+    muted: "#9f7a8f",
+    accent: "#ec4899",
+    accentSoft: "#fde2e8",
+    line: "#f9a8d4",
+    paper: "#fff5f7",
+  },
+  modern: {
+    ink: "#111827",
+    muted: "#6b7280",
+    accent: "#1f2937",
+    accentSoft: "#e5e7eb",
+    line: "#d1d5db",
+    paper: "#f9fafb",
+  },
+  nature: {
+    ink: "#1f2d20",
+    muted: "#6b7c6e",
+    accent: "#15803d",
+    accentSoft: "#dcfce7",
+    line: "#86efac",
+    paper: "#f7fbf5",
+  },
+  adventure: {
+    ink: "#0f2c3f",
+    muted: "#5f7b8b",
+    accent: "#0ea5e9",
+    accentSoft: "#dbeafe",
+    line: "#93c5fd",
+    paper: "#f0f8ff",
+  },
 };
 
 const formatDate = (date: string) => {
@@ -151,6 +191,31 @@ const PageHeader = ({ title, subtitle, icon: Icon, theme }: HeaderProps) => (
 
 export function TripPreview({ trip }: PreviewProps) {
   const theme = templateThemes[trip.templateType];
+  const fullPages = trip.design?.pages?.length
+    ? [...trip.design.pages].sort((a, b) => a.pageNumber - b.pageNumber)
+    : null;
+
+  if (fullPages) {
+    return (
+      <div className="space-y-12">
+        {fullPages.map((page) => (
+          <motion.section
+            key={page.id}
+            className="relative mx-auto w-full max-w-4xl aspect-[210/297] overflow-hidden rounded-[32px] shadow-2xl border border-gray-200 bg-white"
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <img
+              src={`data:${page.mimeType};base64,${page.base64}`}
+              alt={`${trip.title} ${page.label}`}
+              className="h-full w-full object-contain"
+            />
+          </motion.section>
+        ))}
+      </div>
+    );
+  }
   const assetUrl = (mode: DesignMode) => {
     const legacyDesign = trip.design as
       | (Trip["design"] & {

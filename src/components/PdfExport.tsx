@@ -44,6 +44,46 @@ const templateThemes: Record<TemplateType, Theme> = {
     line: "#93c5fd",
     paper: "#f8fafc",
   },
+  retro: {
+    ink: "#3f2f1e",
+    muted: "#7c6a58",
+    accent: "#b45309",
+    accentSoft: "#fde68a",
+    line: "#f59e0b",
+    paper: "#fff7ed",
+  },
+  romantic: {
+    ink: "#4b2c38",
+    muted: "#9f7a8f",
+    accent: "#ec4899",
+    accentSoft: "#fde2e8",
+    line: "#f9a8d4",
+    paper: "#fff5f7",
+  },
+  modern: {
+    ink: "#111827",
+    muted: "#6b7280",
+    accent: "#1f2937",
+    accentSoft: "#e5e7eb",
+    line: "#d1d5db",
+    paper: "#f9fafb",
+  },
+  nature: {
+    ink: "#1f2d20",
+    muted: "#6b7c6e",
+    accent: "#15803d",
+    accentSoft: "#dcfce7",
+    line: "#86efac",
+    paper: "#f7fbf5",
+  },
+  adventure: {
+    ink: "#0f2c3f",
+    muted: "#5f7b8b",
+    accent: "#0ea5e9",
+    accentSoft: "#dbeafe",
+    line: "#93c5fd",
+    paper: "#f0f8ff",
+  },
 };
 
 interface PdfExportProps {
@@ -149,6 +189,77 @@ export function PdfExport({ trip }: PdfExportProps) {
         memoDataUrl,
         "linear-gradient(180deg, rgba(255,255,255,0.75), rgba(255,255,255,0.98))",
       );
+
+      const fullPages = trip.design?.pages?.length
+        ? [...trip.design.pages].sort((a, b) => a.pageNumber - b.pageNumber)
+        : null;
+
+      if (fullPages) {
+        const fullPagesHtml = fullPages
+          .map(
+            (page) => `
+              <section class="page full">
+                <img src="data:${page.mimeType};base64,${page.base64}" alt="${trip.title} ${page.label}" />
+              </section>
+            `,
+          )
+          .join("");
+
+        const html = `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="UTF-8">
+            <title>${trip.title} - 旅のしおり</title>
+            <style>
+              @page {
+                size: ${pageSize.width} ${pageSize.height};
+                margin: 0;
+              }
+              body {
+                margin: 0;
+                padding: 0;
+                background: #fff;
+              }
+              .page {
+                width: ${pageSize.width};
+                height: ${pageSize.height};
+                page-break-after: always;
+                margin: 0;
+              }
+              .page:last-child {
+                page-break-after: auto;
+              }
+              .page.full img {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+                display: block;
+                background: #fff;
+              }
+            </style>
+          </head>
+          <body>
+            ${fullPagesHtml}
+            <script>
+              window.onload = () => {
+                setTimeout(() => {
+                  window.print();
+                }, 500);
+              };
+            </script>
+          </body>
+          </html>
+        `;
+
+        printWindow.document.write(html);
+        printWindow.document.close();
+
+        setTimeout(() => {
+          setIsGenerating(false);
+        }, 1000);
+        return;
+      }
 
       const packingItems =
         trip.aiEnabled && trip.aiContent?.packingSuggestions

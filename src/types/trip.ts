@@ -51,11 +51,26 @@ export type DesignMode =
   | "memo";
 
 export type FormatType = "classic" | "collage" | "notebook" | "timeline";
+export type DesignRenderMode = "background" | "full";
+
+export interface TripDesignPage {
+  id: string;
+  mode: DesignMode;
+  label: string;
+  pageNumber: number;
+  totalPages: number;
+  mimeType: string;
+  base64: string;
+  prompt?: string;
+  createdAt: string;
+}
 
 export interface TripDesign {
   style: TemplateType;
   format: FormatType;
-  assets: Partial<Record<DesignMode, TripDesignImage>>;
+  renderMode: DesignRenderMode;
+  assets?: Partial<Record<DesignMode, TripDesignImage>>;
+  pages?: TripDesignPage[];
   updatedAt: string;
 }
 

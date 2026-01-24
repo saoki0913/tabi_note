@@ -17,9 +17,9 @@ import {
   Sparkles,
   Trash2,
 } from "lucide-react";
-import type { DesignMode, Trip, TripDesignImage } from "../types/trip";
+import type { DesignMode, Trip, TripDesignPage } from "../types/trip";
 import { generateAiContent } from "../lib/ai";
-import { generateShareToken, storage } from "../lib/storage";
+import { generateId, generateShareToken, storage } from "../lib/storage";
 import { PdfExport } from "./PdfExport";
 import { TripForm } from "./TripForm";
 import { TripPreview } from "./TripPreview";
@@ -72,10 +72,18 @@ export function TabiNoteApp() {
     };
   }, []);
 
-  const requestDesign = async (trip: Trip, mode: DesignMode) => {
+  const requestDesign = async (
+    trip: Trip,
+    mode: DesignMode,
+    options?: {
+      pageNumber?: number;
+      totalPages?: number;
+      day?: number;
+      renderMode?: "background" | "full";
+    },
+  ) => {
     const tripPayload: Trip = {
       ...trip,
-      aiContent: undefined,
       design: undefined,
     };
     const response = await fetch("/api/design", {
@@ -83,7 +91,14 @@ export function TabiNoteApp() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ trip: tripPayload, mode }),
+      body: JSON.stringify({
+        trip: tripPayload,
+        mode,
+        renderMode: options?.renderMode ?? "full",
+        pageNumber: options?.pageNumber,
+        totalPages: options?.totalPages,
+        day: options?.day,
+      }),
     });
 
     if (!response.ok) {
@@ -115,28 +130,70 @@ export function TabiNoteApp() {
     }
   };
 
-  const generateDesignAssets = async (
+  const generateDesignPages = async (
     trip: Trip,
     onProgress?: (current: number, total: number) => void,
   ) => {
-    const modes: DesignMode[] = [
-      "cover",
-      "overview",
-      "schedule",
-      "checklist",
-      "info",
-      "memo",
+    const pageRequests: Array<{
+      mode: DesignMode;
+      label: string;
+      day?: number;
+    }> = [
+      { mode: "cover", label: "表紙" },
+      { mode: "overview", label: "概要" },
+      ...trip.dayPlans.map((plan) => ({
+        mode: "schedule" as const,
+        label: `Day ${plan.day}`,
+        day: plan.day,
+      })),
     ];
-    const assets: Partial<Record<DesignMode, TripDesignImage>> = {};
-    for (let index = 0; index < modes.length; index += 1) {
-      const mode = modes[index];
-      const current = index + 1;
-      onProgress?.(current, modes.length);
-      // eslint-disable-next-line no-await-in-loop
-      const asset = await requestDesign(trip, mode);
-      assets[mode] = asset;
+
+    const hasChecklist =
+      (trip.aiContent?.packingSuggestions?.length ?? 0) > 0 ||
+      trip.wantItems.length > 0;
+    if (hasChecklist) {
+      pageRequests.push({ mode: "checklist", label: "持ち物" });
     }
-    return assets;
+
+    const hasInfo =
+      trip.lodgings.length > 0 ||
+      Boolean(trip.transportText) ||
+      Boolean(trip.aiContent?.cautionsText) ||
+      Boolean(trip.notes);
+    if (hasInfo) {
+      pageRequests.push({ mode: "info", label: "情報" });
+    }
+
+    pageRequests.push({ mode: "memo", label: "メモ" });
+
+    const totalPages = pageRequests.length;
+    const pages: TripDesignPage[] = [];
+
+    for (let index = 0; index < pageRequests.length; index += 1) {
+      const request = pageRequests[index];
+      const current = index + 1;
+      onProgress?.(current, totalPages);
+      // eslint-disable-next-line no-await-in-loop
+      const asset = await requestDesign(trip, request.mode, {
+        pageNumber: current,
+        totalPages,
+        day: request.day,
+        renderMode: "full",
+      });
+      pages.push({
+        id: generateId(),
+        mode: request.mode,
+        label: request.label,
+        pageNumber: current,
+        totalPages,
+        mimeType: asset.mimeType,
+        base64: asset.base64,
+        prompt: asset.prompt,
+        createdAt: asset.createdAt,
+      });
+    }
+
+    return pages;
   };
 
   const handleGenerateDesign = async () => {
@@ -151,7 +208,7 @@ export function TabiNoteApp() {
     });
 
     try {
-      const assets = await generateDesignAssets(currentTrip, (current, total) => {
+      const pages = await generateDesignPages(currentTrip, (current, total) => {
         setDesignProgress({ current, total });
         setBlockState({
           active: true,
@@ -164,7 +221,9 @@ export function TabiNoteApp() {
         ...currentTrip,
         design: {
           style: currentTrip.templateType,
-          assets,
+          format: currentTrip.formatType,
+          renderMode: "full",
+          pages,
           updatedAt: new Date().toISOString(),
         },
       };
@@ -205,7 +264,7 @@ export function TabiNoteApp() {
     });
     let finalTrip = savedTrip;
     try {
-      const assets = await generateDesignAssets(savedTrip, (current, total) => {
+      const pages = await generateDesignPages(savedTrip, (current, total) => {
         setDesignProgress({ current, total });
         setBlockState({
           active: true,
@@ -218,7 +277,9 @@ export function TabiNoteApp() {
         ...savedTrip,
         design: {
           style: savedTrip.templateType,
-          assets,
+          format: savedTrip.formatType,
+          renderMode: "full",
+          pages,
           updatedAt: new Date().toISOString(),
         },
       };
@@ -691,9 +752,10 @@ export function TabiNoteApp() {
               </div>
             </div>
             {currentTrip.design &&
-              currentTrip.design.style !== currentTrip.templateType && (
+              (currentTrip.design.style !== currentTrip.templateType ||
+                currentTrip.design.format !== currentTrip.formatType) && (
                 <div className="mt-4 text-sm text-amber-600 font-semibold">
-                  現在のテンプレートと生成済みデザインが一致しません。再生成がおすすめです。
+                  現在のスタイル/フォーマットと生成済みデザインが一致しません。再生成がおすすめです。
                 </div>
               )}
           </motion.div>
