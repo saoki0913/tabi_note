@@ -138,7 +138,7 @@ export function TabiNoteApp() {
   const generateDesignPages = async (
     trip: Trip,
     onProgress?: (current: number, total: number) => void,
-    renderMode: "background" | "full" = "background",
+    renderMode: "background" | "full" = "full",
   ) => {
     const pageRequests: Array<{
       mode: DesignMode;
@@ -215,7 +215,7 @@ export function TabiNoteApp() {
     });
 
     try {
-      const renderMode: "background" | "full" = "background";
+      const renderMode: "background" | "full" = "full";
       const pages = await generateDesignPages(
         currentTrip,
         (current, total) => {
@@ -276,7 +276,7 @@ export function TabiNoteApp() {
     });
     let finalTrip = savedTrip;
     try {
-      const renderMode: "background" | "full" = "background";
+      const renderMode: "background" | "full" = "full";
       const pages = await generateDesignPages(
         savedTrip,
         (current, total) => {

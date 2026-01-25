@@ -42,3 +42,10 @@ next-env.d.ts
 
 #memo
 MEMO.md
+
+#agents
+/.agents
+/.claude
+/.codex
+/.gemini
+/.cursor
