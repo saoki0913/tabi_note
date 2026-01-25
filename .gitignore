@@ -39,3 +39,6 @@ next-env.d.ts
 
 #output
 /output
+
+#memo
+MEMO.md

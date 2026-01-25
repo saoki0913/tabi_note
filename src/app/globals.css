@@ -3,17 +3,282 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #1f2933;
-  --muted: #6b7280;
+  --paper: #fff4de;
+  --paper-deep: #ffe3c0;
+  --panel: #fffaf1;
+  --ink: #2c2320;
+  --ink-soft: #4f4440;
+  --muted: #6f5f54;
+  --accent: #ff6f61;
+  --accent-strong: #e45847;
+  --accent-soft: #ffe0d8;
+  --sun: #f5b63b;
+  --teal: #22a0a5;
+  --mint: #8bd7b1;
+  --sky: #7fd3e6;
+  --sage: #8bd7b1;
+  --ocean: #22a0a5;
+  --gold: #f5b63b;
+  --line: #efd5b6;
+  --shadow: 0 22px 44px rgba(44, 35, 32, 0.18);
+  --background: var(--paper);
+  --foreground: var(--ink);
 }
 
 body {
   color: var(--foreground);
-  background: var(--background);
+  background: radial-gradient(
+      circle at 12% 18%,
+      rgba(245, 182, 59, 0.22),
+      transparent 40%
+    ),
+    radial-gradient(
+      circle at 88% 12%,
+      rgba(255, 111, 97, 0.22),
+      transparent 42%
+    ),
+    radial-gradient(
+      circle at 78% 78%,
+      rgba(34, 160, 165, 0.18),
+      transparent 45%
+    ),
+    linear-gradient(180deg, #fff7ea 0%, #fde7c7 55%, #eaf7f3 100%);
   font-family: var(--font-body), "Hiragino Sans", "Hiragino Kaku Gothic ProN",
     "Yu Gothic", sans-serif;
   min-height: 100vh;
+  letter-spacing: 0.01em;
+  background-attachment: fixed;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.4;
+  background-image:
+    radial-gradient(rgba(255, 111, 97, 0.35) 0.7px, transparent 0.7px),
+    radial-gradient(rgba(34, 160, 165, 0.35) 0.7px, transparent 0.7px),
+    radial-gradient(rgba(245, 182, 59, 0.3) 0.6px, transparent 0.6px);
+  background-size: 18px 18px, 26px 26px, 32px 32px;
+  background-position: 0 0, 8px 12px, 16px 4px;
+  mix-blend-mode: multiply;
+}
+
+h1,
+h2,
+h3,
+.font-display {
+  font-family: var(--font-display), "Yu Mincho", "Hiragino Mincho ProN",
+    serif;
+}
+
+.font-accent {
+  font-family: var(--font-accent), var(--font-body), sans-serif;
+}
+
+@layer components {
+  .app-shell {
+    position: relative;
+    min-height: 100vh;
+    isolation: isolate;
+    overflow-x: hidden;
+  }
+
+  .app-shell::before {
+    content: "";
+    position: absolute;
+    width: 520px;
+    height: 520px;
+    top: -240px;
+    right: -160px;
+    background: radial-gradient(
+      circle at 30% 30%,
+      rgba(255, 111, 97, 0.3),
+      transparent 70%
+    );
+    opacity: 0.8;
+    pointer-events: none;
+  }
+
+  .app-shell::after {
+    content: "";
+    position: absolute;
+    width: 520px;
+    height: 520px;
+    bottom: -280px;
+    left: -200px;
+    background: radial-gradient(
+      circle at 70% 30%,
+      rgba(34, 160, 165, 0.22),
+      transparent 70%
+    );
+    opacity: 0.7;
+    pointer-events: none;
+  }
+
+  .paper-card {
+    background: linear-gradient(140deg, #fffdf7 0%, #fff4e6 100%);
+    border: 2px solid var(--line);
+    border-radius: 28px;
+    box-shadow: var(--shadow);
+  }
+
+  .paper-card-soft {
+    background: rgba(255, 255, 255, 0.75);
+    border: 2px dashed var(--line);
+    border-radius: 24px;
+  }
+
+  .btn-primary {
+    background: linear-gradient(120deg, var(--accent) 0%, var(--sun) 100%);
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    padding: 0.85rem 1.6rem;
+    font-weight: 600;
+    box-shadow: 0 16px 32px rgba(255, 111, 97, 0.35);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 20px 40px rgba(255, 111, 97, 0.4);
+  }
+
+  .btn-secondary {
+    background: linear-gradient(120deg, var(--teal) 0%, var(--sky) 100%);
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    padding: 0.8rem 1.4rem;
+    font-weight: 600;
+    transition: transform 0.2s ease;
+  }
+
+  .btn-outline {
+    background: rgba(255, 255, 255, 0.8);
+    color: var(--ink);
+    border: 2px dashed var(--line);
+    border-radius: 999px;
+    padding: 0.75rem 1.4rem;
+    font-weight: 600;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+  }
+
+  .btn-outline:hover {
+    transform: translateY(-1px);
+    border-color: var(--accent);
+  }
+
+  .btn-ghost {
+    background: rgba(255, 255, 255, 0.5);
+    color: var(--ink);
+    border: 2px solid var(--line);
+    border-radius: 16px;
+    padding: 0.7rem 1.1rem;
+    font-weight: 600;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+  }
+
+  .btn-danger {
+    background: #d94a3a;
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    padding: 0.75rem 1.3rem;
+    font-weight: 600;
+  }
+
+  .field {
+    background: rgba(255, 255, 255, 0.92);
+    border: 2px solid var(--line);
+    border-radius: 18px;
+    padding: 0.8rem 1rem;
+    color: var(--ink);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .field:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px rgba(255, 111, 97, 0.18);
+  }
+
+  .badge-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    border: 2px dashed var(--line);
+    background: rgba(255, 255, 255, 0.7);
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .badge-solid {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.9rem;
+    border-radius: 999px;
+    border: 2px solid var(--accent-soft);
+    background: var(--accent-soft);
+    font-size: 0.8rem;
+    color: var(--ink);
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.3rem 0.8rem;
+    border-radius: 999px;
+    border: 2px solid var(--line);
+    background: rgba(255, 255, 255, 0.85);
+    font-size: 0.75rem;
+    color: var(--ink);
+  }
+
+  .sticker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.4rem 1rem;
+    border-radius: 999px;
+    border: 2px dashed var(--accent);
+    background: #fff;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--ink);
+    box-shadow: 0 10px 20px rgba(44, 35, 32, 0.15);
+    transform: rotate(-2deg);
+  }
+
+  .sticker.teal {
+    border-color: var(--teal);
+  }
+
+  .sticker.sun {
+    border-color: var(--sun);
+  }
+
+  .section-kicker {
+    font-size: 0.7rem;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-family: var(--font-accent), var(--font-body), sans-serif;
+  }
+
+  .section-title {
+    font-size: clamp(2.2rem, 4.5vw, 3.8rem);
+    line-height: 1.1;
+    color: var(--ink);
+  }
 }
 
 @layer utilities {

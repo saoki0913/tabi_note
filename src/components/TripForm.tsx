@@ -51,64 +51,64 @@ const templateOptions = [
     label: "シンプル",
     description: "すっきり見やすい",
     emoji: "🧾",
-    active: "border-slate-500 bg-slate-100 scale-105",
-    inactive: "border-slate-300 hover:border-slate-400 bg-white",
+    active: "border-[var(--accent)] bg-[var(--accent-soft)] scale-[1.02]",
+    inactive: "border-[var(--line)] hover:border-[var(--accent)] bg-white/70",
   },
   {
     value: "pop",
     label: "ポップ",
     description: "明るく元気に",
     emoji: "🎨",
-    active: "border-pink-500 bg-pink-100 scale-105",
-    inactive: "border-gray-300 hover:border-pink-400 bg-white",
+    active: "border-[var(--accent)] bg-[var(--accent-soft)] scale-[1.02]",
+    inactive: "border-[var(--line)] hover:border-[var(--accent)] bg-white/70",
   },
   {
     value: "retro",
     label: "レトロ",
     description: "ヴィンテージ感",
     emoji: "📻",
-    active: "border-amber-500 bg-amber-100 scale-105",
-    inactive: "border-gray-300 hover:border-amber-400 bg-white",
+    active: "border-[var(--accent)] bg-[var(--accent-soft)] scale-[1.02]",
+    inactive: "border-[var(--line)] hover:border-[var(--accent)] bg-white/70",
   },
   {
     value: "romantic",
     label: "ロマンチック",
     description: "甘くやさしい",
     emoji: "💐",
-    active: "border-rose-400 bg-rose-100 scale-105",
-    inactive: "border-gray-300 hover:border-rose-300 bg-white",
+    active: "border-[var(--accent)] bg-[var(--accent-soft)] scale-[1.02]",
+    inactive: "border-[var(--line)] hover:border-[var(--accent)] bg-white/70",
   },
   {
     value: "photo",
     label: "写真多め",
     description: "アルバム風",
     emoji: "📸",
-    active: "border-blue-500 bg-blue-100 scale-105",
-    inactive: "border-gray-300 hover:border-blue-400 bg-white",
+    active: "border-[var(--accent)] bg-[var(--accent-soft)] scale-[1.02]",
+    inactive: "border-[var(--line)] hover:border-[var(--accent)] bg-white/70",
   },
   {
     value: "modern",
     label: "モダン",
     description: "洗練された印象",
     emoji: "🧊",
-    active: "border-indigo-500 bg-indigo-100 scale-105",
-    inactive: "border-gray-300 hover:border-indigo-400 bg-white",
+    active: "border-[var(--accent)] bg-[var(--accent-soft)] scale-[1.02]",
+    inactive: "border-[var(--line)] hover:border-[var(--accent)] bg-white/70",
   },
   {
     value: "nature",
     label: "ナチュラル",
     description: "自然で穏やか",
     emoji: "🌿",
-    active: "border-emerald-500 bg-emerald-100 scale-105",
-    inactive: "border-gray-300 hover:border-emerald-400 bg-white",
+    active: "border-[var(--accent)] bg-[var(--accent-soft)] scale-[1.02]",
+    inactive: "border-[var(--line)] hover:border-[var(--accent)] bg-white/70",
   },
   {
     value: "adventure",
     label: "アドベンチャー",
     description: "旅情あふれる",
     emoji: "🧭",
-    active: "border-sky-500 bg-sky-100 scale-105",
-    inactive: "border-gray-300 hover:border-sky-400 bg-white",
+    active: "border-[var(--accent)] bg-[var(--accent-soft)] scale-[1.02]",
+    inactive: "border-[var(--line)] hover:border-[var(--accent)] bg-white/70",
   },
 ] as const;
 
@@ -118,32 +118,32 @@ const formatOptions = [
     label: "スタンダード",
     description: "情報整理を重視",
     emoji: "📘",
-    active: "border-gray-700 bg-gray-100 scale-105",
-    inactive: "border-gray-300 hover:border-gray-500 bg-white",
+    active: "border-[var(--accent)] bg-[var(--accent-soft)] scale-[1.02]",
+    inactive: "border-[var(--line)] hover:border-[var(--accent)] bg-white/70",
   },
   {
     value: "collage",
     label: "コラージュ",
     description: "写真や素材を重ねる",
     emoji: "🧷",
-    active: "border-orange-500 bg-orange-100 scale-105",
-    inactive: "border-gray-300 hover:border-orange-400 bg-white",
+    active: "border-[var(--accent)] bg-[var(--accent-soft)] scale-[1.02]",
+    inactive: "border-[var(--line)] hover:border-[var(--accent)] bg-white/70",
   },
   {
     value: "notebook",
     label: "ノート",
     description: "手帳風の余白",
     emoji: "📓",
-    active: "border-lime-500 bg-lime-100 scale-105",
-    inactive: "border-gray-300 hover:border-lime-400 bg-white",
+    active: "border-[var(--accent)] bg-[var(--accent-soft)] scale-[1.02]",
+    inactive: "border-[var(--line)] hover:border-[var(--accent)] bg-white/70",
   },
   {
     value: "timeline",
     label: "タイムライン",
     description: "時系列を強調",
     emoji: "🕒",
-    active: "border-teal-500 bg-teal-100 scale-105",
-    inactive: "border-gray-300 hover:border-teal-400 bg-white",
+    active: "border-[var(--accent)] bg-[var(--accent-soft)] scale-[1.02]",
+    inactive: "border-[var(--line)] hover:border-[var(--accent)] bg-white/70",
   },
 ] as const;
 
@@ -294,7 +294,7 @@ export function TripForm({
 
   return (
     <motion.div
-      className="max-w-4xl mx-auto"
+      className="max-w-5xl mx-auto"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
     >
@@ -302,12 +302,12 @@ export function TripForm({
         {[1, 2, 3, 4].map((step) => (
           <div key={step} className="flex items-center">
             <motion.div
-              className={`w-14 h-14 rounded-full flex items-center justify-center font-bold text-lg shadow-lg ${
+              className={`w-11 h-11 rounded-full flex items-center justify-center font-semibold text-sm shadow-sm border ${
                 currentStep === step
-                  ? "bg-gradient-to-r from-pink-500 via-purple-500 to-orange-400 text-white scale-110"
+                  ? "bg-[var(--accent)] text-white border-[var(--accent-strong)]"
                   : currentStep > step
-                    ? "bg-gradient-to-r from-green-400 to-green-500 text-white"
-                    : "bg-white border-4 border-gray-300 text-gray-400"
+                    ? "bg-[var(--teal)] text-white border-[var(--teal)]"
+                    : "bg-white/80 border-[var(--line)] text-[var(--muted)]"
               }`}
               whileHover={{ scale: 1.08 }}
               transition={{ type: "spring", stiffness: 300 }}
@@ -316,8 +316,8 @@ export function TripForm({
             </motion.div>
             {step < 4 && (
               <div
-                className={`w-16 h-2 rounded-full mx-2 ${
-                  currentStep > step ? "bg-green-400" : "bg-gray-200"
+                className={`w-12 h-[2px] rounded-full mx-2 ${
+                  currentStep > step ? "bg-[var(--teal)]" : "bg-[var(--line)]"
                 }`}
               />
             )}
@@ -326,7 +326,7 @@ export function TripForm({
       </div>
 
       <motion.div
-        className="bg-white rounded-3xl shadow-2xl p-10 border-4 border-pink-300"
+        className="paper-card p-8 md:p-10"
         layout
       >
         <AnimatePresence mode="wait">
@@ -338,8 +338,8 @@ export function TripForm({
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -50 }}
             >
-              <h2 className="text-4xl font-bold text-center mb-8 bg-gradient-to-r from-pink-500 via-purple-500 to-orange-400 bg-clip-text text-transparent">
-                基本情報を入力 ✨
+              <h2 className="text-3xl md:text-4xl font-semibold text-center mb-8 text-[var(--ink)]">
+                基本情報
               </h2>
 
               <div>
@@ -352,14 +352,14 @@ export function TripForm({
                   onChange={(event) =>
                     setTrip({ ...trip, title: event.target.value })
                   }
-                  className="w-full px-6 py-4 border-2 border-pink-200 rounded-2xl focus:border-pink-500 focus:outline-none text-lg shadow-sm transition"
+                  className="field w-full text-lg"
                   placeholder="例: 沖縄3泊4日の旅"
                 />
               </div>
 
               <div>
                 <label className="block font-bold mb-3 text-xl flex items-center gap-2">
-                  <MapPin className="w-6 h-6 text-pink-500" />
+                  <MapPin className="w-6 h-6 text-[var(--accent)]" />
                   目的地 <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -368,7 +368,7 @@ export function TripForm({
                   onChange={(event) =>
                     setTrip({ ...trip, destination: event.target.value })
                   }
-                  className="w-full px-6 py-4 border-2 border-pink-200 rounded-2xl focus:border-pink-500 focus:outline-none text-lg shadow-sm transition"
+                  className="field w-full text-lg"
                   placeholder="例: 沖縄県那覇市"
                 />
               </div>
@@ -376,7 +376,7 @@ export function TripForm({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
                   <label className="block font-bold mb-3 text-xl flex items-center gap-2">
-                    <Calendar className="w-6 h-6 text-pink-500" />
+                    <Calendar className="w-6 h-6 text-[var(--accent)]" />
                     出発日 <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -385,12 +385,12 @@ export function TripForm({
                     onChange={(event) =>
                       setTrip({ ...trip, startDate: event.target.value })
                     }
-                    className="w-full px-6 py-4 border-2 border-pink-200 rounded-2xl focus:border-pink-500 focus:outline-none shadow-sm transition"
+                    className="field w-full"
                   />
                 </div>
                 <div>
                   <label className="block font-bold mb-3 text-xl flex items-center gap-2">
-                    <Calendar className="w-6 h-6 text-pink-500" />
+                    <Calendar className="w-6 h-6 text-[var(--accent)]" />
                     帰着日 <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -399,14 +399,14 @@ export function TripForm({
                     onChange={(event) =>
                       setTrip({ ...trip, endDate: event.target.value })
                     }
-                    className="w-full px-6 py-4 border-2 border-pink-200 rounded-2xl focus:border-pink-500 focus:outline-none shadow-sm transition"
+                    className="field w-full"
                   />
                 </div>
               </div>
 
               <div>
                 <label className="block font-bold mb-3 text-xl flex items-center gap-2">
-                  <Plane className="w-6 h-6 text-pink-500" />
+                  <Plane className="w-6 h-6 text-[var(--accent)]" />
                   移動手段
                 </label>
                 <input
@@ -415,14 +415,14 @@ export function TripForm({
                   onChange={(event) =>
                     setTrip({ ...trip, transportText: event.target.value })
                   }
-                  className="w-full px-6 py-4 border-2 border-pink-200 rounded-2xl focus:border-pink-500 focus:outline-none text-lg shadow-sm transition"
+                  className="field w-full text-lg"
                   placeholder="例: 飛行機、レンタカー"
                 />
               </div>
 
               <div>
                 <label className="block font-bold mb-3 text-xl flex items-center gap-2">
-                  <Users className="w-6 h-6 text-pink-500" />
+                  <Users className="w-6 h-6 text-[var(--accent)]" />
                   メンバー
                 </label>
                 <div className="flex flex-col md:flex-row gap-3 mb-4">
@@ -436,12 +436,12 @@ export function TripForm({
                         handleAddMember();
                       }
                     }}
-                    className="flex-1 px-6 py-4 border-2 border-pink-200 rounded-2xl focus:border-pink-500 focus:outline-none shadow-sm transition"
+                    className="field flex-1"
                     placeholder="名前を入力"
                   />
                   <motion.button
                     onClick={handleAddMember}
-                    className="px-8 py-4 bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-2xl hover:from-pink-600 hover:to-pink-700 transition flex items-center justify-center gap-2 font-bold shadow-lg"
+                    className="btn-outline flex items-center justify-center gap-2"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     type="button"
@@ -455,16 +455,18 @@ export function TripForm({
                     {trip.members.map((member) => (
                       <motion.div
                         key={member.id}
-                        className="bg-gradient-to-r from-pink-100 to-purple-100 text-pink-700 px-6 py-3 rounded-full flex items-center gap-3 shadow-md"
+                        className="chip flex items-center gap-3"
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
                         exit={{ scale: 0 }}
                         whileHover={{ scale: 1.05 }}
                       >
-                        <span className="font-medium">{member.name}</span>
+                        <span className="font-medium text-[var(--ink)]">
+                          {member.name}
+                        </span>
                         <button
                           onClick={() => handleRemoveMember(member.id)}
-                          className="hover:text-pink-900 transition"
+                          className="text-[var(--accent-strong)] hover:text-[var(--accent)] transition"
                           type="button"
                         >
                           <X className="w-5 h-5" />
@@ -485,19 +487,19 @@ export function TripForm({
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -50 }}
             >
-              <h2 className="text-4xl font-bold text-center mb-8 bg-gradient-to-r from-pink-500 via-purple-500 to-orange-400 bg-clip-text text-transparent">
-                日程と予定 📅
+              <h2 className="text-3xl md:text-4xl font-semibold text-center mb-8 text-[var(--ink)]">
+                日程と予定
               </h2>
 
               {trip.dayPlans.map((plan, dayIndex) => (
                 <motion.div
                   key={plan.day}
-                  className="border-2 border-pink-300 rounded-2xl p-8 bg-gradient-to-br from-pink-50 via-yellow-50 to-orange-50 shadow-lg"
+                  className="paper-card-soft p-6 md:p-8"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: dayIndex * 0.1 }}
                 >
-                  <h3 className="text-3xl font-bold mb-5 text-pink-600">
+                  <h3 className="text-2xl font-semibold mb-5 text-[var(--ink)]">
                     Day {plan.day} - {plan.date}
                   </h3>
                   <div className="space-y-3 mb-5">
@@ -505,13 +507,13 @@ export function TripForm({
                       {plan.activities.map((activity, activityIndex) => (
                         <motion.div
                           key={`${plan.day}-${activityIndex}`}
-                          className="flex items-center gap-3 bg-white p-4 rounded-xl shadow-md"
+                          className="flex items-center gap-3 bg-white/80 border border-[var(--line)] p-4 rounded-xl"
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
                           exit={{ opacity: 0, x: 20 }}
                           whileHover={{ scale: 1.02 }}
                         >
-                          <span className="flex-shrink-0 w-9 h-9 bg-gradient-to-r from-pink-500 to-orange-400 text-white rounded-full flex items-center justify-center font-bold shadow-md">
+                          <span className="flex-shrink-0 w-9 h-9 bg-[var(--accent-soft)] text-[var(--ink)] rounded-full border border-[var(--line)] flex items-center justify-center font-semibold">
                             {activityIndex + 1}
                           </span>
                           <span className="flex-1 text-lg">{activity}</span>
@@ -519,7 +521,7 @@ export function TripForm({
                             onClick={() =>
                               handleRemoveActivity(dayIndex, activityIndex)
                             }
-                            className="text-red-500 hover:text-red-700 transition"
+                            className="text-[var(--accent-strong)] hover:text-[var(--accent)] transition"
                             whileHover={{ scale: 1.2 }}
                             whileTap={{ scale: 0.9 }}
                             type="button"
@@ -532,7 +534,7 @@ export function TripForm({
                   </div>
                   <motion.button
                     onClick={() => handleAddActivity(dayIndex)}
-                    className="w-full py-4 border-2 border-dashed border-pink-400 rounded-xl text-pink-600 hover:bg-pink-100 transition flex items-center justify-center gap-3 font-bold text-lg"
+                    className="w-full py-4 border border-dashed border-[var(--line)] rounded-xl text-[var(--ink)] hover:border-[var(--accent)] hover:text-[var(--accent-strong)] transition flex items-center justify-center gap-3 font-semibold text-base"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     type="button"
@@ -553,13 +555,13 @@ export function TripForm({
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -50 }}
             >
-              <h2 className="text-4xl font-bold text-center mb-8 bg-gradient-to-r from-pink-500 via-purple-500 to-orange-400 bg-clip-text text-transparent">
-                やりたいこと・宿泊先 🏨
+              <h2 className="text-3xl md:text-4xl font-semibold text-center mb-8 text-[var(--ink)]">
+                やりたいこと・宿泊先
               </h2>
 
               <div>
                 <label className="block font-bold mb-3 text-xl flex items-center gap-2">
-                  <Package className="w-6 h-6 text-pink-500" />
+                  <Package className="w-6 h-6 text-[var(--accent)]" />
                   やりたいことリスト
                 </label>
                 <div className="flex flex-col md:flex-row gap-3 mb-4">
@@ -573,12 +575,12 @@ export function TripForm({
                         handleAddWantItem();
                       }
                     }}
-                    className="flex-1 px-6 py-4 border-2 border-pink-200 rounded-2xl focus:border-pink-500 focus:outline-none shadow-sm transition"
+                    className="field flex-1"
                     placeholder="やりたいことを入力"
                   />
                   <motion.button
                     onClick={handleAddWantItem}
-                    className="px-8 py-4 bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-2xl hover:from-pink-600 hover:to-pink-700 transition flex items-center justify-center gap-2 font-bold shadow-lg"
+                    className="btn-outline flex items-center justify-center gap-2"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     type="button"
@@ -592,17 +594,17 @@ export function TripForm({
                     {trip.wantItems.map((item) => (
                       <motion.div
                         key={item.id}
-                        className="flex items-center gap-3 bg-gradient-to-r from-yellow-50 to-pink-50 p-4 rounded-xl border-2 border-pink-200 shadow-md"
+                        className="flex items-center gap-3 bg-white/80 border border-[var(--line)] p-4 rounded-xl"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, x: -100 }}
                         whileHover={{ scale: 1.02 }}
                       >
-                        <span className="text-pink-500 text-2xl">✓</span>
+                        <span className="text-[var(--accent)] text-xl">✓</span>
                         <span className="flex-1 text-lg">{item.text}</span>
                         <motion.button
                           onClick={() => handleRemoveWantItem(item.id)}
-                          className="text-red-500 hover:text-red-700 transition"
+                          className="text-[var(--accent-strong)] hover:text-[var(--accent)] transition"
                           whileHover={{ scale: 1.2 }}
                           whileTap={{ scale: 0.9 }}
                           type="button"
@@ -617,7 +619,7 @@ export function TripForm({
 
               <div>
                 <label className="block font-bold mb-3 text-xl flex items-center gap-2">
-                  <Home className="w-6 h-6 text-pink-500" />
+                  <Home className="w-6 h-6 text-[var(--accent)]" />
                   宿泊施設
                 </label>
 
@@ -626,19 +628,19 @@ export function TripForm({
                     {trip.lodgings.map((lodging) => (
                       <motion.div
                         key={lodging.id}
-                        className="bg-gradient-to-r from-blue-50 to-purple-50 p-5 rounded-2xl border-l-4 border-blue-500 shadow-md"
+                        className="bg-white/80 border border-[var(--line)] p-5 rounded-2xl"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, x: -100 }}
                         whileHover={{ scale: 1.02 }}
                       >
                         <div className="flex items-start justify-between mb-2">
-                          <h4 className="font-bold text-xl text-blue-700">
+                          <h4 className="font-bold text-xl text-[var(--ink)]">
                             {lodging.name}
                           </h4>
                           <motion.button
                             onClick={() => handleRemoveLodging(lodging.id)}
-                            className="text-red-500 hover:text-red-700 transition"
+                            className="text-[var(--accent-strong)] hover:text-[var(--accent)] transition"
                             whileHover={{ scale: 1.2 }}
                             whileTap={{ scale: 0.9 }}
                             type="button"
@@ -647,7 +649,7 @@ export function TripForm({
                           </motion.button>
                         </div>
                         {lodging.address && (
-                          <p className="text-sm text-gray-600 mb-1">
+                          <p className="text-sm text-[var(--muted)] mb-1">
                             📍 {lodging.address}
                           </p>
                         )}
@@ -657,11 +659,11 @@ export function TripForm({
                           </p>
                         )}
                       </motion.div>
-                    ))}
-                  </AnimatePresence>
-                </div>
+                  ))}
+                </AnimatePresence>
+              </div>
 
-                <div className="border-2 border-dashed border-blue-300 rounded-2xl p-6 space-y-3 bg-blue-50/30">
+                <div className="paper-card-soft p-6 space-y-3">
                   <input
                     type="text"
                     value={editingLodging.name || ""}
@@ -671,7 +673,7 @@ export function TripForm({
                         name: event.target.value,
                       })
                     }
-                    className="w-full px-5 py-3 border-2 border-blue-200 rounded-xl focus:border-blue-500 focus:outline-none"
+                    className="field w-full"
                     placeholder="宿泊施設名"
                   />
                   <input
@@ -683,7 +685,7 @@ export function TripForm({
                         address: event.target.value,
                       })
                     }
-                    className="w-full px-5 py-3 border-2 border-blue-200 rounded-xl focus:border-blue-500 focus:outline-none"
+                    className="field w-full"
                     placeholder="住所"
                   />
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -696,7 +698,7 @@ export function TripForm({
                           checkin: event.target.value,
                         })
                       }
-                      className="px-5 py-3 border-2 border-blue-200 rounded-xl focus:border-blue-500 focus:outline-none"
+                      className="field"
                       placeholder="チェックイン"
                     />
                     <input
@@ -708,7 +710,7 @@ export function TripForm({
                           checkout: event.target.value,
                         })
                       }
-                      className="px-5 py-3 border-2 border-blue-200 rounded-xl focus:border-blue-500 focus:outline-none"
+                      className="field"
                       placeholder="チェックアウト"
                     />
                   </div>
@@ -721,7 +723,7 @@ export function TripForm({
                         phone: event.target.value,
                       })
                     }
-                    className="w-full px-5 py-3 border-2 border-blue-200 rounded-xl focus:border-blue-500 focus:outline-none"
+                    className="field w-full"
                     placeholder="電話番号"
                   />
                   <input
@@ -733,12 +735,12 @@ export function TripForm({
                         url: event.target.value,
                       })
                     }
-                    className="w-full px-5 py-3 border-2 border-blue-200 rounded-xl focus:border-blue-500 focus:outline-none"
+                    className="field w-full"
                     placeholder="URL"
                   />
                   <motion.button
                     onClick={handleAddLodging}
-                    className="w-full py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition flex items-center justify-center gap-2 font-bold shadow-lg"
+                    className="btn-outline w-full flex items-center justify-center gap-2"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     type="button"
@@ -756,7 +758,7 @@ export function TripForm({
                   onChange={(event) =>
                     setTrip({ ...trip, notes: event.target.value })
                   }
-                  className="w-full px-6 py-4 border-2 border-pink-200 rounded-2xl focus:border-pink-500 focus:outline-none shadow-sm transition"
+                  className="field w-full"
                   rows={4}
                   placeholder="その他のメモや注意事項など"
                 />
@@ -772,8 +774,8 @@ export function TripForm({
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -50 }}
             >
-              <h2 className="text-4xl font-bold text-center mb-8 bg-gradient-to-r from-pink-500 via-purple-500 to-orange-400 bg-clip-text text-transparent">
-                デザインとAI設定 🎨
+              <h2 className="text-3xl md:text-4xl font-semibold text-center mb-8 text-[var(--ink)]">
+                デザインとAI設定
               </h2>
 
               <div>
@@ -787,7 +789,7 @@ export function TripForm({
                       onClick={() =>
                         setTrip({ ...trip, templateType: option.value })
                       }
-                      className={`p-6 border-4 rounded-2xl transition shadow-lg ${
+                      className={`p-6 border rounded-2xl transition shadow-sm ${
                         trip.templateType === option.value
                           ? option.active
                           : option.inactive
@@ -800,7 +802,7 @@ export function TripForm({
                       <h3 className="font-bold text-lg mb-1">
                         {option.label}
                       </h3>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-[var(--muted)]">
                         {option.description}
                       </p>
                     </motion.button>
@@ -819,7 +821,7 @@ export function TripForm({
                       onClick={() =>
                         setTrip({ ...trip, formatType: option.value })
                       }
-                      className={`p-6 border-4 rounded-2xl transition shadow-lg text-left ${
+                      className={`p-6 border rounded-2xl transition shadow-sm text-left ${
                         trip.formatType === option.value
                           ? option.active
                           : option.inactive
@@ -834,7 +836,7 @@ export function TripForm({
                           <h3 className="font-bold text-lg">
                             {option.label}
                           </h3>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-[var(--muted)]">
                             {option.description}
                           </p>
                         </div>
@@ -845,12 +847,12 @@ export function TripForm({
               </div>
 
               <motion.div
-                className="border-4 border-purple-300 rounded-2xl p-8 bg-gradient-to-br from-purple-50 via-pink-50 to-yellow-50 shadow-lg"
+                className="paper-card-soft p-8"
                 whileHover={{ scale: 1.02 }}
               >
                 <div className="flex items-center gap-3 mb-6">
-                  <Sparkles className="w-8 h-8 text-purple-500" />
-                  <h3 className="text-2xl font-bold text-purple-700">
+                  <Sparkles className="w-8 h-8 text-[var(--accent)]" />
+                  <h3 className="text-2xl font-bold text-[var(--ink)]">
                     AI補完機能
                   </h3>
                 </div>
@@ -862,7 +864,7 @@ export function TripForm({
                     onChange={(event) =>
                       setTrip({ ...trip, aiEnabled: event.target.checked })
                     }
-                    className="w-7 h-7 accent-purple-500"
+                    className="w-7 h-7 accent-[var(--accent)]"
                   />
                   <label className="text-xl font-medium">
                     AIで文章を補完する
@@ -880,10 +882,10 @@ export function TripForm({
                     <div className="flex flex-col md:flex-row gap-4">
                       <motion.button
                         onClick={() => setTrip({ ...trip, aiTone: "polite" })}
-                        className={`flex-1 py-4 px-6 rounded-xl border-2 transition font-bold text-lg shadow-md ${
+                        className={`flex-1 py-4 px-6 rounded-xl border transition font-semibold text-lg shadow-sm ${
                           trip.aiTone === "polite"
-                            ? "border-purple-500 bg-purple-200 scale-105"
-                            : "border-gray-300 hover:border-purple-400 bg-white"
+                            ? "border-[var(--accent)] bg-[var(--accent-soft)] scale-[1.02]"
+                            : "border-[var(--line)] hover:border-[var(--accent)] bg-white/70"
                         }`}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
@@ -893,10 +895,10 @@ export function TripForm({
                       </motion.button>
                       <motion.button
                         onClick={() => setTrip({ ...trip, aiTone: "casual" })}
-                        className={`flex-1 py-4 px-6 rounded-xl border-2 transition font-bold text-lg shadow-md ${
+                        className={`flex-1 py-4 px-6 rounded-xl border transition font-semibold text-lg shadow-sm ${
                           trip.aiTone === "casual"
-                            ? "border-purple-500 bg-purple-200 scale-105"
-                            : "border-gray-300 hover:border-purple-400 bg-white"
+                            ? "border-[var(--accent)] bg-[var(--accent-soft)] scale-[1.02]"
+                            : "border-[var(--line)] hover:border-[var(--accent)] bg-white/70"
                         }`}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
@@ -908,7 +910,7 @@ export function TripForm({
                   </motion.div>
                 )}
 
-                <p className="text-sm text-gray-700 mt-6 bg-white/50 p-4 rounded-xl">
+                <p className="text-sm text-[var(--muted)] mt-6 bg-white/70 border border-[var(--line)] p-4 rounded-xl">
                   💡 AIが表紙コピー、概要文、見どころ要約などを自動生成します。入力内容は変更されません。
                 </p>
               </motion.div>
@@ -916,14 +918,12 @@ export function TripForm({
           )}
         </AnimatePresence>
 
-        <div className="flex flex-col md:flex-row justify-between gap-4 mt-10 pt-8 border-t-4 border-pink-200">
+        <div className="flex flex-col md:flex-row justify-between gap-4 mt-10 pt-8 border-t border-[var(--line)]">
           {currentStep > 1 ? (
             <motion.button
               onClick={() => setCurrentStep((prev) => prev - 1)}
-              className={`px-10 py-4 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-2xl transition font-bold text-lg shadow-lg ${
-                isBlocked
-                  ? "opacity-60 cursor-not-allowed"
-                  : "hover:from-gray-600 hover:to-gray-700"
+              className={`btn-outline ${
+                isBlocked ? "opacity-60 cursor-not-allowed" : ""
               }`}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -935,10 +935,8 @@ export function TripForm({
           ) : (
             <motion.button
               onClick={onCancel}
-              className={`px-10 py-4 bg-gradient-to-r from-gray-400 to-gray-500 text-white rounded-2xl transition font-bold text-lg shadow-lg ${
-                isBlocked
-                  ? "opacity-60 cursor-not-allowed"
-                  : "hover:from-gray-500 hover:to-gray-600"
+              className={`btn-outline ${
+                isBlocked ? "opacity-60 cursor-not-allowed" : ""
               }`}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -952,8 +950,8 @@ export function TripForm({
           {currentStep < 4 ? (
             <motion.button
               onClick={handleNext}
-              className={`px-10 py-4 bg-gradient-to-r from-pink-500 via-purple-500 to-orange-400 text-white rounded-2xl transition font-bold text-lg shadow-lg ${
-                isBlocked ? "opacity-60 cursor-not-allowed" : "hover:shadow-2xl"
+              className={`btn-primary ${
+                isBlocked ? "opacity-60 cursor-not-allowed" : ""
               }`}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -965,8 +963,8 @@ export function TripForm({
           ) : (
             <motion.button
               onClick={handleSubmit}
-              className={`px-12 py-4 bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 text-white rounded-2xl transition font-bold text-xl shadow-lg flex items-center justify-center gap-3 ${
-                isBlocked ? "opacity-60 cursor-not-allowed" : "hover:shadow-2xl"
+              className={`btn-primary flex items-center justify-center gap-3 ${
+                isBlocked ? "opacity-60 cursor-not-allowed" : ""
               }`}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}

@@ -57,6 +57,7 @@ export interface TripDesignPage {
   id: string;
   mode: DesignMode;
   label: string;
+  day?: number;
   pageNumber: number;
   totalPages: number;
   mimeType: string;

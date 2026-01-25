@@ -1,17 +1,27 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
+import {
+  DM_Sans,
+  Zen_Kaku_Gothic_New,
+  Yusei_Magic,
+} from "next/font/google";
 import "./globals.css";
 
-const geistBody = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-body",
-  weight: "100 900",
+const displayFont = Yusei_Magic({
+  subsets: ["latin"],
+  weight: ["400"],
+  variable: "--font-display",
 });
 
-const geistDisplay = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-display",
-  weight: "100 900",
+const bodyFont = Zen_Kaku_Gothic_New({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "700"],
+  variable: "--font-body",
+});
+
+const accentFont = DM_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  variable: "--font-accent",
 });
 
 export const metadata: Metadata = {
@@ -28,7 +38,7 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body
-        className={`${geistBody.variable} ${geistDisplay.variable} antialiased`}
+        className={`${bodyFont.variable} ${displayFont.variable} ${accentFont.variable} antialiased`}
       >
         {children}
       </body>

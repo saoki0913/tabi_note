@@ -138,6 +138,7 @@ export function TabiNoteApp() {
   const generateDesignPages = async (
     trip: Trip,
     onProgress?: (current: number, total: number) => void,
+    renderMode: "background" | "full" = "background",
   ) => {
     const pageRequests: Array<{
       mode: DesignMode;
@@ -183,12 +184,13 @@ export function TabiNoteApp() {
         pageNumber: current,
         totalPages,
         day: request.day,
-        renderMode: "full",
+        renderMode,
       });
       pages.push({
         id: generateId(),
         mode: request.mode,
         label: request.label,
+        day: request.day,
         pageNumber: current,
         totalPages,
         mimeType: asset.mimeType,
@@ -213,21 +215,26 @@ export function TabiNoteApp() {
     });
 
     try {
-      const pages = await generateDesignPages(currentTrip, (current, total) => {
-        setDesignProgress({ current, total });
-        setBlockState({
-          active: true,
-          title: "デザインを生成中",
-          message: `レイアウト素材を作成しています。(${current}/${total})`,
-          progress: { current, total },
-        });
-      });
+      const renderMode: "background" | "full" = "background";
+      const pages = await generateDesignPages(
+        currentTrip,
+        (current, total) => {
+          setDesignProgress({ current, total });
+          setBlockState({
+            active: true,
+            title: "デザインを生成中",
+            message: `レイアウト素材を作成しています。(${current}/${total})`,
+            progress: { current, total },
+          });
+        },
+        renderMode,
+      );
       const nextTrip: Trip = {
         ...currentTrip,
         design: {
           style: currentTrip.templateType,
           format: currentTrip.formatType,
-          renderMode: "full",
+          renderMode,
           pages,
           updatedAt: new Date().toISOString(),
         },
@@ -269,21 +276,26 @@ export function TabiNoteApp() {
     });
     let finalTrip = savedTrip;
     try {
-      const pages = await generateDesignPages(savedTrip, (current, total) => {
-        setDesignProgress({ current, total });
-        setBlockState({
-          active: true,
-          title: "しおりを作成中",
-          message: `デザインを生成しています。(${current}/${total})`,
-          progress: { current, total },
-        });
-      });
+      const renderMode: "background" | "full" = "background";
+      const pages = await generateDesignPages(
+        savedTrip,
+        (current, total) => {
+          setDesignProgress({ current, total });
+          setBlockState({
+            active: true,
+            title: "しおりを作成中",
+            message: `デザインを生成しています。(${current}/${total})`,
+            progress: { current, total },
+          });
+        },
+        renderMode,
+      );
       const withDesign: Trip = {
         ...savedTrip,
         design: {
           style: savedTrip.templateType,
           format: savedTrip.formatType,
-          renderMode: "full",
+          renderMode,
           pages,
           updatedAt: new Date().toISOString(),
         },
@@ -359,27 +371,29 @@ export function TabiNoteApp() {
       : 0;
     return (
       <motion.div
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+        className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(22,18,14,0.55)] backdrop-blur-sm"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
       >
-        <div className="bg-white rounded-3xl shadow-2xl border-2 border-pink-200 px-10 py-8 text-center max-w-sm w-full">
-          <div className="flex items-center justify-center gap-3 text-pink-500">
-            <Loader2 className="w-6 h-6 animate-spin" />
-            <span className="text-lg font-bold">{blockState.title}</span>
+        <div className="paper-card px-8 py-7 max-w-sm w-full">
+          <div className="flex items-center gap-3 text-[var(--ink)]">
+            <Loader2 className="w-5 h-5 animate-spin text-[var(--accent)]" />
+            <span className="text-base font-semibold">{blockState.title}</span>
           </div>
           {blockState.message && (
-            <p className="mt-3 text-sm text-gray-600">{blockState.message}</p>
+            <p className="mt-3 text-sm text-[var(--muted)]">
+              {blockState.message}
+            </p>
           )}
           {progress && (
-            <div className="mt-6">
-              <div className="h-2 w-full rounded-full bg-gray-200 overflow-hidden">
+            <div className="mt-5">
+              <div className="h-2 w-full rounded-full bg-[var(--line)] overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-pink-500 via-purple-500 to-orange-400 transition-all"
+                  className="h-full bg-gradient-to-r from-[var(--accent)] to-[var(--sage)] transition-all"
                   style={{ width: `${percent}%` }}
                 />
               </div>
-              <p className="mt-2 text-xs text-gray-500">
+              <p className="mt-2 text-xs text-[var(--muted)]">
                 {progress.current}/{progress.total}
               </p>
             </div>
@@ -392,136 +406,197 @@ export function TabiNoteApp() {
 
   if (view === "home") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-100 via-yellow-100 to-orange-100 overflow-hidden relative">
+      <div className="app-shell text-[var(--ink)]">
         <motion.div
-          className="absolute top-20 left-10 text-pink-400 opacity-20"
-          animate={{ y: [0, -20, 0], rotate: [0, 6, 0] }}
-          transition={{ duration: 5, repeat: Infinity }}
+          className="pointer-events-none absolute top-24 right-10 text-[var(--accent)]/25"
+          animate={{ y: [0, -16, 0], rotate: [0, 6, 0] }}
+          transition={{ duration: 7, repeat: Infinity }}
         >
-          <Plane className="w-16 h-16" />
+          <Plane className="h-12 w-12" />
         </motion.div>
         <motion.div
-          className="absolute top-40 right-20 text-purple-400 opacity-20"
-          animate={{ y: [0, 20, 0], rotate: [0, -8, 0] }}
-          transition={{ duration: 6, repeat: Infinity, delay: 0.5 }}
+          className="pointer-events-none absolute bottom-24 left-16 text-[var(--ocean)]/25"
+          animate={{ y: [0, 18, 0], rotate: [0, -8, 0] }}
+          transition={{ duration: 8, repeat: Infinity, delay: 0.4 }}
         >
-          <MapPin className="w-14 h-14" />
-        </motion.div>
-        <motion.div
-          className="absolute bottom-40 left-1/4 text-orange-300 opacity-30"
-          animate={{ y: [0, -15, 0], rotate: [0, 10, 0] }}
-          transition={{ duration: 7, repeat: Infinity, delay: 1 }}
-        >
-          <Sparkles className="w-12 h-12" />
+          <MapPin className="h-10 w-10" />
         </motion.div>
 
         <motion.header
-          className="bg-gradient-to-r from-pink-500 via-purple-500 to-orange-400 text-white py-12 shadow-2xl relative overflow-hidden"
-          initial={{ y: -120 }}
-          animate={{ y: 0 }}
-          transition={{ type: "spring", stiffness: 90 }}
+          className="relative"
+          initial={{ opacity: 0, y: -30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
         >
-          <div className="absolute inset-0 bg-white opacity-10">
-            <motion.div
-              className="absolute inset-0 bg-[radial-gradient(circle,_white_1px,_transparent_1px)] bg-[length:50px_50px]"
-              animate={{ backgroundPosition: ["0% 0%", "100% 100%"] }}
-              transition={{ duration: 20, repeat: Infinity, repeatType: "reverse" }}
-            />
-          </div>
-
-          <div className="container mx-auto px-4 relative z-10">
-            <motion.div
-              className="flex items-center justify-center gap-4"
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.2 }}
-            >
-              <motion.div
-                animate={{ rotate: [0, 8, -8, 0] }}
-                transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 2 }}
-              >
-                <BookOpen className="w-16 h-16 drop-shadow-lg" />
-              </motion.div>
-              <div className="text-center">
-                <motion.h1
-                  className="text-6xl font-bold drop-shadow-lg"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.3 }}
-                >
-                  たびNote
-                </motion.h1>
-                <motion.p
-                  className="text-2xl mt-2 font-medium"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.4 }}
-                >
-                  ✨ 5分でできる旅のしおり ✨
-                </motion.p>
+          <div className="container mx-auto px-6 pt-16 pb-12">
+            <div className="flex flex-wrap items-center justify-between gap-6">
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[var(--line)] bg-white/80 shadow-sm">
+                  <BookOpen className="h-6 w-6 text-[var(--accent)]" />
+                </div>
+                <div>
+                  <p className="section-kicker">Travel note maker</p>
+                  <p className="text-sm text-[var(--muted)]">
+                    旅のしおりをサクッと
+                  </p>
+                </div>
               </div>
-            </motion.div>
+              <div className="badge-outline">since 2024</div>
+            </div>
+
+            <div className="mt-12 grid gap-10 lg:grid-cols-[1.2fr_0.8fr]">
+              <div>
+                <div className="flex flex-wrap gap-3 mb-4">
+                  <span className="sticker">AIレイアウト</span>
+                  <span className="sticker teal">共有リンク</span>
+                  <span className="sticker sun">PDF</span>
+                </div>
+                <h1 className="section-title">たびNote</h1>
+                <p className="mt-5 text-lg text-[var(--muted)] text-balance">
+                  予定・メンバー・持ち物をまとめて、カラフルに仕上げる旅のしおり。
+                  伝えたい情報を、かわいく読みやすくまとめます。
+                </p>
+                <div className="mt-8 flex flex-wrap items-center gap-4">
+                  <motion.button
+                    onClick={handleCreateNew}
+                    className="btn-primary inline-flex items-center gap-3"
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    type="button"
+                  >
+                    <Plus className="h-5 w-5" />
+                    新しいしおりを作る
+                  </motion.button>
+                  <span className="badge-solid">5分で完成</span>
+                </div>
+                <div className="mt-8 flex flex-wrap gap-3 text-sm text-[var(--muted)]">
+                  <span className="chip">入力</span>
+                  <span className="chip">デザイン生成</span>
+                  <span className="chip">共有・PDF</span>
+                </div>
+              </div>
+
+              <motion.div
+                className="paper-card p-6 md:p-8"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <div className="flex items-center justify-between">
+                  <p className="section-kicker">Flow</p>
+                  <Plane className="h-5 w-5 text-[var(--accent)]" />
+                </div>
+                <h3 className="mt-3 text-2xl font-semibold text-[var(--ink)]">
+                  3ステップで完成
+                </h3>
+                <div className="mt-5 space-y-4 text-sm text-[var(--muted)]">
+                  {[
+                    {
+                      title: "入力",
+                      body: "旅程やメンバーをまとめて整理。",
+                    },
+                    {
+                      title: "デザイン",
+                      body: "AIがしおり用レイアウトを生成。",
+                    },
+                    {
+                      title: "共有",
+                      body: "URL共有やPDFで配布。",
+                    },
+                  ].map((item, index) => (
+                    <div key={item.title} className="flex items-start gap-4">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-[var(--accent)] bg-white text-sm font-semibold text-[var(--accent-strong)]">
+                        {index + 1}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-[var(--ink)]">
+                          {item.title}
+                        </p>
+                        <p>{item.body}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="relative mt-6 h-40">
+                  <div className="absolute left-0 top-4 w-36 rounded-2xl border-2 border-[var(--line)] bg-white/90 p-3 shadow-md rotate-[-6deg]">
+                    <div className="text-[0.6rem] uppercase tracking-[0.3em] text-[var(--muted)]">
+                      Cover
+                    </div>
+                    <div className="mt-2 h-16 rounded-xl bg-gradient-to-br from-[var(--accent-soft)] to-white" />
+                    <div className="mt-2 h-2 w-12 rounded-full bg-[var(--accent)]/80" />
+                  </div>
+                  <div className="absolute left-20 top-0 w-36 rounded-2xl border-2 border-[var(--line)] bg-white/90 p-3 shadow-md rotate-[4deg]">
+                    <div className="text-[0.6rem] uppercase tracking-[0.3em] text-[var(--muted)]">
+                      Schedule
+                    </div>
+                    <div className="mt-2 space-y-2">
+                      <div className="h-2 w-full rounded-full bg-[var(--line)]" />
+                      <div className="h-2 w-4/5 rounded-full bg-[var(--line)]" />
+                      <div className="h-2 w-3/5 rounded-full bg-[var(--line)]" />
+                    </div>
+                    <div className="mt-3 h-6 rounded-lg bg-[var(--sky)]/40" />
+                  </div>
+                  <div className="absolute right-0 top-10 w-32 rounded-2xl border-2 border-[var(--line)] bg-white/90 p-3 shadow-md rotate-[10deg]">
+                    <div className="text-[0.6rem] uppercase tracking-[0.3em] text-[var(--muted)]">
+                      Check
+                    </div>
+                    <div className="mt-2 space-y-2">
+                      <div className="h-2 w-3/4 rounded-full bg-[var(--line)]" />
+                      <div className="h-2 w-2/3 rounded-full bg-[var(--line)]" />
+                      <div className="h-2 w-1/2 rounded-full bg-[var(--line)]" />
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
           </div>
         </motion.header>
 
-        <main className="container mx-auto px-4 py-16 max-w-6xl relative z-10">
-          <motion.div
-            className="text-center mb-16"
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <motion.button
-              onClick={handleCreateNew}
-              className="inline-flex items-center gap-4 px-12 py-6 bg-gradient-to-r from-pink-500 via-purple-500 to-orange-400 text-white rounded-3xl shadow-2xl text-2xl font-bold relative overflow-hidden group"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.96 }}
-              type="button"
-            >
-              <span className="absolute inset-0 bg-gradient-to-r from-yellow-400 via-pink-400 to-purple-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <Plus className="relative z-10 w-8 h-8" />
-              <span className="relative z-10">新しいしおりを作る</span>
-              <Sparkles className="relative z-10 w-7 h-7" />
-            </motion.button>
-          </motion.div>
-
-          <section>
-            <div className="flex items-center gap-4 justify-center mb-8">
-              <Calendar className="w-10 h-10 text-pink-600" />
-              <h2 className="text-4xl font-bold bg-gradient-to-r from-pink-600 to-orange-500 bg-clip-text text-transparent">
-                作成したしおり
-              </h2>
+        <main className="container mx-auto px-6 pb-16 max-w-6xl relative z-10">
+          <section className="mt-6">
+            <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
+              <div>
+                <p className="section-kicker">Library</p>
+                <h2 className="text-3xl md:text-4xl font-semibold text-[var(--ink)]">
+                  作成したしおり
+                </h2>
+              </div>
+              {!isLoading && (
+                <p className="text-sm text-[var(--muted)]">
+                  全 {trips.length} 件
+                </p>
+              )}
             </div>
 
             {isLoading ? (
               <motion.div
-                className="bg-white rounded-3xl shadow-2xl p-16 text-center border-4 border-pink-200"
+                className="paper-card p-12 text-center"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
               >
                 <motion.div
-                  className="flex items-center justify-center mb-6 text-pink-300"
+                  className="flex items-center justify-center mb-4 text-[var(--accent)]"
                   animate={{ rotate: 360 }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                  transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
                 >
-                  <Sparkles className="w-16 h-16" />
+                  <Sparkles className="w-12 h-12" />
                 </motion.div>
-                <p className="text-2xl text-gray-600 font-bold">
+                <p className="text-lg text-[var(--muted)]">
                   しおりを読み込み中...
                 </p>
               </motion.div>
             ) : trips.length === 0 ? (
               <motion.div
-                className="bg-white rounded-3xl shadow-2xl p-16 text-center border-4 border-pink-300"
-                initial={{ opacity: 0, scale: 0.95 }}
+                className="paper-card p-12 text-center"
+                initial={{ opacity: 0, scale: 0.96 }}
                 animate={{ opacity: 1, scale: 1 }}
               >
-                <BookOpen className="w-24 h-24 mx-auto mb-6 text-pink-300" />
-                <p className="text-2xl text-gray-600 font-bold">
+                <BookOpen className="w-16 h-16 mx-auto mb-4 text-[var(--accent)]/60" />
+                <p className="text-xl font-semibold text-[var(--ink)]">
                   まだしおりがありません
                 </p>
-                <p className="text-gray-500 mt-3 text-lg">
-                  上のボタンから作成を始めましょう！
+                <p className="text-sm text-[var(--muted)] mt-2">
+                  上のボタンから作成を始めましょう。
                 </p>
               </motion.div>
             ) : (
@@ -532,47 +607,47 @@ export function TabiNoteApp() {
                       key={trip.id}
                       initial={{ opacity: 0, y: 40 }}
                       animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
+                      exit={{ opacity: 0, scale: 0.96 }}
                       transition={{ delay: index * 0.08 }}
-                      whileHover={{ y: -8 }}
-                      className="bg-white rounded-3xl shadow-xl overflow-hidden border-4 border-pink-300 hover:border-pink-400 hover:shadow-2xl transition-all"
+                      whileHover={{ y: -6 }}
+                      className="paper-card overflow-hidden"
                     >
-                      <div className="bg-gradient-to-r from-pink-500 via-purple-500 to-orange-400 text-white p-8 relative overflow-hidden">
-                        <motion.div
-                          className="absolute top-0 right-0 text-white/30"
-                          animate={{ rotate: 360 }}
-                          transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
-                        >
-                          <Plane className="w-14 h-14" />
-                        </motion.div>
-                        <h3 className="text-2xl font-bold mb-3 line-clamp-2 relative z-10">
-                          {trip.title}
-                        </h3>
-                        <div className="flex items-center gap-2 text-sm opacity-90 relative z-10">
-                          <MapPin className="w-4 h-4" />
-                          <span className="line-clamp-1">{trip.destination}</span>
+                      <div className="border-b border-[var(--line)] p-6 bg-white/80">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="section-kicker">Trip</p>
+                            <h3 className="mt-3 text-2xl font-semibold line-clamp-2 text-[var(--ink)]">
+                              {trip.title}
+                            </h3>
+                          </div>
+                          <Plane className="w-5 h-5 text-[var(--accent)]/60" />
                         </div>
-                        <div className="flex items-center gap-2 text-sm opacity-90 mt-2 relative z-10">
-                          <Calendar className="w-4 h-4" />
-                          <span>
-                            {formatDate(trip.startDate)} 〜{" "}
-                            {formatDate(trip.endDate)}
-                          </span>
+                        <div className="mt-4 space-y-2 text-sm text-[var(--muted)]">
+                          <div className="flex items-center gap-2">
+                            <MapPin className="w-4 h-4 text-[var(--accent)]" />
+                            <span className="line-clamp-1">
+                              {trip.destination}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Calendar className="w-4 h-4 text-[var(--accent)]" />
+                            <span>
+                              {formatDate(trip.startDate)} 〜{" "}
+                              {formatDate(trip.endDate)}
+                            </span>
+                          </div>
                         </div>
                       </div>
 
-                      <div className="p-6">
-                        <div className="flex flex-wrap gap-2 mb-5">
+                      <div className="p-6 space-y-5">
+                        <div className="flex flex-wrap gap-2">
                           {trip.members.slice(0, 3).map((member) => (
-                            <span
-                              key={member.id}
-                              className="text-xs bg-gradient-to-r from-pink-100 to-purple-100 text-pink-700 px-4 py-2 rounded-full font-medium shadow-sm"
-                            >
+                            <span key={member.id} className="chip">
                               {member.name}
                             </span>
                           ))}
                           {trip.members.length > 3 && (
-                            <span className="text-xs bg-gray-100 text-gray-700 px-4 py-2 rounded-full font-medium">
+                            <span className="chip text-[var(--muted)]">
                               +{trip.members.length - 3}人
                             </span>
                           )}
@@ -581,9 +656,9 @@ export function TabiNoteApp() {
                         <div className="grid grid-cols-2 gap-3">
                           <motion.button
                             onClick={() => handleViewTrip(trip)}
-                            className="flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-xl hover:from-pink-600 hover:to-pink-700 transition text-sm font-bold shadow-md"
-                            whileHover={{ scale: 1.03 }}
-                            whileTap={{ scale: 0.96 }}
+                            className="btn-outline flex items-center justify-center gap-2 text-sm"
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.97 }}
                             type="button"
                           >
                             <Eye className="w-4 h-4" />
@@ -591,9 +666,9 @@ export function TabiNoteApp() {
                           </motion.button>
                           <motion.button
                             onClick={() => handleShareTrip(trip)}
-                            className="flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition text-sm font-bold shadow-md"
-                            whileHover={{ scale: 1.03 }}
-                            whileTap={{ scale: 0.96 }}
+                            className="btn-outline flex items-center justify-center gap-2 text-sm"
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.97 }}
                             type="button"
                           >
                             <Share2 className="w-4 h-4" />
@@ -601,9 +676,9 @@ export function TabiNoteApp() {
                           </motion.button>
                           <motion.button
                             onClick={() => handleEditTrip(trip)}
-                            className="flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl hover:from-purple-600 hover:to-purple-700 transition text-sm font-bold shadow-md"
-                            whileHover={{ scale: 1.03 }}
-                            whileTap={{ scale: 0.96 }}
+                            className="btn-ghost flex items-center justify-center gap-2 text-sm"
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.97 }}
                             type="button"
                           >
                             <Edit className="w-4 h-4" />
@@ -611,9 +686,9 @@ export function TabiNoteApp() {
                           </motion.button>
                           <motion.button
                             onClick={() => handleDeleteTrip(trip.id)}
-                            className="flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-red-400 to-red-500 text-white rounded-xl hover:from-red-500 hover:to-red-600 transition text-sm font-bold shadow-md"
-                            whileHover={{ scale: 1.03 }}
-                            whileTap={{ scale: 0.96 }}
+                            className="btn-danger flex items-center justify-center gap-2 text-sm"
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.97 }}
                             type="button"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -629,13 +704,13 @@ export function TabiNoteApp() {
           </section>
         </main>
 
-        <footer className="bg-gradient-to-r from-pink-500 via-purple-500 to-orange-400 text-white py-8 mt-20">
-          <div className="container mx-auto px-4 text-center">
-            <p className="text-xl font-medium flex items-center justify-center gap-3">
-              <Plane className="w-6 h-6" />
-              たびNote - 思い出に残る旅のしおりを簡単に作成
-              <BookOpen className="w-6 h-6" />
-            </p>
+        <footer className="border-t border-[var(--line)] py-8">
+          <div className="container mx-auto px-6 flex flex-wrap items-center justify-between gap-3 text-sm text-[var(--muted)]">
+            <div className="flex items-center gap-2">
+              <Plane className="w-4 h-4 text-[var(--accent)]" />
+              たびNote
+            </div>
+            <span>思い出に残る旅のしおりを簡単に作成</span>
           </div>
         </footer>
         {renderBlockingOverlay()}
@@ -646,22 +721,23 @@ export function TabiNoteApp() {
   if (view === "create") {
     return (
       <motion.div
-        className="min-h-screen bg-gradient-to-br from-pink-100 via-yellow-100 to-orange-100 py-8"
+        className="app-shell py-10"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
       >
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-6">
           <motion.div
-            className="text-center mb-8"
+            className="text-center mb-10"
             initial={{ y: -40, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
           >
-            <h1 className="text-5xl font-bold text-gray-800 flex items-center justify-center gap-4">
-              <BookOpen className="w-12 h-12 text-pink-500" />
-              <span className="bg-gradient-to-r from-pink-600 to-orange-500 bg-clip-text text-transparent">
-                {currentTrip ? "しおりを編集" : "新しいしおりを作成"}
-              </span>
+            <p className="section-kicker">Create</p>
+            <h1 className="section-title mt-3">
+              {currentTrip ? "しおりを編集" : "新しいしおりを作成"}
             </h1>
+            <p className="mt-3 text-sm text-[var(--muted)]">
+              入力内容に合わせて、しおりのデザインを整えます。
+            </p>
           </motion.div>
 
           <TripForm
@@ -680,20 +756,20 @@ export function TabiNoteApp() {
   if (view === "preview" && currentTrip) {
     return (
       <motion.div
-        className="min-h-screen bg-gradient-to-br from-pink-100 via-yellow-100 to-orange-100 py-8"
+        className="app-shell py-10"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
       >
-        <div className="container mx-auto px-4 max-w-5xl">
+        <div className="container mx-auto px-6 max-w-5xl">
           <motion.div
-            className="bg-white rounded-3xl shadow-2xl p-8 mb-8 border-4 border-pink-300"
+            className="paper-card p-6 md:p-8 mb-8"
             initial={{ y: -40, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
           >
             <div className="flex flex-wrap items-center justify-between gap-4">
               <motion.button
                 onClick={handleBackToHome}
-                className="px-8 py-4 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-xl hover:from-gray-700 hover:to-gray-800 transition font-bold shadow-lg"
+                className="btn-outline flex items-center gap-2"
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.96 }}
                 type="button"
@@ -704,10 +780,8 @@ export function TabiNoteApp() {
               <div className="flex flex-wrap gap-3">
                 <motion.button
                   onClick={handleGenerateDesign}
-                  className={`flex items-center gap-2 px-8 py-4 rounded-xl transition font-bold shadow-lg ${
-                    isGeneratingDesign
-                      ? "bg-gray-200 text-gray-500"
-                      : "bg-gradient-to-r from-amber-400 via-pink-400 to-purple-400 text-white hover:shadow-2xl"
+                  className={`btn-primary flex items-center gap-2 ${
+                    isGeneratingDesign ? "opacity-60 cursor-not-allowed" : ""
                   }`}
                   whileHover={isGeneratingDesign ? {} : { scale: 1.03 }}
                   whileTap={isGeneratingDesign ? {} : { scale: 0.96 }}
@@ -727,7 +801,7 @@ export function TabiNoteApp() {
                 </motion.button>
                 <motion.button
                   onClick={() => handleEditTrip(currentTrip)}
-                  className="flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl hover:from-purple-600 hover:to-purple-700 transition font-bold shadow-lg"
+                  className="btn-outline flex items-center gap-2"
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.96 }}
                   type="button"
@@ -737,7 +811,7 @@ export function TabiNoteApp() {
                 </motion.button>
                 <motion.button
                   onClick={() => handleShareTrip(currentTrip)}
-                  className="flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition font-bold shadow-lg"
+                  className="btn-outline flex items-center gap-2"
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.96 }}
                   type="button"
@@ -747,7 +821,7 @@ export function TabiNoteApp() {
                 </motion.button>
                 <motion.button
                   onClick={() => setShowPdfExport((prev) => !prev)}
-                  className="flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-pink-500 via-purple-500 to-orange-400 text-white rounded-xl hover:shadow-2xl transition font-bold shadow-lg"
+                  className="btn-secondary flex items-center gap-2"
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.96 }}
                   type="button"
@@ -760,7 +834,7 @@ export function TabiNoteApp() {
             {currentTrip.design &&
               (currentTrip.design.style !== currentTrip.templateType ||
                 currentTrip.design.format !== currentTrip.formatType) && (
-                <div className="mt-4 text-sm text-amber-600 font-semibold">
+                <div className="mt-4 text-sm text-[var(--accent-strong)] font-semibold">
                   現在のスタイル/フォーマットと生成済みデザインが一致しません。再生成がおすすめです。
                 </div>
               )}

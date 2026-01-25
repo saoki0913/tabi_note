@@ -116,12 +116,30 @@ export function PdfExport({ trip }: PdfExportProps) {
       ? `data:${resolvedAsset.mimeType};base64,${resolvedAsset.base64}`
       : "";
   };
-  const coverDataUrl = assetUrl("cover");
-  const overviewDataUrl = assetUrl("overview");
-  const scheduleDataUrl = assetUrl("schedule");
-  const checklistDataUrl = assetUrl("checklist");
-  const infoDataUrl = assetUrl("info");
-  const memoDataUrl = assetUrl("memo");
+  const renderMode = trip.design?.renderMode ?? "full";
+  const sortedPages = trip.design?.pages?.length
+    ? [...trip.design.pages].sort((a, b) => a.pageNumber - b.pageNumber)
+    : null;
+  const fullPages = renderMode === "full" ? sortedPages : null;
+  const backgroundPages = renderMode === "background" ? sortedPages : null;
+
+  const resolveBackgroundUrl = (mode: DesignMode, day?: number) => {
+    if (backgroundPages) {
+      if (typeof day === "number") {
+        const dayMatch = backgroundPages.find(
+          (page) => page.mode === mode && page.day === day,
+        );
+        if (dayMatch) {
+          return `data:${dayMatch.mimeType};base64,${dayMatch.base64}`;
+        }
+      }
+      const fallback = backgroundPages.find((page) => page.mode === mode);
+      if (fallback) {
+        return `data:${fallback.mimeType};base64,${fallback.base64}`;
+      }
+    }
+    return assetUrl(mode);
+  };
 
   const generatePdf = async () => {
     setIsGenerating(true);
@@ -139,7 +157,28 @@ export function PdfExport({ trip }: PdfExportProps) {
       const formatDate = (date: string) => {
         if (!date) return "";
         const parsed = new Date(date);
+        if (Number.isNaN(parsed.getTime())) {
+          return date;
+        }
         return `${parsed.getFullYear()}年${parsed.getMonth() + 1}月${parsed.getDate()}日`;
+      };
+
+      const escapeHtml = (value: string) =>
+        value
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+
+      const formatHtmlText = (
+        value: string,
+        options: { preserveNewlines?: boolean } = {},
+      ) => {
+        const escaped = escapeHtml(value);
+        return options.preserveNewlines
+          ? escaped.replace(/\n/g, "<br>")
+          : escaped;
       };
 
       const getPageSize = () => {
@@ -161,45 +200,48 @@ export function PdfExport({ trip }: PdfExportProps) {
 
       const pageSize = getPageSize();
 
-      const buildPageBackground = (assetUrl: string, overlay: string) =>
+      const coverDataUrl = resolveBackgroundUrl("cover");
+      const overviewDataUrl = resolveBackgroundUrl("overview");
+      const checklistDataUrl = resolveBackgroundUrl("checklist");
+      const infoDataUrl = resolveBackgroundUrl("info");
+      const memoDataUrl = resolveBackgroundUrl("memo");
+
+      const buildPageBackground = (assetUrl: string | null, overlay: string) =>
         assetUrl
-          ? `background-image: ${overlay}, url('${assetUrl}'); background-size: cover; background-position: center;`
+          ? `
+            <img class="page-bg" src="${assetUrl}" alt="" />
+            <div class="page-overlay" style="background: ${overlay};"></div>
+          `
           : "";
-      const coverBackgroundStyle = buildPageBackground(
+      const coverBackgroundHtml = buildPageBackground(
         coverDataUrl,
         "linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.45))",
       );
-      const overviewBackgroundStyle = buildPageBackground(
+      const overviewBackgroundHtml = buildPageBackground(
         overviewDataUrl,
         "linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0.92))",
       );
-      const scheduleBackgroundStyle = buildPageBackground(
-        scheduleDataUrl,
-        "linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.92))",
-      );
-      const checklistBackgroundStyle = buildPageBackground(
+      const checklistBackgroundHtml = buildPageBackground(
         checklistDataUrl,
         "linear-gradient(180deg, rgba(255,255,255,0.7), rgba(255,255,255,0.95))",
       );
-      const infoBackgroundStyle = buildPageBackground(
+      const infoBackgroundHtml = buildPageBackground(
         infoDataUrl,
         "linear-gradient(180deg, rgba(255,255,255,0.68), rgba(255,255,255,0.95))",
       );
-      const memoBackgroundStyle = buildPageBackground(
+      const memoBackgroundHtml = buildPageBackground(
         memoDataUrl,
         "linear-gradient(180deg, rgba(255,255,255,0.75), rgba(255,255,255,0.98))",
       );
-
-      const fullPages = trip.design?.pages?.length
-        ? [...trip.design.pages].sort((a, b) => a.pageNumber - b.pageNumber)
-        : null;
 
       if (fullPages) {
         const fullPagesHtml = fullPages
           .map(
             (page) => `
               <section class="page full">
-                <img src="data:${page.mimeType};base64,${page.base64}" alt="${trip.title} ${page.label}" />
+                <img src="data:${page.mimeType};base64,${page.base64}" alt="${escapeHtml(
+                  `${trip.title} ${page.label}`.trim(),
+                )}" />
               </section>
             `,
           )
@@ -210,7 +252,7 @@ export function PdfExport({ trip }: PdfExportProps) {
           <html>
           <head>
             <meta charset="UTF-8">
-            <title>${trip.title} - 旅のしおり</title>
+            <title>${escapeHtml(trip.title || "旅のしおり")} - 旅のしおり</title>
             <style>
               @page {
                 size: ${pageSize.width} ${pageSize.height};
@@ -220,6 +262,8 @@ export function PdfExport({ trip }: PdfExportProps) {
                 margin: 0;
                 padding: 0;
                 background: #fff;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
               }
               .page {
                 width: ${pageSize.width};
@@ -233,7 +277,7 @@ export function PdfExport({ trip }: PdfExportProps) {
               .page.full img {
                 width: 100%;
                 height: 100%;
-                object-fit: contain;
+                object-fit: cover;
                 display: block;
                 background: #fff;
               }
@@ -242,10 +286,27 @@ export function PdfExport({ trip }: PdfExportProps) {
           <body>
             ${fullPagesHtml}
             <script>
+              const waitForImages = () => {
+                const images = Array.from(document.images);
+                return Promise.all(
+                  images.map((img) => {
+                    if (img.complete) return Promise.resolve();
+                    return new Promise((resolve) => {
+                      img.onload = resolve;
+                      img.onerror = resolve;
+                    });
+                  })
+                );
+              };
+
+              const waitForFonts = document.fonts ? document.fonts.ready : Promise.resolve();
+
               window.onload = () => {
-                setTimeout(() => {
-                  window.print();
-                }, 500);
+                Promise.all([waitForImages(), waitForFonts]).then(() => {
+                  setTimeout(() => {
+                    window.print();
+                  }, 300);
+                });
               };
             </script>
           </body>
@@ -270,112 +331,181 @@ export function PdfExport({ trip }: PdfExportProps) {
       const hasInfo =
         trip.lodgings.length > 0 ||
         Boolean(trip.transportText) ||
-        Boolean(trip.aiContent?.cautionsText);
+        Boolean(trip.aiContent?.cautionsText) ||
+        Boolean(trip.notes);
 
-      const headerHtml = (title: string, subtitle?: string) => `
-        <div class="page-header">
-          <div>
-            <div class="eyebrow">TRAVEL NOTES</div>
-            <h2>${title}</h2>
-            ${subtitle ? `<p class="subtitle">${subtitle}</p>` : ""}
+      const headerHtml = (title: string, subtitle?: string) => {
+        const safeTitle = formatHtmlText(title);
+        const safeSubtitle = subtitle ? formatHtmlText(subtitle) : "";
+        return `
+          <div class="page-header">
+            <div>
+              <div class="eyebrow">TRAVEL NOTES</div>
+              <h2>${safeTitle}</h2>
+              ${safeSubtitle ? `<p class="subtitle">${safeSubtitle}</p>` : ""}
+            </div>
+            <div class="header-icon"></div>
           </div>
-          <div class="header-icon"></div>
-        </div>
-      `;
+        `;
+      };
 
-      const coverCopy =
+      const coverCopyText =
         trip.aiEnabled && trip.aiContent?.coverCopy
-          ? `<p class="cover-copy">"${trip.aiContent.coverCopy}"</p>`
+          ? formatHtmlText(trip.aiContent.coverCopy)
           : "";
+      const coverCopy = coverCopyText
+        ? `<p class="cover-copy">&quot;${coverCopyText}&quot;</p>`
+        : "";
       const membersText = trip.members.length
-        ? trip.members.map((member) => member.name).join(" ・ ")
+        ? trip.members.map((member) => formatHtmlText(member.name)).join(" ・ ")
         : "";
       const overviewText =
         trip.aiEnabled && trip.aiContent?.overviewText
-          ? trip.aiContent.overviewText
+          ? formatHtmlText(trip.aiContent.overviewText, {
+              preserveNewlines: true,
+            })
           : "旅の目的や雰囲気をまとめましょう。";
-      const lodgingSummary =
-        trip.lodgings.length > 0
-          ? trip.lodgings
-              .slice(0, 2)
-              .map(
-                (lodging) => `
-                  <div class="list-block">
-                    <div class="list-title">${lodging.name}</div>
-                    <div class="muted">${lodging.address || "住所未入力"}</div>
-                  </div>
-                `,
-              )
-              .join("")
-          : `<p class="muted">宿泊情報を入力するとここに表示されます。</p>`;
+      const renderLodgingBlocks = (
+        lodgings: Trip["lodgings"],
+        options: { detailed?: boolean; limit?: number } = {},
+      ) => {
+        if (lodgings.length === 0) {
+          return `<p class="muted">宿泊情報を入力するとここに表示されます。</p>`;
+        }
+        const limit =
+          typeof options.limit === "number" ? options.limit : lodgings.length;
+        return lodgings.slice(0, limit).map((lodging) => {
+          const name = formatHtmlText(lodging.name || "宿泊先");
+          const address = lodging.address
+            ? formatHtmlText(lodging.address)
+            : "住所未入力";
+          const checkInOut =
+            lodging.checkin || lodging.checkout
+              ? `IN ${formatHtmlText(lodging.checkin || "-")} / OUT ${formatHtmlText(
+                  lodging.checkout || "-",
+                )}`
+              : "";
+          const phone = lodging.phone
+            ? `TEL: ${formatHtmlText(lodging.phone)}`
+            : "";
+          const url = lodging.url ? formatHtmlText(lodging.url) : "";
+          const memo = lodging.memo
+            ? formatHtmlText(lodging.memo, { preserveNewlines: true })
+            : "";
+          const details = [checkInOut, phone, url, memo].filter(Boolean);
+          return `
+              <div class="list-block">
+                <div class="list-title">${name}</div>
+                <div class="muted">${address}</div>
+                ${
+                  options.detailed && details.length > 0
+                    ? details
+                        .map((detail) => `<div class="muted">${detail}</div>`)
+                        .join("")
+                    : ""
+                }
+              </div>
+            `;
+        }).join("");
+      };
+      const lodgingSummary = renderLodgingBlocks(trip.lodgings, { limit: 2 });
+      const lodgingDetails = renderLodgingBlocks(trip.lodgings, {
+        detailed: true,
+      });
       const cautionsText =
         trip.aiEnabled && trip.aiContent?.cautionsText
-          ? trip.aiContent.cautionsText.replace(/\n/g, "<br>")
+          ? formatHtmlText(trip.aiContent.cautionsText, {
+              preserveNewlines: true,
+            })
           : "";
 
       const renderChecklist = (items: string[], emptyText: string) => {
         if (items.length === 0) {
-          return `<p class="muted">${emptyText}</p>`;
+          return `<p class="muted">${formatHtmlText(emptyText)}</p>`;
         }
         return items
           .map(
             (item) => `
               <div class="checklist-item">
                 <span class="checkbox"></span>
-                <span>${item}</span>
+                <span>${formatHtmlText(item)}</span>
               </div>
             `,
           )
           .join("");
       };
 
+      const totalPages =
+        3 +
+        trip.dayPlans.length +
+        (hasChecklist ? 1 : 0) +
+        (hasInfo ? 1 : 0);
+      const pageNumberHtml = (pageNumber: number) => `
+        <div class="page-number">${pageNumber}/${totalPages}</div>
+      `;
+      const checklistPageNumber = 3 + trip.dayPlans.length;
+      const infoPageNumber = checklistPageNumber + (hasChecklist ? 1 : 0);
+      const memoPageNumber = infoPageNumber + (hasInfo ? 1 : 0);
+
       const pages: string[] = [];
 
       pages.push(`
-        <section class="page cover" style="${coverBackgroundStyle}">
-          <div class="cover-top">
-            <div class="eyebrow">TRAVEL NOTE</div>
-            <h1>${trip.title || "旅のしおり"}</h1>
-            ${coverCopy}
-            <div class="pill">📍 ${trip.destination || "行き先"}</div>
-          </div>
-          <div class="cover-bottom">
-            <div class="divider"></div>
-            <div class="info-grid">
-              <div>📅 ${formatDate(trip.startDate)} 〜 ${formatDate(trip.endDate)}</div>
-              ${membersText ? `<div>👥 ${membersText}</div>` : ""}
+        <section class="page cover">
+          ${coverBackgroundHtml}
+          <div class="page-content">
+            <div class="cover-top">
+              <div class="eyebrow">TRAVEL NOTE</div>
+              <h1>${formatHtmlText(trip.title || "旅のしおり")}</h1>
+              ${coverCopy}
+              <div class="pill">📍 ${formatHtmlText(trip.destination || "行き先")}</div>
+            </div>
+            <div class="cover-bottom">
+              <div class="divider"></div>
+              <div class="info-grid">
+                <div>📅 ${formatHtmlText(formatDate(trip.startDate))} 〜 ${formatHtmlText(formatDate(trip.endDate))}</div>
+                ${membersText ? `<div>👥 ${membersText}</div>` : ""}
+              </div>
             </div>
           </div>
+          ${pageNumberHtml(1)}
         </section>
       `);
 
       pages.push(`
-        <section class="page" style="${overviewBackgroundStyle}">
-          ${headerHtml("PLAN", "旅のプラン")}
-          <div class="grid-two">
-            <div class="card">
-              <div class="card-title">OVERVIEW</div>
-              <p>${overviewText}</p>
-              <div class="meta muted">
-                <div>目的地: ${trip.destination || "-"}</div>
-                <div>日程: ${formatDate(trip.startDate)} 〜 ${formatDate(trip.endDate)}</div>
-              </div>
-            </div>
-            <div class="stack">
+        <section class="page">
+          ${overviewBackgroundHtml}
+          <div class="page-content">
+            ${headerHtml("PLAN", "旅のプラン")}
+            <div class="grid-two">
               <div class="card">
-                <div class="card-title">TRANSPORT</div>
-                <p>${trip.transportText || "移動手段を入力するとここに表示されます。"}</p>
+                <div class="card-title">OVERVIEW</div>
+                <p>${overviewText}</p>
+                <div class="meta muted">
+                  <div>目的地: ${formatHtmlText(trip.destination || "-")}</div>
+                  <div>日程: ${formatHtmlText(formatDate(trip.startDate))} 〜 ${formatHtmlText(formatDate(trip.endDate))}</div>
+                </div>
               </div>
-              <div class="card">
-                <div class="card-title">LODGING</div>
-                ${lodgingSummary}
+              <div class="stack">
+                <div class="card">
+                  <div class="card-title">TRANSPORT</div>
+                  <p>${trip.transportText ? formatHtmlText(trip.transportText, { preserveNewlines: true }) : "移動手段を入力するとここに表示されます。"}</p>
+                </div>
+                <div class="card">
+                  <div class="card-title">LODGING</div>
+                  ${lodgingSummary}
+                </div>
               </div>
             </div>
           </div>
+          ${pageNumberHtml(2)}
         </section>
       `);
 
-      trip.dayPlans.forEach((plan) => {
+      trip.dayPlans.forEach((plan, index) => {
+        const scheduleBackgroundHtml = buildPageBackground(
+          resolveBackgroundUrl("schedule", plan.day),
+          "linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.92))",
+        );
         const activityItems =
           plan.activities.length > 0
             ? plan.activities
@@ -383,89 +513,115 @@ export function PdfExport({ trip }: PdfExportProps) {
                   (activity, idx) => `
                     <div class="timeline-item">
                       <div class="timeline-dot">${idx + 1}</div>
-                      <div class="timeline-text">${activity}</div>
+                      <div class="timeline-text">${formatHtmlText(activity, {
+                        preserveNewlines: true,
+                      })}</div>
                     </div>
                   `,
                 )
                 .join("")
             : `<p class="muted">予定がまだ登録されていません。</p>`;
-        const summary =
+        const summaryText =
           trip.aiEnabled && trip.aiContent?.daySummaries[plan.day]
-            ? trip.aiContent.daySummaries[plan.day]
+            ? formatHtmlText(trip.aiContent.daySummaries[plan.day], {
+                preserveNewlines: true,
+              })
             : "印象に残るポイントをメモしておきましょう。";
 
         pages.push(`
-          <section class="page" style="${scheduleBackgroundStyle}">
-            ${headerHtml(`DAY ${plan.day}`, plan.date)}
-            <div class="grid-schedule">
-              <div class="timeline">
-                ${activityItems}
-              </div>
-              <div class="stack">
-                <div class="card">
-                  <div class="card-title">HIGHLIGHTS</div>
-                  <p>${summary}</p>
+          <section class="page">
+            ${scheduleBackgroundHtml}
+            <div class="page-content">
+              ${headerHtml(`DAY ${plan.day}`, plan.date)}
+              <div class="grid-schedule">
+                <div class="timeline">
+                  ${activityItems}
                 </div>
-                <div class="card photo-slot">
-                  <div class="card-title">PHOTO SLOT</div>
-                  <div class="photo-box"></div>
+                <div class="stack">
+                  <div class="card">
+                    <div class="card-title">HIGHLIGHTS</div>
+                    <p>${summaryText}</p>
+                  </div>
+                  <div class="card photo-slot">
+                    <div class="card-title">PHOTO SLOT</div>
+                    <div class="photo-box"></div>
+                  </div>
                 </div>
               </div>
             </div>
+            ${pageNumberHtml(3 + index)}
           </section>
         `);
       });
 
       if (hasChecklist) {
         pages.push(`
-          <section class="page" style="${checklistBackgroundStyle}">
-            ${headerHtml("CHECK LIST", "持ち物・やりたいこと")}
-            <div class="grid-two">
-              <div class="card">
-                <div class="card-title">PACKING</div>
-                ${renderChecklist(packingItems, "持ち物リストがまだありません。")}
-              </div>
-              <div class="card">
-                <div class="card-title">WISH LIST</div>
-                ${renderChecklist(wantItems, "やりたいことがまだありません。")}
+          <section class="page">
+            ${checklistBackgroundHtml}
+            <div class="page-content">
+              ${headerHtml("CHECK LIST", "持ち物・やりたいこと")}
+              <div class="grid-two">
+                <div class="card">
+                  <div class="card-title">PACKING</div>
+                  ${renderChecklist(packingItems, "持ち物リストがまだありません。")}
+                </div>
+                <div class="card">
+                  <div class="card-title">WISH LIST</div>
+                  ${renderChecklist(wantItems, "やりたいことがまだありません。")}
+                </div>
               </div>
             </div>
+            ${pageNumberHtml(checklistPageNumber)}
           </section>
         `);
       }
 
       if (hasInfo) {
-        const notesText = [
-          trip.transportText ? `移動: ${trip.transportText}` : "",
+        const notesSegments = [
+          trip.transportText
+            ? `移動: ${formatHtmlText(trip.transportText, {
+                preserveNewlines: true,
+              })}`
+            : "",
           cautionsText,
-        ]
-          .filter(Boolean)
-          .join("<br>");
+          trip.notes
+            ? formatHtmlText(trip.notes, { preserveNewlines: true })
+            : "",
+        ].filter(Boolean);
+        const notesText = notesSegments.join("<br>");
         pages.push(`
-          <section class="page" style="${infoBackgroundStyle}">
-            ${headerHtml("INFORMATION", "集合・注意事項")}
-            <div class="grid-two">
-              <div class="card">
-                <div class="card-title">LODGING</div>
-                ${lodgingSummary}
-              </div>
-              <div class="card">
-                <div class="card-title">NOTES</div>
-                ${
-                  notesText
-                    ? `<p>${notesText}</p>`
-                    : `<p class="muted">注意事項がここに表示されます。</p>`
-                }
+          <section class="page">
+            ${infoBackgroundHtml}
+            <div class="page-content">
+              ${headerHtml("INFORMATION", "集合・注意事項")}
+              <div class="grid-two">
+                <div class="card">
+                  <div class="card-title">LODGING</div>
+                  ${lodgingDetails}
+                </div>
+                <div class="card">
+                  <div class="card-title">NOTES</div>
+                  ${
+                    notesText
+                      ? `<p>${notesText}</p>`
+                      : `<p class="muted">注意事項がここに表示されます。</p>`
+                  }
+                </div>
               </div>
             </div>
+            ${pageNumberHtml(infoPageNumber)}
           </section>
         `);
       }
 
       pages.push(`
-        <section class="page memo" style="${memoBackgroundStyle}">
-          ${headerHtml("MEMO", "自由記入スペース")}
-          <div class="memo-box"></div>
+        <section class="page memo">
+          ${memoBackgroundHtml}
+          <div class="page-content">
+            ${headerHtml("MEMO", "自由記入スペース")}
+            <div class="memo-box"></div>
+          </div>
+          ${pageNumberHtml(memoPageNumber)}
         </section>
       `);
 
@@ -474,7 +630,7 @@ export function PdfExport({ trip }: PdfExportProps) {
         <html>
         <head>
           <meta charset="UTF-8">
-          <title>${trip.title} - 旅のしおり</title>
+          <title>${escapeHtml(trip.title || "旅のしおり")} - 旅のしおり</title>
           <style>
             :root {
               --ink: ${theme.ink};
@@ -495,23 +651,55 @@ export function PdfExport({ trip }: PdfExportProps) {
               margin: 0;
               padding: 0;
               background: #f5f5f5;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
             }
             .page {
               page-break-after: always;
               border: 3px solid var(--line);
               border-radius: 24px;
-              padding: 40px;
               width: ${pageSize.width};
               height: ${pageSize.height};
               box-sizing: border-box;
               background-color: var(--paper);
               min-height: 400px;
-              display: flex;
-              flex-direction: column;
-              gap: 24px;
+              position: relative;
+              overflow: hidden;
             }
             .page:last-child {
               page-break-after: auto;
+            }
+            .page-bg {
+              position: absolute;
+              inset: 0;
+              width: 100%;
+              height: 100%;
+              object-fit: cover;
+              z-index: 0;
+            }
+            .page-overlay {
+              position: absolute;
+              inset: 0;
+              z-index: 1;
+            }
+            .page-content {
+              position: relative;
+              z-index: 2;
+              display: flex;
+              flex-direction: column;
+              gap: 24px;
+              height: 100%;
+              padding: 40px 40px 60px;
+              box-sizing: border-box;
+            }
+            .page-number {
+              position: absolute;
+              bottom: 18px;
+              left: 50%;
+              transform: translateX(-50%);
+              font-size: 12px;
+              color: var(--muted);
+              z-index: 2;
             }
             .eyebrow {
               font-size: 10px;
@@ -616,7 +804,7 @@ export function PdfExport({ trip }: PdfExportProps) {
               background-image: linear-gradient(to bottom, transparent 26px, var(--line) 27px);
               background-size: 100% 28px;
             }
-            .cover {
+            .cover .page-content {
               justify-content: space-between;
             }
             .cover h1 {
@@ -649,9 +837,11 @@ export function PdfExport({ trip }: PdfExportProps) {
               grid-template-columns: repeat(2, 1fr);
               gap: 10px;
               font-size: 12px;
+              word-break: break-word;
             }
             .muted {
               color: var(--muted);
+              word-break: break-word;
             }
             .meta {
               margin-top: 12px;
@@ -689,10 +879,27 @@ export function PdfExport({ trip }: PdfExportProps) {
           ${pages.join("")}
 
           <script>
+            const waitForImages = () => {
+              const images = Array.from(document.images);
+              return Promise.all(
+                images.map((img) => {
+                  if (img.complete) return Promise.resolve();
+                  return new Promise((resolve) => {
+                    img.onload = resolve;
+                    img.onerror = resolve;
+                  });
+                })
+              );
+            };
+
+            const waitForFonts = document.fonts ? document.fonts.ready : Promise.resolve();
+
             window.onload = () => {
-              setTimeout(() => {
-                window.print();
-              }, 500);
+              Promise.all([waitForImages(), waitForFonts]).then(() => {
+                setTimeout(() => {
+                  window.print();
+                }, 300);
+              });
             };
           </script>
         </body>
@@ -714,15 +921,20 @@ export function PdfExport({ trip }: PdfExportProps) {
 
   return (
     <motion.div
-      className="bg-white rounded-3xl shadow-2xl p-10 border-4 border-pink-300"
+      className="paper-card p-8 md:p-10"
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
     >
-      <div className="flex items-center gap-4 mb-8">
-        <FileText className="w-10 h-10 text-pink-500" />
-        <h2 className="text-4xl font-bold bg-gradient-to-r from-pink-500 to-orange-400 bg-clip-text text-transparent">
-          PDF書き出し
-        </h2>
+      <div className="flex items-center justify-between gap-4 mb-8">
+        <div>
+          <p className="section-kicker">Export</p>
+          <h2 className="text-3xl md:text-4xl font-semibold text-[var(--ink)]">
+            PDF書き出し
+          </h2>
+        </div>
+        <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[var(--line)] bg-white/70">
+          <FileText className="w-6 h-6 text-[var(--accent)]" />
+        </div>
       </div>
 
       <div className="space-y-8">
@@ -731,42 +943,48 @@ export function PdfExport({ trip }: PdfExportProps) {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             <button
               onClick={() => setPdfSize("a4")}
-              className={`p-6 border-2 rounded-2xl transition shadow-lg ${
+              className={`p-6 border rounded-2xl transition shadow-sm ${
                 pdfSize === "a4"
-                  ? "border-pink-500 bg-gradient-to-br from-pink-50 to-orange-50 scale-105"
-                  : "border-gray-300 hover:border-pink-400 bg-white"
+                  ? "border-[var(--accent)] bg-[var(--accent-soft)] scale-[1.02]"
+                  : "border-[var(--line)] hover:border-[var(--accent)] bg-white/70"
               }`}
               type="button"
             >
               <div className="text-5xl mb-3">📄</div>
               <div className="font-bold text-lg">A4</div>
-              <div className="text-sm text-gray-600 mt-1">210×297mm</div>
+              <div className="text-sm text-[var(--muted)] mt-1">
+                210×297mm
+              </div>
             </button>
             <button
               onClick={() => setPdfSize("a5")}
-              className={`p-6 border-2 rounded-2xl transition shadow-lg ${
+              className={`p-6 border rounded-2xl transition shadow-sm ${
                 pdfSize === "a5"
-                  ? "border-pink-500 bg-gradient-to-br from-pink-50 to-orange-50 scale-105"
-                  : "border-gray-300 hover:border-pink-400 bg-white"
+                  ? "border-[var(--accent)] bg-[var(--accent-soft)] scale-[1.02]"
+                  : "border-[var(--line)] hover:border-[var(--accent)] bg-white/70"
               }`}
               type="button"
             >
               <div className="text-5xl mb-3">📕</div>
               <div className="font-bold text-lg">A5（冊子）</div>
-              <div className="text-sm text-gray-600 mt-1">148×210mm</div>
+              <div className="text-sm text-[var(--muted)] mt-1">
+                148×210mm
+              </div>
             </button>
             <button
               onClick={() => setPdfSize("bookmark")}
-              className={`p-6 border-2 rounded-2xl transition shadow-lg ${
+              className={`p-6 border rounded-2xl transition shadow-sm ${
                 pdfSize === "bookmark"
-                  ? "border-pink-500 bg-gradient-to-br from-pink-50 to-orange-50 scale-105"
-                  : "border-gray-300 hover:border-pink-400 bg-white"
+                  ? "border-[var(--accent)] bg-[var(--accent-soft)] scale-[1.02]"
+                  : "border-[var(--line)] hover:border-[var(--accent)] bg-white/70"
               }`}
               type="button"
             >
               <div className="text-5xl mb-3">🔖</div>
               <div className="font-bold text-lg">栞サイズ</div>
-              <div className="text-sm text-gray-600 mt-1">55×180mm</div>
+              <div className="text-sm text-[var(--muted)] mt-1">
+                55×180mm
+              </div>
             </button>
           </div>
         </div>
@@ -777,10 +995,10 @@ export function PdfExport({ trip }: PdfExportProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <button
                 onClick={() => setOrientation("portrait")}
-                className={`p-6 border-2 rounded-2xl transition flex items-center justify-center gap-4 shadow-lg ${
+                className={`p-6 border rounded-2xl transition flex items-center justify-center gap-4 shadow-sm ${
                   orientation === "portrait"
-                    ? "border-pink-500 bg-gradient-to-br from-pink-50 to-orange-50 scale-105"
-                    : "border-gray-300 hover:border-pink-400 bg-white"
+                    ? "border-[var(--accent)] bg-[var(--accent-soft)] scale-[1.02]"
+                    : "border-[var(--line)] hover:border-[var(--accent)] bg-white/70"
                 }`}
                 type="button"
               >
@@ -789,10 +1007,10 @@ export function PdfExport({ trip }: PdfExportProps) {
               </button>
               <button
                 onClick={() => setOrientation("landscape")}
-                className={`p-6 border-2 rounded-2xl transition flex items-center justify-center gap-4 shadow-lg ${
+                className={`p-6 border rounded-2xl transition flex items-center justify-center gap-4 shadow-sm ${
                   orientation === "landscape"
-                    ? "border-pink-500 bg-gradient-to-br from-pink-50 to-orange-50 scale-105"
-                    : "border-gray-300 hover:border-pink-400 bg-white"
+                    ? "border-[var(--accent)] bg-[var(--accent-soft)] scale-[1.02]"
+                    : "border-[var(--line)] hover:border-[var(--accent)] bg-white/70"
                 }`}
                 type="button"
               >
@@ -806,8 +1024,8 @@ export function PdfExport({ trip }: PdfExportProps) {
         <motion.button
           onClick={generatePdf}
           disabled={isGenerating}
-          className={`w-full py-6 bg-gradient-to-r from-pink-500 via-purple-500 to-orange-400 text-white rounded-2xl font-bold text-2xl flex items-center justify-center gap-4 shadow-2xl ${
-            isGenerating ? "opacity-50 cursor-not-allowed" : "hover:shadow-2xl"
+          className={`btn-primary w-full flex items-center justify-center gap-4 text-lg ${
+            isGenerating ? "opacity-60 cursor-not-allowed" : ""
           }`}
           whileHover={isGenerating ? {} : { scale: 1.02 }}
           whileTap={isGenerating ? {} : { scale: 0.98 }}
@@ -818,13 +1036,13 @@ export function PdfExport({ trip }: PdfExportProps) {
         </motion.button>
 
         <motion.div
-          className="bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-300 rounded-2xl p-6 shadow-md"
+          className="paper-card-soft p-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
         >
-          <p className="text-base text-gray-700 leading-relaxed">
-            💡 <strong className="text-lg">ヒント:</strong>{" "}
+          <p className="text-base text-[var(--muted)] leading-relaxed">
+            <strong className="text-[var(--ink)]">ヒント:</strong>{" "}
             PDFは印刷用に最適化されています。ブラウザの印刷ダイアログが開きますので、そこからPDFとして保存できます。
           </p>
         </motion.div>
