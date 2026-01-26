@@ -116,12 +116,16 @@ export function PdfExport({ trip }: PdfExportProps) {
       ? `data:${resolvedAsset.mimeType};base64,${resolvedAsset.base64}`
       : "";
   };
-  const renderMode = trip.design?.renderMode ?? "full";
   const sortedPages = trip.design?.pages?.length
     ? [...trip.design.pages].sort((a, b) => a.pageNumber - b.pageNumber)
     : null;
-  const fullPages = renderMode === "full" ? sortedPages : null;
-  const backgroundPages = renderMode === "background" ? sortedPages : null;
+  const hasGeneratedPages = Boolean(sortedPages?.length);
+  const renderMode =
+    trip.design?.renderMode ?? (hasGeneratedPages ? "full" : "background");
+  const fullPages = hasGeneratedPages ? sortedPages : null;
+  const backgroundPages =
+    !hasGeneratedPages && renderMode === "background" ? sortedPages : null;
+  const canGenerate = Boolean(fullPages) && !isGenerating;
 
   const resolveBackgroundUrl = (mode: DesignMode, day?: number) => {
     if (backgroundPages) {
@@ -145,6 +149,13 @@ export function PdfExport({ trip }: PdfExportProps) {
     setIsGenerating(true);
 
     try {
+      if (!fullPages) {
+        alert(
+          "デザイン画像が未生成のため、PDFを書き出せません。先にデザインを再生成してください。",
+        );
+        setIsGenerating(false);
+        return;
+      }
       const printWindow = window.open("", "_blank");
       if (!printWindow) {
         alert(
@@ -277,7 +288,7 @@ export function PdfExport({ trip }: PdfExportProps) {
               .page.full img {
                 width: 100%;
                 height: 100%;
-                object-fit: cover;
+                object-fit: contain;
                 display: block;
                 background: #fff;
               }
@@ -919,131 +930,118 @@ export function PdfExport({ trip }: PdfExportProps) {
     }
   };
 
-  return (
+    return (
     <motion.div
-      className="paper-card p-8 md:p-10"
-      initial={{ opacity: 0, scale: 0.95 }}
+      className="paper-card paper-stack rounded-3xl p-10"
+      initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
     >
-      <div className="flex items-center justify-between gap-4 mb-8">
-        <div>
-          <p className="section-kicker">Export</p>
-          <h2 className="text-3xl md:text-4xl font-semibold text-[var(--ink)]">
-            PDF書き出し
-          </h2>
-        </div>
-        <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[var(--line)] bg-white/70">
-          <FileText className="w-6 h-6 text-[var(--accent)]" />
-        </div>
+      <div className="flex items-center gap-4 mb-8">
+        <FileText className="w-10 h-10 text-accent-coral" />
+        <h2 className="text-4xl font-display gradient-text-warm">PDF書き出し</h2>
       </div>
 
       <div className="space-y-8">
         <div>
-          <label className="block font-bold mb-4 text-2xl">用紙サイズ</label>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <button
+          <label className="block font-ui font-semibold mb-4 text-xl text-ink">
+            用紙サイズ
+          </label>
+          <div className="grid grid-cols-3 gap-5">
+            <motion.button
               onClick={() => setPdfSize("a4")}
-              className={`p-6 border rounded-2xl transition shadow-sm ${
-                pdfSize === "a4"
-                  ? "border-[var(--accent)] bg-[var(--accent-soft)] scale-[1.02]"
-                  : "border-[var(--line)] hover:border-[var(--accent)] bg-white/70"
-              }`}
+              className={`choice-card p-6 ${pdfSize === "a4" ? "is-selected" : ""}`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               type="button"
             >
               <div className="text-5xl mb-3">📄</div>
-              <div className="font-bold text-lg">A4</div>
-              <div className="text-sm text-[var(--muted)] mt-1">
-                210×297mm
-              </div>
-            </button>
-            <button
+              <div className="font-ui font-semibold text-lg text-ink">A4</div>
+              <div className="text-sm text-ink-soft mt-1">210×297mm</div>
+            </motion.button>
+            <motion.button
               onClick={() => setPdfSize("a5")}
-              className={`p-6 border rounded-2xl transition shadow-sm ${
-                pdfSize === "a5"
-                  ? "border-[var(--accent)] bg-[var(--accent-soft)] scale-[1.02]"
-                  : "border-[var(--line)] hover:border-[var(--accent)] bg-white/70"
-              }`}
+              className={`choice-card p-6 ${pdfSize === "a5" ? "is-selected" : ""}`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               type="button"
             >
               <div className="text-5xl mb-3">📕</div>
-              <div className="font-bold text-lg">A5（冊子）</div>
-              <div className="text-sm text-[var(--muted)] mt-1">
-                148×210mm
-              </div>
-            </button>
-            <button
+              <div className="font-ui font-semibold text-lg text-ink">A5（冊子）</div>
+              <div className="text-sm text-ink-soft mt-1">148×210mm</div>
+            </motion.button>
+            <motion.button
               onClick={() => setPdfSize("bookmark")}
-              className={`p-6 border rounded-2xl transition shadow-sm ${
-                pdfSize === "bookmark"
-                  ? "border-[var(--accent)] bg-[var(--accent-soft)] scale-[1.02]"
-                  : "border-[var(--line)] hover:border-[var(--accent)] bg-white/70"
-              }`}
+              className={`choice-card p-6 ${pdfSize === "bookmark" ? "is-selected" : ""}`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               type="button"
             >
               <div className="text-5xl mb-3">🔖</div>
-              <div className="font-bold text-lg">栞サイズ</div>
-              <div className="text-sm text-[var(--muted)] mt-1">
-                55×180mm
-              </div>
-            </button>
+              <div className="font-ui font-semibold text-lg text-ink">しおりサイズ</div>
+              <div className="text-sm text-ink-soft mt-1">55×180mm</div>
+            </motion.button>
           </div>
         </div>
 
         {pdfSize !== "bookmark" && (
-          <div>
-            <label className="block font-bold mb-4 text-2xl">向き</label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <button
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+          >
+            <label className="block font-ui font-semibold mb-4 text-xl text-ink">
+              向き
+            </label>
+            <div className="grid grid-cols-2 gap-5">
+              <motion.button
                 onClick={() => setOrientation("portrait")}
-                className={`p-6 border rounded-2xl transition flex items-center justify-center gap-4 shadow-sm ${
-                  orientation === "portrait"
-                    ? "border-[var(--accent)] bg-[var(--accent-soft)] scale-[1.02]"
-                    : "border-[var(--line)] hover:border-[var(--accent)] bg-white/70"
+                className={`choice-card p-6 flex items-center justify-center gap-4 ${
+                  orientation === "portrait" ? "is-selected" : ""
                 }`}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 type="button"
               >
                 <div className="text-5xl">📱</div>
-                <div className="font-bold text-xl">縦</div>
-              </button>
-              <button
+                <div className="font-ui font-semibold text-xl text-ink">縦</div>
+              </motion.button>
+              <motion.button
                 onClick={() => setOrientation("landscape")}
-                className={`p-6 border rounded-2xl transition flex items-center justify-center gap-4 shadow-sm ${
-                  orientation === "landscape"
-                    ? "border-[var(--accent)] bg-[var(--accent-soft)] scale-[1.02]"
-                    : "border-[var(--line)] hover:border-[var(--accent)] bg-white/70"
+                className={`choice-card p-6 flex items-center justify-center gap-4 ${
+                  orientation === "landscape" ? "is-selected" : ""
                 }`}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 type="button"
               >
                 <div className="text-5xl">💻</div>
-                <div className="font-bold text-xl">横</div>
-              </button>
+                <div className="font-ui font-semibold text-xl text-ink">横</div>
+              </motion.button>
             </div>
-          </div>
+          </motion.div>
         )}
 
         <motion.button
           onClick={generatePdf}
-          disabled={isGenerating}
-          className={`btn-primary w-full flex items-center justify-center gap-4 text-lg ${
-            isGenerating ? "opacity-60 cursor-not-allowed" : ""
+          disabled={!canGenerate}
+          className={`w-full py-6 btn btn-primary text-xl flex items-center justify-center gap-4 ${
+            !canGenerate ? "opacity-50 cursor-not-allowed" : ""
           }`}
-          whileHover={isGenerating ? {} : { scale: 1.02 }}
-          whileTap={isGenerating ? {} : { scale: 0.98 }}
+          whileHover={!canGenerate ? {} : { scale: 1.03 }}
+          whileTap={!canGenerate ? {} : { scale: 0.97 }}
           type="button"
         >
-          <Download className="w-7 h-7" />
+          <Download className="w-8 h-8" />
           {isGenerating ? "PDF生成中..." : "PDFを生成"}
         </motion.button>
 
         <motion.div
-          className="paper-card-soft p-6"
+          className="note-callout p-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: 0.3 }}
         >
-          <p className="text-base text-[var(--muted)] leading-relaxed">
-            <strong className="text-[var(--ink)]">ヒント:</strong>{" "}
-            PDFは印刷用に最適化されています。ブラウザの印刷ダイアログが開きますので、そこからPDFとして保存できます。
+          <p className="text-base text-ink-soft leading-relaxed">
+            💡 <strong className="text-lg text-ink">ヒント:</strong> PDFは印刷用に最適化されています。ブラウザの印刷ダイアログが開きますので、そこからPDFとして保存できます。
           </p>
         </motion.div>
       </div>

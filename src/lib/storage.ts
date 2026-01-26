@@ -59,19 +59,34 @@ const saveLocalTrip = (trip: Trip) => {
       },
     };
   };
+  const upsertTrip = (entries: Trip[], nextTrip: Trip) => {
+    const nextEntries = [...entries];
+    const index = nextEntries.findIndex((item) => item.id === nextTrip.id);
+    if (index >= 0) {
+      nextEntries[index] = nextTrip;
+    } else {
+      nextEntries.push(nextTrip);
+    }
+    return nextEntries;
+  };
 
   try {
-    const trips = getLocalTrips().map(stripDesignForLocal);
-    const nextTrip = stripDesignForLocal(trip);
-    const index = trips.findIndex((item) => item.id === nextTrip.id);
-    if (index >= 0) {
-      trips[index] = nextTrip;
-    } else {
-      trips.push(nextTrip);
-    }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(trips));
+    const trips = getLocalTrips();
+    const nextTrips = upsertTrip(trips, trip);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(nextTrips));
   } catch (error) {
-    console.error("Failed to save trip locally:", error);
+    console.warn(
+      "Failed to save trip locally with design assets. Falling back to a compact copy.",
+      error,
+    );
+    try {
+      const trips = getLocalTrips().map(stripDesignForLocal);
+      const nextTrip = stripDesignForLocal(trip);
+      const nextTrips = upsertTrip(trips, nextTrip);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(nextTrips));
+    } catch (fallbackError) {
+      console.error("Failed to save trip locally:", fallbackError);
+    }
   }
 };
 

@@ -1,27 +1,27 @@
 import type { Metadata } from "next";
 import {
-  DM_Sans,
-  Zen_Kaku_Gothic_New,
-  Yusei_Magic,
+  M_PLUS_Rounded_1c,
+  Yomogi,
+  Zen_Maru_Gothic,
 } from "next/font/google";
 import "./globals.css";
 
-const displayFont = Yusei_Magic({
+const displayFont = M_PLUS_Rounded_1c({
   subsets: ["latin"],
-  weight: ["400"],
+  weight: ["400", "500", "700", "800", "900"],
   variable: "--font-display",
 });
 
-const bodyFont = Zen_Kaku_Gothic_New({
+const bodyFont = Zen_Maru_Gothic({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "700"],
+  weight: ["400", "500", "700"],
   variable: "--font-body",
 });
 
-const accentFont = DM_Sans({
+const handFont = Yomogi({
   subsets: ["latin"],
-  weight: ["400", "500", "700"],
-  variable: "--font-accent",
+  weight: ["400"],
+  variable: "--font-hand",
 });
 
 export const metadata: Metadata = {
@@ -38,7 +38,7 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body
-        className={`${bodyFont.variable} ${displayFont.variable} ${accentFont.variable} antialiased`}
+        className={`${bodyFont.variable} ${displayFont.variable} ${handFont.variable} antialiased`}
       >
         {children}
       </body>

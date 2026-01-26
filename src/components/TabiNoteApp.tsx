@@ -7,14 +7,12 @@ import {
   Calendar,
   Download,
   Edit,
-  Eye,
+  Feather,
   Loader2,
-  Palette,
+  Map,
   MapPin,
   Plane,
-  Plus,
   Share2,
-  Sparkles,
   Trash2,
 } from "lucide-react";
 import type {
@@ -25,12 +23,15 @@ import type {
 } from "../types/trip";
 import { generateAiContent } from "../lib/ai";
 import { generateId, generateShareToken, storage } from "../lib/storage";
+import { Header } from "./Header";
 import { PdfExport } from "./PdfExport";
+import { ShioriShowcase } from "./ShioriShowcase";
 import { TripForm } from "./TripForm";
 import { TripPreview } from "./TripPreview";
 
 type View = "home" | "create" | "preview";
 type ProgressState = { current: number; total: number } | null;
+
 type BlockState = {
   active: boolean;
   title: string;
@@ -38,20 +39,35 @@ type BlockState = {
   progress?: ProgressState;
 };
 
-const formatDate = (date: string) => {
-  if (!date) return "";
-  const parsed = new Date(date);
-  return `${parsed.getFullYear()}/${parsed.getMonth() + 1}/${parsed.getDate()}`;
-};
+const CircleDecoration = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 100 100" fill="none">
+    <circle
+      cx="50"
+      cy="50"
+      r="48"
+      stroke="currentColor"
+      strokeWidth="1"
+      strokeDasharray="4 4"
+      opacity="0.3"
+    />
+    <circle
+      cx="50"
+      cy="50"
+      r="35"
+      stroke="currentColor"
+      strokeWidth="0.5"
+      opacity="0.2"
+    />
+  </svg>
+);
 
 export function TabiNoteApp() {
   const [view, setView] = useState<View>("home");
   const [trips, setTrips] = useState<Trip[]>([]);
   const [currentTrip, setCurrentTrip] = useState<Trip | null>(null);
   const [showPdfExport, setShowPdfExport] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isGeneratingDesign, setIsGeneratingDesign] = useState(false);
-  const [designProgress, setDesignProgress] = useState<ProgressState>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortOrder, setSortOrder] = useState<"recent" | "oldest">("recent");
   const [blockState, setBlockState] = useState<BlockState>({
     active: false,
     title: "",
@@ -65,11 +81,9 @@ export function TabiNoteApp() {
   useEffect(() => {
     let active = true;
     const loadTrips = async () => {
-      setIsLoading(true);
       const nextTrips = await storage.getTrips();
       if (!active) return;
       setTrips(nextTrips);
-      setIsLoading(false);
     };
     loadTrips();
     return () => {
@@ -203,10 +217,15 @@ export function TabiNoteApp() {
     return pages;
   };
 
-  const handleGenerateDesign = async () => {
-    if (!currentTrip) return;
-    setIsGeneratingDesign(true);
-    setDesignProgress(null);
+  const needsDesignPages = (trip: Trip) => {
+    if (!trip.design) return true;
+    if (trip.design.renderMode !== "full") return true;
+    if (!trip.design.pages || trip.design.pages.length === 0) return true;
+    return false;
+  };
+
+  const ensureDesignPages = async (trip: Trip) => {
+    if (!needsDesignPages(trip)) return trip;
     setBlockState({
       active: true,
       title: "デザインを生成中",
@@ -217,9 +236,8 @@ export function TabiNoteApp() {
     try {
       const renderMode: "background" | "full" = "full";
       const pages = await generateDesignPages(
-        currentTrip,
+        trip,
         (current, total) => {
-          setDesignProgress({ current, total });
           setBlockState({
             active: true,
             title: "デザインを生成中",
@@ -230,10 +248,10 @@ export function TabiNoteApp() {
         renderMode,
       );
       const nextTrip: Trip = {
-        ...currentTrip,
+        ...trip,
         design: {
-          style: currentTrip.templateType,
-          format: currentTrip.formatType,
+          style: trip.templateType,
+          format: trip.formatType,
           renderMode,
           pages,
           updatedAt: new Date().toISOString(),
@@ -241,14 +259,12 @@ export function TabiNoteApp() {
       };
       const savedTrip = await safeSaveTrip(nextTrip);
       await refreshTrips();
-      setCurrentTrip(savedTrip);
-      alert("デザインテンプレートを生成しました。");
+      return savedTrip;
     } catch (error) {
       console.error(error);
       alert("デザイン生成に失敗しました。もう一度お試しください。");
+      return trip;
     } finally {
-      setIsGeneratingDesign(false);
-      setDesignProgress(null);
       setBlockState({ active: false, title: "" });
     }
   };
@@ -256,6 +272,13 @@ export function TabiNoteApp() {
   const handleCreateNew = () => {
     setCurrentTrip(null);
     setView("create");
+  };
+
+  const handleScrollToList = () => {
+    const listSection = document.getElementById("trip-list");
+    if (listSection) {
+      listSection.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   };
 
   const handleSaveTrip = async (trip: Trip) => {
@@ -280,7 +303,6 @@ export function TabiNoteApp() {
       const pages = await generateDesignPages(
         savedTrip,
         (current, total) => {
-          setDesignProgress({ current, total });
           setBlockState({
             active: true,
             title: "しおりを作成中",
@@ -305,7 +327,6 @@ export function TabiNoteApp() {
       console.error(error);
       alert("デザイン生成に失敗しました。再度お試しください。");
     } finally {
-      setDesignProgress(null);
       setBlockState({ active: false, title: "" });
     }
     await refreshTrips();
@@ -327,8 +348,9 @@ export function TabiNoteApp() {
     await refreshTrips();
   };
 
-  const handleViewTrip = (trip: Trip) => {
-    setCurrentTrip(trip);
+  const handleViewTrip = async (trip: Trip) => {
+    const ensuredTrip = await ensureDesignPages(trip);
+    setCurrentTrip(ensuredTrip);
     setView("preview");
   };
 
@@ -363,6 +385,56 @@ export function TabiNoteApp() {
     setShowPdfExport(false);
   };
 
+  const formatDate = (date: string) => {
+    if (!date) return "";
+    const d = new Date(date);
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+    return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+  };
+
+  const templateLabels: Record<Trip["templateType"], string> = {
+    minimal: "ミニマル",
+    pop: "ポップ",
+    photo: "写真多め",
+    retro: "レトロ",
+    romantic: "ロマンチック",
+    modern: "モダン",
+    nature: "ナチュラル",
+    adventure: "アドベンチャー",
+  };
+
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const filteredTrips = trips.filter((trip) => {
+    if (!normalizedQuery) return true;
+    const haystack = [
+      trip.title,
+      trip.destination,
+      trip.members.map((member) => member.name).join(" "),
+    ]
+      .join(" ")
+      .toLowerCase();
+    return haystack.includes(normalizedQuery);
+  });
+
+  const visibleTrips = [...filteredTrips].sort((a, b) => {
+    const aTime = new Date(a.updatedAt).getTime();
+    const bTime = new Date(b.updatedAt).getTime();
+    return sortOrder === "recent" ? bTime - aTime : aTime - bTime;
+  });
+
   const renderBlockingOverlay = () => {
     if (!blockState.active) return null;
     const progress = blockState.progress;
@@ -371,29 +443,31 @@ export function TabiNoteApp() {
       : 0;
     return (
       <motion.div
-        className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(22,18,14,0.55)] backdrop-blur-sm"
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
       >
-        <div className="paper-card px-8 py-7 max-w-sm w-full">
-          <div className="flex items-center gap-3 text-[var(--ink)]">
-            <Loader2 className="w-5 h-5 animate-spin text-[var(--accent)]" />
-            <span className="text-base font-semibold">{blockState.title}</span>
+        <div className="paper-card rounded-2xl px-8 py-7 max-w-sm w-full">
+          <div className="flex items-center gap-3 text-ink">
+            <div className="w-9 h-9 rounded-full hero-badge flex items-center justify-center">
+              <Loader2 className="w-5 h-5 text-paper animate-spin" />
+            </div>
+            <span className="text-base font-semibold font-ui">
+              {blockState.title}
+            </span>
           </div>
           {blockState.message && (
-            <p className="mt-3 text-sm text-[var(--muted)]">
-              {blockState.message}
-            </p>
+            <p className="mt-3 text-sm text-ink-soft">{blockState.message}</p>
           )}
           {progress && (
             <div className="mt-5">
-              <div className="h-2 w-full rounded-full bg-[var(--line)] overflow-hidden">
+              <div className="h-2 w-full rounded-full bg-paper-200 overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-[var(--accent)] to-[var(--sage)] transition-all"
+                  className="h-full bg-gradient-to-r from-accent-coral to-accent-sun transition-all"
                   style={{ width: `${percent}%` }}
                 />
               </div>
-              <p className="mt-2 text-xs text-[var(--muted)]">
+              <p className="mt-2 text-xs text-ink-soft">
                 {progress.current}/{progress.total}
               </p>
             </div>
@@ -403,316 +477,512 @@ export function TabiNoteApp() {
     );
   };
 
-
   if (view === "home") {
     return (
-      <div className="app-shell text-[var(--ink)]">
+      <div className="min-h-screen ink-wash overflow-hidden relative">
+        <Header
+          onCreateNew={handleCreateNew}
+          onViewList={handleScrollToList}
+          currentView={view}
+        />
+
         <motion.div
-          className="pointer-events-none absolute top-24 right-10 text-[var(--accent)]/25"
-          animate={{ y: [0, -16, 0], rotate: [0, 6, 0] }}
-          transition={{ duration: 7, repeat: Infinity }}
+          className="absolute top-20 right-10 w-32 h-32 text-accent-coral opacity-30"
+          animate={{ rotate: 360 }}
+          transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
         >
-          <Plane className="h-12 w-12" />
+          <CircleDecoration />
         </motion.div>
         <motion.div
-          className="pointer-events-none absolute bottom-24 left-16 text-[var(--ocean)]/25"
-          animate={{ y: [0, 18, 0], rotate: [0, -8, 0] }}
-          transition={{ duration: 8, repeat: Infinity, delay: 0.4 }}
+          className="absolute bottom-40 left-10 w-24 h-24 text-accent-sky opacity-20"
+          animate={{ rotate: -360 }}
+          transition={{ duration: 45, repeat: Infinity, ease: "linear" }}
         >
-          <MapPin className="h-10 w-10" />
+          <CircleDecoration />
         </motion.div>
 
-        <motion.header
+        <motion.section
           className="relative"
-          initial={{ opacity: 0, y: -30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8 }}
         >
-          <div className="container mx-auto px-6 pt-16 pb-12">
-            <div className="flex flex-wrap items-center justify-between gap-6">
-              <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[var(--line)] bg-white/80 shadow-sm">
-                  <BookOpen className="h-6 w-6 text-[var(--accent)]" />
-                </div>
-                <div>
-                  <p className="section-kicker">Travel note maker</p>
-                  <p className="text-sm text-[var(--muted)]">
-                    旅のしおりをサクッと
-                  </p>
-                </div>
-              </div>
-              <div className="badge-outline">since 2024</div>
-            </div>
-
-            <div className="mt-12 grid gap-10 lg:grid-cols-[1.2fr_0.8fr]">
-              <div>
-                <div className="flex flex-wrap gap-3 mb-4">
-                  <span className="sticker">AIレイアウト</span>
-                  <span className="sticker teal">共有リンク</span>
-                  <span className="sticker sun">PDF</span>
-                </div>
-                <h1 className="section-title">たびNote</h1>
-                <p className="mt-5 text-lg text-[var(--muted)] text-balance">
-                  予定・メンバー・持ち物をまとめて、カラフルに仕上げる旅のしおり。
-                  伝えたい情報を、かわいく読みやすくまとめます。
+          <div className="container mx-auto px-6 py-8 max-w-6xl">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-start">
+              <motion.div
+                className="relative"
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.2, duration: 0.6 }}
+              >
+                <motion.h1
+                  className="font-display text-5xl md:text-6xl font-bold"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.4 }}
+                >
+                  <span className="gradient-text-warm font-black">たび</span>
+                  <span className="text-ink font-black">Note</span>
+                </motion.h1>
+                <p className="font-body text-base text-ink-soft mt-3 max-w-md">
+                  旅のしおりを5分で作れる。AIが旅行の内容に合わせたしおりを簡単に自動生成します。
                 </p>
-                <div className="mt-8 flex flex-wrap items-center gap-4">
+                <div className="mt-5 flex flex-wrap gap-2">
                   <motion.button
                     onClick={handleCreateNew}
-                    className="btn-primary inline-flex items-center gap-3"
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.97 }}
+                    className="px-6 py-3 btn btn-primary btn-pill text-sm"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     type="button"
                   >
-                    <Plus className="h-5 w-5" />
-                    新しいしおりを作る
+                    新しいしおりを作成
                   </motion.button>
-                  <span className="badge-solid">5分で完成</span>
+                  <motion.button
+                    onClick={handleScrollToList}
+                    className="px-5 py-3 btn btn-ghost text-ink text-sm"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    type="button"
+                  >
+                    作成したしおりを見る
+                  </motion.button>
                 </div>
-                <div className="mt-8 flex flex-wrap gap-3 text-sm text-[var(--muted)]">
-                  <span className="chip">入力</span>
-                  <span className="chip">デザイン生成</span>
-                  <span className="chip">共有・PDF</span>
-                </div>
-              </div>
 
-              <motion.div
-                className="paper-card p-6 md:p-8"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-              >
-                <div className="flex items-center justify-between">
-                  <p className="section-kicker">Flow</p>
-                  <Plane className="h-5 w-5 text-[var(--accent)]" />
-                </div>
-                <h3 className="mt-3 text-2xl font-semibold text-[var(--ink)]">
-                  3ステップで完成
-                </h3>
-                <div className="mt-5 space-y-4 text-sm text-[var(--muted)]">
-                  {[
-                    {
-                      title: "入力",
-                      body: "旅程やメンバーをまとめて整理。",
-                    },
-                    {
-                      title: "デザイン",
-                      body: "AIがしおり用レイアウトを生成。",
-                    },
-                    {
-                      title: "共有",
-                      body: "URL共有やPDFで配布。",
-                    },
-                  ].map((item, index) => (
-                    <div key={item.title} className="flex items-start gap-4">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-[var(--accent)] bg-white text-sm font-semibold text-[var(--accent-strong)]">
-                        {index + 1}
+                {/* 3ステップで完成セクション */}
+                <motion.div
+                  className="mt-8 paper-card rounded-2xl p-6 relative overflow-hidden"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5, duration: 0.6 }}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-ui text-[10px] tracking-widest text-ink-soft uppercase">
+                      Flow
+                    </span>
+                    <Plane className="w-4 h-4 text-accent-coral" />
+                  </div>
+
+                  <h3 className="font-display text-xl md:text-2xl font-bold text-ink mb-4">
+                    3ステップで完成
+                  </h3>
+
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-3">
+                      <div className="w-7 h-7 rounded-full border-[1.5px] border-accent-coral text-accent-coral flex items-center justify-center flex-shrink-0 font-ui text-xs font-semibold">
+                        1
                       </div>
                       <div>
-                        <p className="font-semibold text-[var(--ink)]">
-                          {item.title}
+                        <p className="font-display text-base font-semibold text-ink">
+                          入力
                         </p>
-                        <p>{item.body}</p>
+                        <p className="text-xs text-ink-soft">
+                          旅程やメンバーをまとめて整理。
+                        </p>
                       </div>
                     </div>
-                  ))}
-                </div>
-                <div className="relative mt-6 h-40">
-                  <div className="absolute left-0 top-4 w-36 rounded-2xl border-2 border-[var(--line)] bg-white/90 p-3 shadow-md rotate-[-6deg]">
-                    <div className="text-[0.6rem] uppercase tracking-[0.3em] text-[var(--muted)]">
-                      Cover
+
+                    <div className="flex items-start gap-3">
+                      <div className="w-7 h-7 rounded-full border-[1.5px] border-accent-coral text-accent-coral flex items-center justify-center flex-shrink-0 font-ui text-xs font-semibold">
+                        2
+                      </div>
+                      <div>
+                        <p className="font-display text-base font-semibold text-ink">
+                          デザイン
+                        </p>
+                        <p className="text-xs text-ink-soft">
+                          AIがしおり用レイアウトを生成。
+                        </p>
+                      </div>
                     </div>
-                    <div className="mt-2 h-16 rounded-xl bg-gradient-to-br from-[var(--accent-soft)] to-white" />
-                    <div className="mt-2 h-2 w-12 rounded-full bg-[var(--accent)]/80" />
-                  </div>
-                  <div className="absolute left-20 top-0 w-36 rounded-2xl border-2 border-[var(--line)] bg-white/90 p-3 shadow-md rotate-[4deg]">
-                    <div className="text-[0.6rem] uppercase tracking-[0.3em] text-[var(--muted)]">
-                      Schedule
-                    </div>
-                    <div className="mt-2 space-y-2">
-                      <div className="h-2 w-full rounded-full bg-[var(--line)]" />
-                      <div className="h-2 w-4/5 rounded-full bg-[var(--line)]" />
-                      <div className="h-2 w-3/5 rounded-full bg-[var(--line)]" />
-                    </div>
-                    <div className="mt-3 h-6 rounded-lg bg-[var(--sky)]/40" />
-                  </div>
-                  <div className="absolute right-0 top-10 w-32 rounded-2xl border-2 border-[var(--line)] bg-white/90 p-3 shadow-md rotate-[10deg]">
-                    <div className="text-[0.6rem] uppercase tracking-[0.3em] text-[var(--muted)]">
-                      Check
-                    </div>
-                    <div className="mt-2 space-y-2">
-                      <div className="h-2 w-3/4 rounded-full bg-[var(--line)]" />
-                      <div className="h-2 w-2/3 rounded-full bg-[var(--line)]" />
-                      <div className="h-2 w-1/2 rounded-full bg-[var(--line)]" />
+
+                    <div className="flex items-start gap-3">
+                      <div className="w-7 h-7 rounded-full border-[1.5px] border-accent-coral text-accent-coral flex items-center justify-center flex-shrink-0 font-ui text-xs font-semibold">
+                        3
+                      </div>
+                      <div>
+                        <p className="font-display text-base font-semibold text-ink">
+                          共有
+                        </p>
+                        <p className="text-xs text-ink-soft">
+                          URL共有やPDFで配布。
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
+
+                  {/* 下部のカードイメージ */}
+                  <div className="mt-5 flex justify-center items-end gap-2">
+                    <motion.div
+                      className="w-16 h-20 bg-paper-50 rounded-lg border border-paper-300 shadow-md p-1.5 -rotate-6"
+                      initial={{ y: 10, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.7 }}
+                    >
+                      <p className="text-[6px] text-ink-soft uppercase tracking-wider mb-1">
+                        Cover
+                      </p>
+                      <div className="w-full h-6 rounded bg-gradient-to-br from-accent-coral/20 to-accent-sun/20" />
+                    </motion.div>
+                    <motion.div
+                      className="w-20 h-24 bg-paper-50 rounded-lg border border-paper-300 shadow-lg p-1.5 z-10"
+                      initial={{ y: 10, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.8 }}
+                    >
+                      <p className="text-[6px] text-ink-soft uppercase tracking-wider mb-1">
+                        Schedule
+                      </p>
+                      <div className="space-y-1">
+                        <div className="w-full h-1 rounded bg-paper-300" />
+                        <div className="w-3/4 h-1 rounded bg-paper-300" />
+                        <div className="w-full h-1 rounded bg-paper-300" />
+                        <div className="w-2/3 h-1 rounded bg-paper-300" />
+                      </div>
+                    </motion.div>
+                    <motion.div
+                      className="w-16 h-20 bg-paper-50 rounded-lg border border-paper-300 shadow-md p-1.5 rotate-6"
+                      initial={{ y: 10, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.9 }}
+                    >
+                      <p className="text-[6px] text-ink-soft uppercase tracking-wider mb-1">
+                        Check
+                      </p>
+                      <div className="space-y-1">
+                        <div className="w-full h-1 rounded bg-paper-300" />
+                        <div className="w-full h-1 rounded bg-paper-300" />
+                        <div className="w-3/4 h-1 rounded bg-paper-300" />
+                      </div>
+                    </motion.div>
+                  </div>
+                </motion.div>
+              </motion.div>
+
+              <motion.div
+                className="relative"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.6 }}
+              >
+                <ShioriShowcase />
               </motion.div>
             </div>
           </div>
-        </motion.header>
+        </motion.section>
 
-        <main className="container mx-auto px-6 pb-16 max-w-6xl relative z-10">
-          <section className="mt-6">
-            <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
-              <div>
-                <p className="section-kicker">Library</p>
-                <h2 className="text-3xl md:text-4xl font-semibold text-[var(--ink)]">
-                  作成したしおり
-                </h2>
-              </div>
-              {!isLoading && (
-                <p className="text-sm text-[var(--muted)]">
-                  全 {trips.length} 件
+        <div className="container mx-auto px-6 py-16 max-w-6xl relative z-10">
+          <motion.section
+            className="mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <div className="flex items-center gap-3 mb-6">
+              <span className="handwritten-label">できること</span>
+              <h2 className="font-display text-3xl text-ink">
+                旅のしおりをで簡単に作成
+              </h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div className="paper-card rounded-2xl p-6 relative">
+                <span className="tape tape-mini tape-top-left" />
+                <span className="stamp-mark stamp-mini">EDIT</span>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-full hero-badge flex items-center justify-center">
+                    <Edit className="w-5 h-5 text-paper" />
+                  </div>
+                  <h3 className="font-display text-xl text-ink">自由に編集</h3>
+                </div>
+                <p className="text-sm text-ink-soft">
+                  AIがあなたの好みに合わせたデザインのしおりを自動生成。簡単に美しい旅のしおりが作れます。
                 </p>
-              )}
+              </div>
+              <div className="paper-card rounded-2xl p-6 relative">
+                <span className="tape tape-mini tape-top-left" />
+                <span className="stamp-mark stamp-mini">PDF</span>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-full hero-badge flex items-center justify-center">
+                    <Download className="w-5 h-5 text-paper" />
+                  </div>
+                  <h3 className="font-display text-xl text-ink">PDFにする</h3>
+                </div>
+                <p className="text-sm text-ink-soft">
+                  印刷して旅のお守りに。冊子もしおりサイズもワンクリックで作成。
+                </p>
+              </div>
+              <div className="paper-card rounded-2xl p-6 relative">
+                <span className="tape tape-mini tape-top-left" />
+                <span className="stamp-mark stamp-mini">SHARE</span>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-full hero-badge flex items-center justify-center">
+                    <Share2 className="w-5 h-5 text-paper" />
+                  </div>
+                  <h3 className="font-display text-xl text-ink">リンクで共有</h3>
+                </div>
+                <p className="text-sm text-ink-soft">
+                  旅仲間にURLで共有。遠くにいても一緒に計画できる。
+                </p>
+              </div>
+            </div>
+          </motion.section>
+
+          <motion.section
+            id="trip-list"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.8 }}
+          >
+            <div className="flex flex-col items-center mb-10">
+              <div className="flex items-center justify-center gap-4">
+                <div className="h-px flex-1 max-w-[100px] section-rule" />
+                <h2 className="font-display text-3xl section-title text-ink flex items-center gap-3">
+                  <Map className="w-7 h-7 text-accent-coral" />
+                  <span>作成したしおり</span>
+                </h2>
+                <div className="h-px flex-1 max-w-[100px] section-rule section-rule-reverse" />
+              </div>
             </div>
 
-            {isLoading ? (
+            <div className="paper-card rounded-2xl p-4 mb-8">
+              <div className="trip-toolbar">
+                <div>
+                  <p className="font-ui text-xs text-ink-soft">
+                    {searchQuery
+                      ? `${visibleTrips.length}冊が見つかりました`
+                      : `全${trips.length}冊`}
+                  </p>
+                  <p className="font-display text-2xl text-ink">しおり一覧</p>
+                </div>
+                <div className="trip-toolbar-actions">
+                  <div className="trip-toolbar-search">
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(event) => setSearchQuery(event.target.value)}
+                      className="input-paper font-body"
+                      placeholder="タイトル・目的地・メンバーで検索"
+                    />
+                    {searchQuery ? (
+                      <motion.button
+                        onClick={() => setSearchQuery("")}
+                        className="btn btn-ghost px-4 py-2 text-xs"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        type="button"
+                      >
+                        クリア
+                      </motion.button>
+                    ) : null}
+                  </div>
+                  <div className="trip-toolbar-sort">
+                    <motion.button
+                      onClick={() => setSortOrder("recent")}
+                      className={`choice-pill px-4 py-2 text-xs ${
+                        sortOrder === "recent" ? "is-selected" : ""
+                      }`}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      type="button"
+                    >
+                      新しい順
+                    </motion.button>
+                    <motion.button
+                      onClick={() => setSortOrder("oldest")}
+                      className={`choice-pill px-4 py-2 text-xs ${
+                        sortOrder === "oldest" ? "is-selected" : ""
+                      }`}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      type="button"
+                    >
+                      古い順
+                    </motion.button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {trips.length === 0 ? (
               <motion.div
-                className="paper-card p-12 text-center"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
+                className="paper-card paper-stack rounded-2xl p-16 text-center max-w-lg mx-auto"
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.9 }}
               >
                 <motion.div
-                  className="flex items-center justify-center mb-4 text-[var(--accent)]"
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+                  animate={{ y: [0, -8, 0] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                 >
-                  <Sparkles className="w-12 h-12" />
+                  <BookOpen
+                    className="w-16 h-16 mx-auto mb-6 text-accent-coral opacity-40"
+                    strokeWidth={1.5}
+                  />
                 </motion.div>
-                <p className="text-lg text-[var(--muted)]">
-                  しおりを読み込み中...
-                </p>
-              </motion.div>
-            ) : trips.length === 0 ? (
-              <motion.div
-                className="paper-card p-12 text-center"
-                initial={{ opacity: 0, scale: 0.96 }}
-                animate={{ opacity: 1, scale: 1 }}
-              >
-                <BookOpen className="w-16 h-16 mx-auto mb-4 text-[var(--accent)]/60" />
-                <p className="text-xl font-semibold text-[var(--ink)]">
+                <p className="text-xl text-ink font-body mb-2">
                   まだしおりがありません
                 </p>
-                <p className="text-sm text-[var(--muted)] mt-2">
-                  上のボタンから作成を始めましょう。
+                <p className="text-ink-soft text-sm">
+                  上のボタンから最初のしおりを作成しましょう
                 </p>
               </motion.div>
+            ) : visibleTrips.length === 0 ? (
+              <motion.div
+                className="paper-card rounded-2xl p-12 text-center max-w-2xl mx-auto"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <p className="font-display text-2xl text-ink mb-2">
+                  一致するしおりがありません
+                </p>
+                <p className="text-sm text-ink-soft mb-6">
+                  検索条件を変えてみてください。
+                </p>
+                <motion.button
+                  onClick={() => setSearchQuery("")}
+                  className="btn btn-ghost px-6 py-3 text-sm"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  type="button"
+                >
+                  検索をクリア
+                </motion.button>
+              </motion.div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 <AnimatePresence>
-                  {trips.map((trip, index) => (
-                    <motion.div
-                      key={trip.id}
-                      initial={{ opacity: 0, y: 40 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.96 }}
-                      transition={{ delay: index * 0.08 }}
-                      whileHover={{ y: -6 }}
-                      className="paper-card overflow-hidden"
-                    >
-                      <div className="border-b border-[var(--line)] p-6 bg-white/80">
+                  {visibleTrips.map((trip, index) => {
+                    const dayCount = trip.dayPlans.length;
+                    const memberCount = trip.members.length;
+                    return (
+                      <motion.article
+                        key={trip.id}
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        transition={{ delay: index * 0.06 }}
+                        className="group paper-card paper-stack rounded-2xl p-5 relative"
+                      >
+                        <span className="tape tape-mini tape-top-left" />
+                        <span className="tape tape-mini tape-bottom-right" />
+
                         <div className="flex items-start justify-between gap-3">
                           <div>
-                            <p className="section-kicker">Trip</p>
-                            <h3 className="mt-3 text-2xl font-semibold line-clamp-2 text-[var(--ink)]">
+                            <p className="font-ui text-xs text-ink-soft">
+                              更新 {formatDate(trip.updatedAt)}
+                            </p>
+                            <h3 className="font-display text-2xl text-ink mt-1 line-clamp-2">
                               {trip.title}
                             </h3>
                           </div>
-                          <Plane className="w-5 h-5 text-[var(--accent)]/60" />
+                          <span className="tag-pill text-xs px-3 py-1 font-ui flex-shrink-0">
+                            {templateLabels[trip.templateType]}
+                          </span>
                         </div>
-                        <div className="mt-4 space-y-2 text-sm text-[var(--muted)]">
-                          <div className="flex items-center gap-2">
-                            <MapPin className="w-4 h-4 text-[var(--accent)]" />
+
+                        <div className="note-card p-3 mt-3 space-y-3">
+                          <div className="flex items-center gap-2 text-sm text-ink">
+                            <MapPin className="w-4 h-4 text-accent-coral" />
                             <span className="line-clamp-1">
                               {trip.destination}
                             </span>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <Calendar className="w-4 h-4 text-[var(--accent)]" />
+                          <div className="flex items-center gap-2 text-sm text-ink">
+                            <Calendar className="w-4 h-4 text-accent-sun" />
                             <span>
-                              {formatDate(trip.startDate)} 〜{" "}
+                              {formatDate(trip.startDate)} —
+                              {" "}
                               {formatDate(trip.endDate)}
                             </span>
                           </div>
                         </div>
-                      </div>
 
-                      <div className="p-6 space-y-5">
-                        <div className="flex flex-wrap gap-2">
-                          {trip.members.slice(0, 3).map((member) => (
-                            <span key={member.id} className="chip">
-                              {member.name}
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <span className="tag-pill text-xs px-3 py-1 font-ui">
+                            メンバー {memberCount}名
+                          </span>
+                          <span className="tag-pill text-xs px-3 py-1 font-ui">
+                            日程 {dayCount}日
+                          </span>
+                          {trip.aiEnabled && (
+                            <span className="tag-pill text-xs px-3 py-1 font-ui">
+                              AI
                             </span>
-                          ))}
-                          {trip.members.length > 3 && (
-                            <span className="chip text-[var(--muted)]">
-                              +{trip.members.length - 3}人
+                          )}
+                          {trip.shareToken && (
+                            <span className="tag-pill text-xs px-3 py-1 font-ui">
+                              共有中
                             </span>
                           )}
                         </div>
 
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="mt-4 flex items-center justify-between gap-3">
                           <motion.button
                             onClick={() => handleViewTrip(trip)}
-                            className="btn-outline flex items-center justify-center gap-2 text-sm"
+                            className="btn btn-primary px-5 py-2 text-sm"
                             whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.97 }}
+                            whileTap={{ scale: 0.98 }}
                             type="button"
                           >
-                            <Eye className="w-4 h-4" />
-                            表示
+                            開く
                           </motion.button>
-                          <motion.button
-                            onClick={() => handleShareTrip(trip)}
-                            className="btn-outline flex items-center justify-center gap-2 text-sm"
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.97 }}
-                            type="button"
-                          >
-                            <Share2 className="w-4 h-4" />
-                            共有
-                          </motion.button>
-                          <motion.button
-                            onClick={() => handleEditTrip(trip)}
-                            className="btn-ghost flex items-center justify-center gap-2 text-sm"
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.97 }}
-                            type="button"
-                          >
-                            <Edit className="w-4 h-4" />
-                            編集
-                          </motion.button>
-                          <motion.button
-                            onClick={() => handleDeleteTrip(trip.id)}
-                            className="btn-danger flex items-center justify-center gap-2 text-sm"
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.97 }}
-                            type="button"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                            削除
-                          </motion.button>
+                          <div className="flex gap-2">
+                            <motion.button
+                              onClick={() => handleEditTrip(trip)}
+                              className="action-chip"
+                              aria-label="編集"
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.98 }}
+                              type="button"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </motion.button>
+                            <motion.button
+                              onClick={() => handleShareTrip(trip)}
+                              className="action-chip"
+                              aria-label="共有"
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.98 }}
+                              type="button"
+                            >
+                              <Share2 className="w-4 h-4" />
+                            </motion.button>
+                            <motion.button
+                              onClick={() => handleDeleteTrip(trip.id)}
+                              className="action-chip danger"
+                              aria-label="削除"
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.98 }}
+                              type="button"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </motion.button>
+                          </div>
                         </div>
-                      </div>
-                    </motion.div>
-                  ))}
+                      </motion.article>
+                    );
+                  })}
                 </AnimatePresence>
               </div>
             )}
-          </section>
-        </main>
+          </motion.section>
+        </div>
 
-        <footer className="border-t border-[var(--line)] py-8">
-          <div className="container mx-auto px-6 flex flex-wrap items-center justify-between gap-3 text-sm text-[var(--muted)]">
-            <div className="flex items-center gap-2">
-              <Plane className="w-4 h-4 text-[var(--accent)]" />
-              たびNote
+        <motion.footer
+          className="footer-ink py-8 mt-20"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1 }}
+        >
+          <div className="container mx-auto px-6 text-center">
+            <div className="flex items-center justify-center gap-3 mb-3">
+              <Feather className="w-5 h-5 text-accent-sun" />
+              <span className="font-display text-lg text-paper">
+                たびNote
+              </span>
             </div>
-            <span>思い出に残る旅のしおりを簡単に作成</span>
+            <p className="text-sm font-ui">旅の思い出を、あなたらしく</p>
           </div>
-        </footer>
+        </motion.footer>
         {renderBlockingOverlay()}
       </div>
     );
@@ -721,23 +991,25 @@ export function TabiNoteApp() {
   if (view === "create") {
     return (
       <motion.div
-        className="app-shell py-10"
+        className="min-h-screen ink-wash py-8"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
       >
         <div className="container mx-auto px-6">
           <motion.div
             className="text-center mb-10"
-            initial={{ y: -40, opacity: 0 }}
+            initial={{ y: -30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
           >
-            <p className="section-kicker">Create</p>
-            <h1 className="section-title mt-3">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-full hero-badge flex items-center justify-center">
+                <Feather className="w-6 h-6 text-paper" />
+              </div>
+            </div>
+            <h1 className="font-display text-4xl text-ink">
               {currentTrip ? "しおりを編集" : "新しいしおりを作成"}
             </h1>
-            <p className="mt-3 text-sm text-[var(--muted)]">
-              入力内容に合わせて、しおりのデザインを整えます。
-            </p>
+            <div className="decorative-line mx-auto mt-4" />
           </motion.div>
 
           <TripForm
@@ -745,7 +1017,7 @@ export function TabiNoteApp() {
             onSave={handleSaveTrip}
             onCancel={handleBackToHome}
             isBusy={blockState.active}
-            busyLabel={blockState.active ? blockState.message || blockState.title : ""}
+            busyLabel={blockState.message}
           />
         </div>
         {renderBlockingOverlay()}
@@ -756,54 +1028,34 @@ export function TabiNoteApp() {
   if (view === "preview" && currentTrip) {
     return (
       <motion.div
-        className="app-shell py-10"
+        className="min-h-screen ink-wash py-8"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
       >
         <div className="container mx-auto px-6 max-w-5xl">
           <motion.div
-            className="paper-card p-6 md:p-8 mb-8"
-            initial={{ y: -40, opacity: 0 }}
+            className="paper-card rounded-xl p-6 mb-8"
+            initial={{ y: -30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
           >
             <div className="flex flex-wrap items-center justify-between gap-4">
               <motion.button
                 onClick={handleBackToHome}
-                className="btn-outline flex items-center gap-2"
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.96 }}
+                className="px-6 py-3 btn btn-ghost flex items-center gap-2"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 type="button"
               >
-                ← ホームに戻る
+                <span>←</span>
+                <span>ホームに戻る</span>
               </motion.button>
 
               <div className="flex flex-wrap gap-3">
                 <motion.button
-                  onClick={handleGenerateDesign}
-                  className={`btn-primary flex items-center gap-2 ${
-                    isGeneratingDesign ? "opacity-60 cursor-not-allowed" : ""
-                  }`}
-                  whileHover={isGeneratingDesign ? {} : { scale: 1.03 }}
-                  whileTap={isGeneratingDesign ? {} : { scale: 0.96 }}
-                  disabled={isGeneratingDesign}
-                  type="button"
-                >
-                  <Palette className="w-5 h-5" />
-                  {isGeneratingDesign
-                    ? `デザイン生成中...${
-                        designProgress
-                          ? ` (${designProgress.current}/${designProgress.total})`
-                          : ""
-                      }`
-                    : currentTrip.design
-                      ? "デザイン再生成"
-                      : "デザイン生成"}
-                </motion.button>
-                <motion.button
                   onClick={() => handleEditTrip(currentTrip)}
-                  className="btn-outline flex items-center gap-2"
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.96 }}
+                  className="flex items-center gap-2 px-6 py-3 btn btn-soft"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   type="button"
                 >
                   <Edit className="w-5 h-5" />
@@ -811,19 +1063,19 @@ export function TabiNoteApp() {
                 </motion.button>
                 <motion.button
                   onClick={() => handleShareTrip(currentTrip)}
-                  className="btn-outline flex items-center gap-2"
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.96 }}
+                  className="flex items-center gap-2 px-6 py-3 btn btn-secondary"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   type="button"
                 >
                   <Share2 className="w-5 h-5" />
-                  共有リンク
+                  共有
                 </motion.button>
                 <motion.button
-                  onClick={() => setShowPdfExport((prev) => !prev)}
-                  className="btn-secondary flex items-center gap-2"
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.96 }}
+                  onClick={() => setShowPdfExport(!showPdfExport)}
+                  className="flex items-center gap-2 px-6 py-3 btn btn-primary"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   type="button"
                 >
                   <Download className="w-5 h-5" />
@@ -831,20 +1083,20 @@ export function TabiNoteApp() {
                 </motion.button>
               </div>
             </div>
-            {currentTrip.design &&
-              (currentTrip.design.style !== currentTrip.templateType ||
-                currentTrip.design.format !== currentTrip.formatType) && (
-                <div className="mt-4 text-sm text-[var(--accent-strong)] font-semibold">
-                  現在のスタイル/フォーマットと生成済みデザインが一致しません。再生成がおすすめです。
-                </div>
-              )}
           </motion.div>
 
+          <AnimatePresence>
             {showPdfExport && (
-              <div className="mb-8">
+              <motion.div
+                className="mb-8"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+              >
                 <PdfExport trip={currentTrip} />
-              </div>
+              </motion.div>
             )}
+          </AnimatePresence>
 
           <TripPreview trip={currentTrip} />
         </div>

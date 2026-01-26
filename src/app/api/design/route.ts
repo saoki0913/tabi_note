@@ -175,6 +175,9 @@ const sanitize = (value: string, limit = 120): string => {
   return `${cleaned.slice(0, limit)}…`;
 };
 
+const normalizeText = (value: string): string =>
+  value.replace(/\r\n/g, "\n").trim();
+
 const formatList = (
   items: string[],
   limit = 0,
@@ -184,6 +187,12 @@ const formatList = (
   const trimmed = limit > 0 ? filtered.slice(0, limit) : filtered;
   return trimmed.map((item) => sanitize(item, 60)).join(separator);
 };
+
+const joinList = (items: string[], separator = "・") =>
+  items
+    .map((item) => normalizeText(item))
+    .filter(Boolean)
+    .join(separator);
 
 const buildBackgroundPrompt = (trip: Trip, mode: DesignMode) => {
   const guide = styleGuides[trip.templateType];
@@ -244,20 +253,18 @@ const buildFullPrompt = (
   const modeGuide = modeGuides[mode];
   const pageNumber = options.pageNumber ?? 1;
   const totalPages = options.totalPages ?? 1;
-  const destination = trip.destination
-    ? sanitize(trip.destination, 80)
-    : "";
-  const title = trip.title ? sanitize(trip.title, 80) : "";
+  const destination = trip.destination ? normalizeText(trip.destination) : "";
+  const title = trip.title ? normalizeText(trip.title) : "";
   const dates =
     trip.startDate && trip.endDate
       ? `${trip.startDate} 〜 ${trip.endDate}`
       : "";
-  const members = formatList(trip.members.map((member) => member.name), 0, "・");
+  const members = joinList(trip.members.map((member) => member.name));
   const coverCopy = trip.aiContent?.coverCopy
-    ? sanitize(trip.aiContent.coverCopy, 60)
+    ? normalizeText(trip.aiContent.coverCopy)
     : "";
   const overviewText = trip.aiContent?.overviewText
-    ? sanitize(trip.aiContent.overviewText, 160)
+    ? normalizeText(trip.aiContent.overviewText)
     : "";
   const cautionsText = trip.aiContent?.cautionsText
     ? trip.aiContent.cautionsText
@@ -269,36 +276,34 @@ const buildFullPrompt = (
       ? trip.dayPlans.find((entry) => entry.day === options.day) ??
         trip.dayPlans[0]
       : undefined;
-  const planTitle = plan ? `DAY ${plan.day}` : "DAY";
+  const planTitle = plan ? `${plan.day}日目` : "日程";
   const planDate = plan?.date ? `(${plan.date})` : "";
-  const planSummary = plan
-    ? trip.aiContent?.daySummaries[plan.day]
-    : "";
+  const planSummary = plan ? trip.aiContent?.daySummaries[plan.day] : "";
   const activities = plan?.activities ?? [];
   const lodgingList = trip.lodgings;
 
   const textLines: string[] = [];
 
   if (mode === "cover") {
-    textLines.push(title);
+    if (title) textLines.push(title);
     if (coverCopy) textLines.push(coverCopy);
-    if (destination) textLines.push(`目的地: ${destination}`);
-    if (dates) textLines.push(`日程: ${dates}`);
-    if (members) textLines.push(`メンバー: ${members}`);
+    if (destination) textLines.push(`目的地：${destination}`);
+    if (dates) textLines.push(`日程：${dates}`);
+    if (members) textLines.push(`メンバー：${members}`);
   }
 
   if (mode === "overview") {
     textLines.push("旅のプラン");
-    if (overviewText) textLines.push(`概要: ${overviewText}`);
+    if (overviewText) textLines.push(`概要：${overviewText}`);
     if (trip.transportText) {
-      textLines.push(`移動: ${sanitize(trip.transportText, 120)}`);
+      textLines.push(`移動：${normalizeText(trip.transportText)}`);
     }
     if (lodgingList.length > 0) {
       textLines.push("宿泊先:");
       lodgingList.forEach((lodging) => {
         textLines.push(
-          `・${sanitize(lodging.name, 80)}${
-            lodging.address ? ` / ${sanitize(lodging.address, 120)}` : ""
+          `・${normalizeText(lodging.name)}${
+            lodging.address ? ` / ${normalizeText(lodging.address)}` : ""
           }${
             lodging.checkin || lodging.checkout
               ? ` / IN ${lodging.checkin || "-"} / OUT ${lodging.checkout || "-"}`
@@ -312,11 +317,11 @@ const buildFullPrompt = (
   if (mode === "schedule") {
     textLines.push(`${planTitle} ${planDate}`.trim());
     if (planSummary) {
-      textLines.push(`見どころ: ${sanitize(planSummary, 120)}`);
+      textLines.push(`見どころ：${normalizeText(planSummary)}`);
     }
     if (activities.length > 0) {
       activities.forEach((activity, index) => {
-        textLines.push(`${index + 1}. ${sanitize(activity, 80)}`);
+        textLines.push(`${index + 1}. ${normalizeText(activity)}`);
       });
     }
   }
@@ -326,13 +331,13 @@ const buildFullPrompt = (
     if (packingList.length > 0) {
       textLines.push("持ち物:");
       packingList.forEach((item) => {
-        textLines.push(`□ ${sanitize(item, 90)}`);
+        textLines.push(`□ ${normalizeText(item)}`);
       });
     }
     if (wantList.length > 0) {
       textLines.push("やりたいこと:");
       wantList.forEach((item) => {
-        textLines.push(`□ ${sanitize(item, 90)}`);
+        textLines.push(`□ ${normalizeText(item)}`);
       });
     }
   }
@@ -343,8 +348,8 @@ const buildFullPrompt = (
       textLines.push("宿泊先:");
       lodgingList.forEach((lodging) => {
         textLines.push(
-          `・${sanitize(lodging.name, 80)}${
-            lodging.address ? ` / ${sanitize(lodging.address, 120)}` : ""
+          `・${normalizeText(lodging.name)}${
+            lodging.address ? ` / ${normalizeText(lodging.address)}` : ""
           }${
             lodging.checkin || lodging.checkout
               ? ` / IN ${lodging.checkin || "-"} / OUT ${lodging.checkout || "-"}`
@@ -357,7 +362,7 @@ const buildFullPrompt = (
       textLines.push("注意事項:");
       cautionsText.split("\n").forEach((line) => {
         if (line.trim()) {
-          textLines.push(`・${sanitize(line, 100)}`);
+          textLines.push(`・${normalizeText(line)}`);
         }
       });
     }
@@ -365,7 +370,7 @@ const buildFullPrompt = (
       textLines.push("メモ:");
       trip.notes.split("\n").forEach((line) => {
         if (line.trim()) {
-          textLines.push(`・${sanitize(line, 120)}`);
+          textLines.push(`・${normalizeText(line)}`);
         }
       });
     }
@@ -398,11 +403,13 @@ const buildFullPrompt = (
     `You are a visual designer creating a printable ${modeGuide.purpose}.`,
     "Output a single full-bleed A4 portrait page (aspect ratio 210:297, ideally 2480x3508px at 300dpi).",
     "STRICT RULES:",
-    "1) Render ONLY the provided text strings. Do not add, translate, or rephrase.",
-    "2) Do not insert extra words like TRAVEL NOTES, DESTINATION, DATES, MEMBERS, ALOHA, VACATION, STEP, or stamps with text.",
-    "3) Do not place any text on stickers or illustrations. Use icon-only stickers.",
-    "4) If text is long, reduce font size, tighten spacing, or use multi-column layout. Do not omit any lines.",
-    "5) Keep punctuation, small Japanese characters, and digits intact. Do not switch languages.",
+    "1) This is a copy task: render EVERY line exactly as provided, preserving all characters and punctuation.",
+    "2) Do not add, translate, rephrase, or remove any characters. Do not invent labels.",
+    "3) Use only characters that appear in TEXT_LINES_JSON. Do not add Latin letters unless they are in the lines.",
+    "4) Do not place any text on stickers, illustrations, maps, stamps, or tickets. Use icon-only motifs.",
+    "5) If text is long, reduce font size, tighten spacing, or use multi-column layout. Do not omit any lines.",
+    "6) Keep punctuation, small Japanese characters, and digits intact. Do not switch languages.",
+    "7) Absolutely no decorative words like TRAVEL, DESTINATION, DATES, MEMBERS, ALOHA, VACATION, SURF, STEP.",
     "Use a clear hierarchy: title > subtitle > body > lists.",
     "Keep text within a 12-15mm safe margin (about 140px). Avoid clipping or overlaps.",
     "Ensure text is crisp and high-contrast against the background for print readability.",
@@ -458,7 +465,7 @@ export async function POST(request: Request) {
           totalPages: body.totalPages,
           day: body.day,
         });
-  const temperature = renderMode === "full" ? 0.25 : 0.6;
+  const temperature = renderMode === "full" ? 0.1 : 0.6;
 
   const response = await fetch(`${GEMINI_ENDPOINT}?key=${apiKey}`, {
     method: "POST",

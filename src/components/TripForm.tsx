@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "motion/react";
 import {
   Calendar,
   Check,
+  Feather,
   Home,
   MapPin,
   Package,
@@ -37,7 +38,7 @@ const createBlankTrip = (): Trip => ({
   lodgings: [],
   wantItems: [],
   dayPlans: [],
-  templateType: "minimal",
+  templateType: "pop",
   formatType: "classic",
   aiEnabled: true,
   aiTone: "casual",
@@ -45,106 +46,22 @@ const createBlankTrip = (): Trip => ({
   updatedAt: new Date().toISOString(),
 });
 
-const templateOptions = [
-  {
-    value: "minimal",
-    label: "シンプル",
-    description: "すっきり見やすい",
-    emoji: "🧾",
-    active: "border-[var(--accent)] bg-[var(--accent-soft)] scale-[1.02]",
-    inactive: "border-[var(--line)] hover:border-[var(--accent)] bg-white/70",
-  },
-  {
-    value: "pop",
-    label: "ポップ",
-    description: "明るく元気に",
-    emoji: "🎨",
-    active: "border-[var(--accent)] bg-[var(--accent-soft)] scale-[1.02]",
-    inactive: "border-[var(--line)] hover:border-[var(--accent)] bg-white/70",
-  },
-  {
-    value: "retro",
-    label: "レトロ",
-    description: "ヴィンテージ感",
-    emoji: "📻",
-    active: "border-[var(--accent)] bg-[var(--accent-soft)] scale-[1.02]",
-    inactive: "border-[var(--line)] hover:border-[var(--accent)] bg-white/70",
-  },
-  {
-    value: "romantic",
-    label: "ロマンチック",
-    description: "甘くやさしい",
-    emoji: "💐",
-    active: "border-[var(--accent)] bg-[var(--accent-soft)] scale-[1.02]",
-    inactive: "border-[var(--line)] hover:border-[var(--accent)] bg-white/70",
-  },
-  {
-    value: "photo",
-    label: "写真多め",
-    description: "アルバム風",
-    emoji: "📸",
-    active: "border-[var(--accent)] bg-[var(--accent-soft)] scale-[1.02]",
-    inactive: "border-[var(--line)] hover:border-[var(--accent)] bg-white/70",
-  },
-  {
-    value: "modern",
-    label: "モダン",
-    description: "洗練された印象",
-    emoji: "🧊",
-    active: "border-[var(--accent)] bg-[var(--accent-soft)] scale-[1.02]",
-    inactive: "border-[var(--line)] hover:border-[var(--accent)] bg-white/70",
-  },
-  {
-    value: "nature",
-    label: "ナチュラル",
-    description: "自然で穏やか",
-    emoji: "🌿",
-    active: "border-[var(--accent)] bg-[var(--accent-soft)] scale-[1.02]",
-    inactive: "border-[var(--line)] hover:border-[var(--accent)] bg-white/70",
-  },
-  {
-    value: "adventure",
-    label: "アドベンチャー",
-    description: "旅情あふれる",
-    emoji: "🧭",
-    active: "border-[var(--accent)] bg-[var(--accent-soft)] scale-[1.02]",
-    inactive: "border-[var(--line)] hover:border-[var(--accent)] bg-white/70",
-  },
+const templateChoices = [
+  { type: "minimal", label: "シンプル", desc: "シンプルで見やすい", icon: "---" },
+  { type: "pop", label: "ポップ", desc: "カラフルで楽しい", icon: "***" },
+  { type: "retro", label: "レトロ", desc: "ヴィンテージ感", icon: "◎◎" },
+  { type: "romantic", label: "ロマンチック", desc: "甘くやさしい", icon: "♡♡" },
+  { type: "photo", label: "写真多め", desc: "アルバム風", icon: "[]" },
+  { type: "modern", label: "モダン", desc: "洗練された印象", icon: "▢▢" },
+  { type: "nature", label: "ナチュラル", desc: "自然で穏やか", icon: "◌◌" },
+  { type: "adventure", label: "アドベンチャー", desc: "旅情あふれる", icon: "✶✶" },
 ] as const;
 
-const formatOptions = [
-  {
-    value: "classic",
-    label: "スタンダード",
-    description: "情報整理を重視",
-    emoji: "📘",
-    active: "border-[var(--accent)] bg-[var(--accent-soft)] scale-[1.02]",
-    inactive: "border-[var(--line)] hover:border-[var(--accent)] bg-white/70",
-  },
-  {
-    value: "collage",
-    label: "コラージュ",
-    description: "写真や素材を重ねる",
-    emoji: "🧷",
-    active: "border-[var(--accent)] bg-[var(--accent-soft)] scale-[1.02]",
-    inactive: "border-[var(--line)] hover:border-[var(--accent)] bg-white/70",
-  },
-  {
-    value: "notebook",
-    label: "ノート",
-    description: "手帳風の余白",
-    emoji: "📓",
-    active: "border-[var(--accent)] bg-[var(--accent-soft)] scale-[1.02]",
-    inactive: "border-[var(--line)] hover:border-[var(--accent)] bg-white/70",
-  },
-  {
-    value: "timeline",
-    label: "タイムライン",
-    description: "時系列を強調",
-    emoji: "🕒",
-    active: "border-[var(--accent)] bg-[var(--accent-soft)] scale-[1.02]",
-    inactive: "border-[var(--line)] hover:border-[var(--accent)] bg-white/70",
-  },
+const formatChoices = [
+  { type: "classic", label: "スタンダード", desc: "情報整理を重視", icon: "📘" },
+  { type: "collage", label: "コラージュ", desc: "写真や素材を重ねる", icon: "🧷" },
+  { type: "notebook", label: "ノート", desc: "手帳風の余白", icon: "📓" },
+  { type: "timeline", label: "タイムライン", desc: "時系列を強調", icon: "🕒" },
 ] as const;
 
 export function TripForm({
@@ -165,9 +82,6 @@ export function TripForm({
   const [editingLodging, setEditingLodging] = useState<Partial<Lodging>>({});
   const [isSaving, setIsSaving] = useState(false);
   const isBlocked = isSaving || Boolean(isBusy);
-  const submitLabel = isBlocked
-    ? busyLabel || "作成中..."
-    : "しおりを作成";
 
   const handleAddMember = () => {
     if (!newMemberName.trim()) return;
@@ -259,15 +173,16 @@ export function TripForm({
   const handleAddActivity = (dayIndex: number) => {
     const activity = prompt("予定を入力してください:");
     if (!activity?.trim()) return;
-    const nextPlans = [...trip.dayPlans];
-    nextPlans[dayIndex].activities.push(activity.trim());
-    setTrip({ ...trip, dayPlans: nextPlans });
+
+    const newDayPlans = [...trip.dayPlans];
+    newDayPlans[dayIndex].activities.push(activity.trim());
+    setTrip({ ...trip, dayPlans: newDayPlans });
   };
 
   const handleRemoveActivity = (dayIndex: number, activityIndex: number) => {
-    const nextPlans = [...trip.dayPlans];
-    nextPlans[dayIndex].activities.splice(activityIndex, 1);
-    setTrip({ ...trip, dayPlans: nextPlans });
+    const newDayPlans = [...trip.dayPlans];
+    newDayPlans[dayIndex].activities.splice(activityIndex, 1);
+    setTrip({ ...trip, dayPlans: newDayPlans });
   };
 
   const handleNext = () => {
@@ -275,7 +190,7 @@ export function TripForm({
     if (currentStep === 1 && trip.startDate && trip.endDate) {
       generateDayPlans();
     }
-    setCurrentStep((prev) => prev + 1);
+    setCurrentStep(currentStep + 1);
   };
 
   const handleSubmit = async () => {
@@ -292,32 +207,34 @@ export function TripForm({
     }
   };
 
+  const stepLabels = ["基本情報", "日程", "詳細", "仕上げ"];
+  const submitLabel = isBlocked ? busyLabel || "作成中..." : "しおりを作成";
+
   return (
     <motion.div
-      className="max-w-5xl mx-auto"
+      className="max-w-4xl mx-auto"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
     >
-      <div className="mb-10 flex items-center justify-center gap-3">
+      <div className="mb-10 flex items-center justify-center gap-2">
         {[1, 2, 3, 4].map((step) => (
           <div key={step} className="flex items-center">
             <motion.div
-              className={`w-11 h-11 rounded-full flex items-center justify-center font-semibold text-sm shadow-sm border ${
+              className={`step-dot ${
                 currentStep === step
-                  ? "bg-[var(--accent)] text-white border-[var(--accent-strong)]"
+                  ? "is-active"
                   : currentStep > step
-                    ? "bg-[var(--teal)] text-white border-[var(--teal)]"
-                    : "bg-white/80 border-[var(--line)] text-[var(--muted)]"
+                    ? "is-done"
+                    : ""
               }`}
-              whileHover={{ scale: 1.08 }}
-              transition={{ type: "spring", stiffness: 300 }}
+              whileHover={{ scale: 1.05 }}
             >
-              {currentStep > step ? <Check className="w-7 h-7" /> : step}
+              {currentStep > step ? <Check className="w-5 h-5" /> : step}
             </motion.div>
             {step < 4 && (
               <div
-                className={`w-12 h-[2px] rounded-full mx-2 ${
-                  currentStep > step ? "bg-[var(--teal)]" : "bg-[var(--line)]"
+                className={`step-line mx-1 ${
+                  currentStep > step ? "is-done" : ""
                 }`}
               />
             )}
@@ -325,8 +242,14 @@ export function TripForm({
         ))}
       </div>
 
+      <div className="mb-8 flex justify-center">
+        <span className="font-body text-lg text-ink">
+          Step {currentStep}: {stepLabels[currentStep - 1]}
+        </span>
+      </div>
+
       <motion.div
-        className="paper-card p-8 md:p-10"
+        className="paper-card paper-stack ring-holes rounded-2xl p-8 md:p-10"
         layout
       >
         <AnimatePresence mode="wait">
@@ -338,13 +261,10 @@ export function TripForm({
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -50 }}
             >
-              <h2 className="text-3xl md:text-4xl font-semibold text-center mb-8 text-[var(--ink)]">
-                基本情報
-              </h2>
-
               <div>
-                <label className="block font-bold mb-3 text-xl flex items-center gap-2">
-                  📝 旅のタイトル <span className="text-red-500">*</span>
+                <label className="block font-ui font-medium mb-2 text-ink flex items-center gap-2">
+                  <Feather className="w-4 h-4 text-accent-coral" />
+                  旅のタイトル <span className="text-accent-berry">*</span>
                 </label>
                 <input
                   type="text"
@@ -352,15 +272,15 @@ export function TripForm({
                   onChange={(event) =>
                     setTrip({ ...trip, title: event.target.value })
                   }
-                  className="field w-full text-lg"
+                  className="input-paper w-full font-body"
                   placeholder="例: 沖縄3泊4日の旅"
                 />
               </div>
 
               <div>
-                <label className="block font-bold mb-3 text-xl flex items-center gap-2">
-                  <MapPin className="w-6 h-6 text-[var(--accent)]" />
-                  目的地 <span className="text-red-500">*</span>
+                <label className="block font-ui font-medium mb-2 text-ink flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-accent-coral" />
+                  目的地 <span className="text-accent-berry">*</span>
                 </label>
                 <input
                   type="text"
@@ -368,16 +288,16 @@ export function TripForm({
                   onChange={(event) =>
                     setTrip({ ...trip, destination: event.target.value })
                   }
-                  className="field w-full text-lg"
+                  className="input-paper w-full font-body"
                   placeholder="例: 沖縄県那覇市"
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block font-bold mb-3 text-xl flex items-center gap-2">
-                    <Calendar className="w-6 h-6 text-[var(--accent)]" />
-                    出発日 <span className="text-red-500">*</span>
+                  <label className="block font-ui font-medium mb-2 text-ink flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-accent-coral" />
+                    出発日 <span className="text-accent-berry">*</span>
                   </label>
                   <input
                     type="date"
@@ -385,13 +305,13 @@ export function TripForm({
                     onChange={(event) =>
                       setTrip({ ...trip, startDate: event.target.value })
                     }
-                    className="field w-full"
+                    className="input-paper w-full font-body"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold mb-3 text-xl flex items-center gap-2">
-                    <Calendar className="w-6 h-6 text-[var(--accent)]" />
-                    帰着日 <span className="text-red-500">*</span>
+                  <label className="block font-ui font-medium mb-2 text-ink flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-accent-coral" />
+                    帰着日 <span className="text-accent-berry">*</span>
                   </label>
                   <input
                     type="date"
@@ -399,14 +319,14 @@ export function TripForm({
                     onChange={(event) =>
                       setTrip({ ...trip, endDate: event.target.value })
                     }
-                    className="field w-full"
+                    className="input-paper w-full font-body"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block font-bold mb-3 text-xl flex items-center gap-2">
-                  <Plane className="w-6 h-6 text-[var(--accent)]" />
+                <label className="block font-ui font-medium mb-2 text-ink flex items-center gap-2">
+                  <Plane className="w-4 h-4 text-accent-coral" />
                   移動手段
                 </label>
                 <input
@@ -415,61 +335,55 @@ export function TripForm({
                   onChange={(event) =>
                     setTrip({ ...trip, transportText: event.target.value })
                   }
-                  className="field w-full text-lg"
+                  className="input-paper w-full font-body"
                   placeholder="例: 飛行機、レンタカー"
                 />
               </div>
 
               <div>
-                <label className="block font-bold mb-3 text-xl flex items-center gap-2">
-                  <Users className="w-6 h-6 text-[var(--accent)]" />
+                <label className="block font-ui font-medium mb-2 text-ink flex items-center gap-2">
+                  <Users className="w-4 h-4 text-accent-coral" />
                   メンバー
                 </label>
-                <div className="flex flex-col md:flex-row gap-3 mb-4">
+                <div className="flex gap-2 mb-3">
                   <input
                     type="text"
                     value={newMemberName}
                     onChange={(event) => setNewMemberName(event.target.value)}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter") {
-                        event.preventDefault();
-                        handleAddMember();
-                      }
-                    }}
-                    className="field flex-1"
+                    onKeyDown={(event) =>
+                      event.key === "Enter" && handleAddMember()
+                    }
+                    className="input-paper flex-1 font-body"
                     placeholder="名前を入力"
                   />
                   <motion.button
                     onClick={handleAddMember}
-                    className="btn-outline flex items-center justify-center gap-2"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                    className="px-5 py-3 btn btn-primary flex items-center gap-2"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     type="button"
                   >
-                    <Plus className="w-5 h-5" />
+                    <Plus className="w-4 h-4" />
                     追加
                   </motion.button>
                 </div>
-                <div className="flex flex-wrap gap-3">
+                <div className="flex flex-wrap gap-2">
                   <AnimatePresence>
                     {trip.members.map((member) => (
                       <motion.div
                         key={member.id}
-                        className="chip flex items-center gap-3"
+                        className="tag-pill px-4 py-2 flex items-center gap-2 font-ui text-sm"
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
                         exit={{ scale: 0 }}
-                        whileHover={{ scale: 1.05 }}
                       >
-                        <span className="font-medium text-[var(--ink)]">
-                          {member.name}
-                        </span>
+                        <span>{member.name}</span>
                         <button
                           onClick={() => handleRemoveMember(member.id)}
-                          className="text-[var(--accent-strong)] hover:text-[var(--accent)] transition"
+                          className="icon-button text-accent-berry"
                           type="button"
                         >
-                          <X className="w-5 h-5" />
+                          <X className="w-4 h-4" />
                         </button>
                       </motion.div>
                     ))}
@@ -487,46 +401,43 @@ export function TripForm({
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -50 }}
             >
-              <h2 className="text-3xl md:text-4xl font-semibold text-center mb-8 text-[var(--ink)]">
-                日程と予定
-              </h2>
-
               {trip.dayPlans.map((plan, dayIndex) => (
                 <motion.div
                   key={plan.day}
-                  className="paper-card-soft p-6 md:p-8"
+                  className="note-card p-6"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: dayIndex * 0.1 }}
                 >
-                  <h3 className="text-2xl font-semibold mb-5 text-[var(--ink)]">
-                    Day {plan.day} - {plan.date}
+                  <h3 className="font-display text-xl text-ink mb-4 flex items-center gap-2">
+                    <span className="w-8 h-8 badge-number rounded-full flex items-center justify-center text-sm font-ui">
+                      {plan.day}
+                    </span>
+                    Day {plan.day} — {plan.date}
                   </h3>
-                  <div className="space-y-3 mb-5">
+                  <div className="space-y-2 mb-4">
                     <AnimatePresence>
                       {plan.activities.map((activity, activityIndex) => (
                         <motion.div
-                          key={`${plan.day}-${activityIndex}`}
-                          className="flex items-center gap-3 bg-white/80 border border-[var(--line)] p-4 rounded-xl"
+                          key={activityIndex}
+                          className="list-item flex items-center gap-3 p-3"
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
                           exit={{ opacity: 0, x: 20 }}
-                          whileHover={{ scale: 1.02 }}
                         >
-                          <span className="flex-shrink-0 w-9 h-9 bg-[var(--accent-soft)] text-[var(--ink)] rounded-full border border-[var(--line)] flex items-center justify-center font-semibold">
+                          <span className="w-6 h-6 badge-number rounded-full flex items-center justify-center text-xs font-ui">
                             {activityIndex + 1}
                           </span>
-                          <span className="flex-1 text-lg">{activity}</span>
+                          <span className="flex-1 font-body">{activity}</span>
                           <motion.button
                             onClick={() =>
                               handleRemoveActivity(dayIndex, activityIndex)
                             }
-                            className="text-[var(--accent-strong)] hover:text-[var(--accent)] transition"
-                            whileHover={{ scale: 1.2 }}
-                            whileTap={{ scale: 0.9 }}
+                            className="icon-button text-accent-berry"
+                            whileHover={{ scale: 1.1 }}
                             type="button"
                           >
-                            <X className="w-6 h-6" />
+                            <X className="w-4 h-4" />
                           </motion.button>
                         </motion.div>
                       ))}
@@ -534,12 +445,12 @@ export function TripForm({
                   </div>
                   <motion.button
                     onClick={() => handleAddActivity(dayIndex)}
-                    className="w-full py-4 border border-dashed border-[var(--line)] rounded-xl text-[var(--ink)] hover:border-[var(--accent)] hover:text-[var(--accent-strong)] transition flex items-center justify-center gap-3 font-semibold text-base"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    className="w-full py-3 btn btn-dashed flex items-center justify-center gap-2 font-ui"
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
                     type="button"
                   >
-                    <Plus className="w-6 h-6" />
+                    <Plus className="w-4 h-4" />
                     予定を追加
                   </motion.button>
                 </motion.div>
@@ -555,61 +466,52 @@ export function TripForm({
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -50 }}
             >
-              <h2 className="text-3xl md:text-4xl font-semibold text-center mb-8 text-[var(--ink)]">
-                やりたいこと・宿泊先
-              </h2>
-
               <div>
-                <label className="block font-bold mb-3 text-xl flex items-center gap-2">
-                  <Package className="w-6 h-6 text-[var(--accent)]" />
+                <label className="block font-ui font-medium mb-3 text-ink flex items-center gap-2">
+                  <Package className="w-4 h-4 text-accent-coral" />
                   やりたいことリスト
                 </label>
-                <div className="flex flex-col md:flex-row gap-3 mb-4">
+                <div className="flex gap-2 mb-3">
                   <input
                     type="text"
                     value={newWantItem}
                     onChange={(event) => setNewWantItem(event.target.value)}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter") {
-                        event.preventDefault();
-                        handleAddWantItem();
-                      }
-                    }}
-                    className="field flex-1"
+                    onKeyDown={(event) =>
+                      event.key === "Enter" && handleAddWantItem()
+                    }
+                    className="input-paper flex-1 font-body"
                     placeholder="やりたいことを入力"
                   />
                   <motion.button
                     onClick={handleAddWantItem}
-                    className="btn-outline flex items-center justify-center gap-2"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                    className="px-5 py-3 btn btn-primary flex items-center gap-2"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     type="button"
                   >
-                    <Plus className="w-5 h-5" />
+                    <Plus className="w-4 h-4" />
                     追加
                   </motion.button>
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <AnimatePresence>
                     {trip.wantItems.map((item) => (
                       <motion.div
                         key={item.id}
-                        className="flex items-center gap-3 bg-white/80 border border-[var(--line)] p-4 rounded-xl"
+                        className="list-item flex items-center gap-3 p-3"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, x: -100 }}
-                        whileHover={{ scale: 1.02 }}
                       >
-                        <span className="text-[var(--accent)] text-xl">✓</span>
-                        <span className="flex-1 text-lg">{item.text}</span>
+                        <Check className="w-5 h-5 text-accent-leaf" />
+                        <span className="flex-1 font-body">{item.text}</span>
                         <motion.button
                           onClick={() => handleRemoveWantItem(item.id)}
-                          className="text-[var(--accent-strong)] hover:text-[var(--accent)] transition"
-                          whileHover={{ scale: 1.2 }}
-                          whileTap={{ scale: 0.9 }}
+                          className="icon-button text-accent-berry"
+                          whileHover={{ scale: 1.1 }}
                           type="button"
                         >
-                          <X className="w-6 h-6" />
+                          <X className="w-4 h-4" />
                         </motion.button>
                       </motion.div>
                     ))}
@@ -618,52 +520,50 @@ export function TripForm({
               </div>
 
               <div>
-                <label className="block font-bold mb-3 text-xl flex items-center gap-2">
-                  <Home className="w-6 h-6 text-[var(--accent)]" />
+                <label className="block font-ui font-medium mb-3 text-ink flex items-center gap-2">
+                  <Home className="w-4 h-4 text-accent-coral" />
                   宿泊施設
                 </label>
 
-                <div className="space-y-4 mb-5">
+                <div className="space-y-3 mb-4">
                   <AnimatePresence>
                     {trip.lodgings.map((lodging) => (
                       <motion.div
                         key={lodging.id}
-                        className="bg-white/80 border border-[var(--line)] p-5 rounded-2xl"
+                        className="note-card accent-strip p-4"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, x: -100 }}
-                        whileHover={{ scale: 1.02 }}
                       >
                         <div className="flex items-start justify-between mb-2">
-                          <h4 className="font-bold text-xl text-[var(--ink)]">
+                          <h4 className="font-body font-medium text-ink">
                             {lodging.name}
                           </h4>
                           <motion.button
                             onClick={() => handleRemoveLodging(lodging.id)}
-                            className="text-[var(--accent-strong)] hover:text-[var(--accent)] transition"
-                            whileHover={{ scale: 1.2 }}
-                            whileTap={{ scale: 0.9 }}
+                            className="icon-button text-accent-berry"
+                            whileHover={{ scale: 1.1 }}
                             type="button"
                           >
-                            <X className="w-6 h-6" />
+                            <X className="w-4 h-4" />
                           </motion.button>
                         </div>
                         {lodging.address && (
-                          <p className="text-sm text-[var(--muted)] mb-1">
-                            📍 {lodging.address}
+                          <p className="text-sm text-ink-soft">
+                            {lodging.address}
                           </p>
                         )}
                         {lodging.checkin && (
-                          <p className="text-sm">
+                          <p className="text-sm text-ink-soft">
                             チェックイン: {lodging.checkin}
                           </p>
                         )}
                       </motion.div>
-                  ))}
-                </AnimatePresence>
-              </div>
+                    ))}
+                  </AnimatePresence>
+                </div>
 
-                <div className="paper-card-soft p-6 space-y-3">
+                <div className="dashed-panel p-4 space-y-3">
                   <input
                     type="text"
                     value={editingLodging.name || ""}
@@ -673,7 +573,7 @@ export function TripForm({
                         name: event.target.value,
                       })
                     }
-                    className="field w-full"
+                    className="input-paper input-paper-sm w-full font-body"
                     placeholder="宿泊施設名"
                   />
                   <input
@@ -685,10 +585,10 @@ export function TripForm({
                         address: event.target.value,
                       })
                     }
-                    className="field w-full"
+                    className="input-paper input-paper-sm w-full font-body"
                     placeholder="住所"
                   />
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-3">
                     <input
                       type="time"
                       value={editingLodging.checkin || ""}
@@ -698,8 +598,7 @@ export function TripForm({
                           checkin: event.target.value,
                         })
                       }
-                      className="field"
-                      placeholder="チェックイン"
+                      className="input-paper input-paper-sm font-body"
                     />
                     <input
                       type="time"
@@ -710,8 +609,7 @@ export function TripForm({
                           checkout: event.target.value,
                         })
                       }
-                      className="field"
-                      placeholder="チェックアウト"
+                      className="input-paper input-paper-sm font-body"
                     />
                   </div>
                   <input
@@ -723,7 +621,7 @@ export function TripForm({
                         phone: event.target.value,
                       })
                     }
-                    className="field w-full"
+                    className="input-paper input-paper-sm w-full font-body"
                     placeholder="電話番号"
                   />
                   <input
@@ -735,30 +633,32 @@ export function TripForm({
                         url: event.target.value,
                       })
                     }
-                    className="field w-full"
+                    className="input-paper input-paper-sm w-full font-body"
                     placeholder="URL"
                   />
                   <motion.button
                     onClick={handleAddLodging}
-                    className="btn-outline w-full flex items-center justify-center gap-2"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    className="w-full py-2.5 btn btn-secondary flex items-center justify-center gap-2"
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
                     type="button"
                   >
-                    <Plus className="w-5 h-5" />
+                    <Plus className="w-4 h-4" />
                     宿泊施設を追加
                   </motion.button>
                 </div>
               </div>
 
               <div>
-                <label className="block font-bold mb-3 text-xl">メモ・その他</label>
+                <label className="block font-ui font-medium mb-2 text-ink">
+                  メモ・その他
+                </label>
                 <textarea
                   value={trip.notes}
                   onChange={(event) =>
                     setTrip({ ...trip, notes: event.target.value })
                   }
-                  className="field w-full"
+                  className="input-paper note-lines w-full font-body"
                   rows={4}
                   placeholder="その他のメモや注意事項など"
                 />
@@ -774,36 +674,35 @@ export function TripForm({
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -50 }}
             >
-              <h2 className="text-3xl md:text-4xl font-semibold text-center mb-8 text-[var(--ink)]">
-                デザインとAI設定
-              </h2>
-
               <div>
-                <label className="block font-bold mb-5 text-xl">
-                  デザインスタイルを選択
+                <label className="block font-ui font-medium mb-4 text-ink">
+                  テンプレートを選択
                 </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-                  {templateOptions.map((option) => (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {templateChoices.map((template) => (
                     <motion.button
-                      key={option.value}
+                      key={template.type}
                       onClick={() =>
-                        setTrip({ ...trip, templateType: option.value })
+                        setTrip({
+                          ...trip,
+                          templateType: template.type as Trip["templateType"],
+                        })
                       }
-                      className={`p-6 border rounded-2xl transition shadow-sm ${
-                        trip.templateType === option.value
-                          ? option.active
-                          : option.inactive
+                      className={`choice-card p-5 text-left ${
+                        trip.templateType === template.type ? "is-selected" : ""
                       }`}
-                      whileHover={{ scale: 1.04 }}
-                      whileTap={{ scale: 0.95 }}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                       type="button"
                     >
-                      <div className="text-4xl mb-3">{option.emoji}</div>
-                      <h3 className="font-bold text-lg mb-1">
-                        {option.label}
+                      <div className="text-2xl mb-2 font-mono text-accent-coral">
+                        {template.icon}
+                      </div>
+                      <h3 className="font-ui font-medium text-ink mb-1">
+                        {template.label}
                       </h3>
-                      <p className="text-sm text-[var(--muted)]">
-                        {option.description}
+                      <p className="text-xs text-ink-soft">
+                        {template.desc}
                       </p>
                     </motion.button>
                   ))}
@@ -811,137 +710,121 @@ export function TripForm({
               </div>
 
               <div>
-                <label className="block font-bold mb-5 text-xl">
+                <label className="block font-ui font-medium mb-4 text-ink">
                   フォーマットを選択
                 </label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {formatOptions.map((option) => (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {formatChoices.map((format) => (
                     <motion.button
-                      key={option.value}
+                      key={format.type}
                       onClick={() =>
-                        setTrip({ ...trip, formatType: option.value })
+                        setTrip({
+                          ...trip,
+                          formatType: format.type as Trip["formatType"],
+                        })
                       }
-                      className={`p-6 border rounded-2xl transition shadow-sm text-left ${
-                        trip.formatType === option.value
-                          ? option.active
-                          : option.inactive
+                      className={`choice-card p-4 text-left ${
+                        trip.formatType === format.type ? "is-selected" : ""
                       }`}
-                      whileHover={{ scale: 1.03 }}
-                      whileTap={{ scale: 0.96 }}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                       type="button"
                     >
-                      <div className="flex items-center gap-3">
-                        <span className="text-3xl">{option.emoji}</span>
-                        <div>
-                          <h3 className="font-bold text-lg">
-                            {option.label}
-                          </h3>
-                          <p className="text-sm text-[var(--muted)]">
-                            {option.description}
-                          </p>
-                        </div>
-                      </div>
+                      <div className="text-2xl mb-2">{format.icon}</div>
+                      <h3 className="font-ui font-medium text-ink mb-1">
+                        {format.label}
+                      </h3>
+                      <p className="text-xs text-ink-soft">{format.desc}</p>
                     </motion.button>
                   ))}
                 </div>
               </div>
 
-              <motion.div
-                className="paper-card-soft p-8"
-                whileHover={{ scale: 1.02 }}
-              >
-                <div className="flex items-center gap-3 mb-6">
-                  <Sparkles className="w-8 h-8 text-[var(--accent)]" />
-                  <h3 className="text-2xl font-bold text-[var(--ink)]">
-                    AI補完機能
-                  </h3>
+              <motion.div className="paper-card accent-panel rounded-xl p-6">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-10 h-10 hero-badge rounded-full flex items-center justify-center">
+                    <Sparkles className="w-5 h-5 text-paper" />
+                  </div>
+                  <h3 className="font-display text-xl text-ink">AI補完機能</h3>
                 </div>
 
-                <div className="flex items-center gap-4 mb-6">
+                <label className="flex items-center gap-3 mb-5 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={trip.aiEnabled}
                     onChange={(event) =>
                       setTrip({ ...trip, aiEnabled: event.target.checked })
                     }
-                    className="w-7 h-7 accent-[var(--accent)]"
+                    className="w-5 h-5 accent-coral rounded"
                   />
-                  <label className="text-xl font-medium">
+                  <span className="font-body text-ink">
                     AIで文章を補完する
-                  </label>
-                </div>
+                  </span>
+                </label>
 
                 {trip.aiEnabled && (
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
                   >
-                    <label className="block font-bold mb-3 text-lg">
+                    <label className="block font-ui text-sm font-medium mb-2 text-ink">
                       文章のトーン
                     </label>
-                    <div className="flex flex-col md:flex-row gap-4">
-                      <motion.button
-                        onClick={() => setTrip({ ...trip, aiTone: "polite" })}
-                        className={`flex-1 py-4 px-6 rounded-xl border transition font-semibold text-lg shadow-sm ${
-                          trip.aiTone === "polite"
-                            ? "border-[var(--accent)] bg-[var(--accent-soft)] scale-[1.02]"
-                            : "border-[var(--line)] hover:border-[var(--accent)] bg-white/70"
-                        }`}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        type="button"
-                      >
-                        丁寧
-                      </motion.button>
-                      <motion.button
-                        onClick={() => setTrip({ ...trip, aiTone: "casual" })}
-                        className={`flex-1 py-4 px-6 rounded-xl border transition font-semibold text-lg shadow-sm ${
-                          trip.aiTone === "casual"
-                            ? "border-[var(--accent)] bg-[var(--accent-soft)] scale-[1.02]"
-                            : "border-[var(--line)] hover:border-[var(--accent)] bg-white/70"
-                        }`}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        type="button"
-                      >
-                        カジュアル
-                      </motion.button>
+                    <div className="flex gap-3">
+                      {[
+                        { tone: "polite", label: "丁寧" },
+                        { tone: "casual", label: "カジュアル" },
+                      ].map((option) => (
+                        <motion.button
+                          key={option.tone}
+                          onClick={() =>
+                            setTrip({
+                              ...trip,
+                              aiTone: option.tone as Trip["aiTone"],
+                            })
+                          }
+                          className={`choice-pill flex-1 py-3 px-4 ${
+                            trip.aiTone === option.tone ? "is-selected" : ""
+                          }`}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          type="button"
+                        >
+                          {option.label}
+                        </motion.button>
+                      ))}
                     </div>
                   </motion.div>
                 )}
 
-                <p className="text-sm text-[var(--muted)] mt-6 bg-white/70 border border-[var(--line)] p-4 rounded-xl">
-                  💡 AIが表紙コピー、概要文、見どころ要約などを自動生成します。入力内容は変更されません。
+                <p className="text-sm text-ink-soft mt-4 note-card p-3">
+                  AIが表紙コピー、概要文、見どころ要約などを自動生成します。入力内容は変更されません。
                 </p>
               </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        <div className="flex flex-col md:flex-row justify-between gap-4 mt-10 pt-8 border-t border-[var(--line)]">
+        <div className="flex justify-between mt-10 pt-6 border-t border-paper">
           {currentStep > 1 ? (
             <motion.button
-              onClick={() => setCurrentStep((prev) => prev - 1)}
-              className={`btn-outline ${
-                isBlocked ? "opacity-60 cursor-not-allowed" : ""
-              }`}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              disabled={isBlocked}
+              onClick={() => setCurrentStep(currentStep - 1)}
+              className="px-6 py-3 btn btn-ghost"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               type="button"
+              disabled={isBlocked}
             >
               ← 戻る
             </motion.button>
           ) : (
             <motion.button
               onClick={onCancel}
-              className={`btn-outline ${
-                isBlocked ? "opacity-60 cursor-not-allowed" : ""
-              }`}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              disabled={isBlocked}
+              className="px-6 py-3 btn btn-ghost text-ink-soft"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               type="button"
+              disabled={isBlocked}
             >
               キャンセル
             </motion.button>
@@ -950,30 +833,25 @@ export function TripForm({
           {currentStep < 4 ? (
             <motion.button
               onClick={handleNext}
-              className={`btn-primary ${
-                isBlocked ? "opacity-60 cursor-not-allowed" : ""
-              }`}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              disabled={isBlocked}
+              className="px-8 py-3 btn btn-primary"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               type="button"
+              disabled={isBlocked}
             >
               次へ →
             </motion.button>
           ) : (
             <motion.button
               onClick={handleSubmit}
-              className={`btn-primary flex items-center justify-center gap-3 ${
-                isBlocked ? "opacity-60 cursor-not-allowed" : ""
-              }`}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              disabled={isBlocked}
+              className="px-10 py-3 btn btn-secondary flex items-center gap-2"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               type="button"
+              disabled={isBlocked}
             >
-              <Sparkles className="w-6 h-6" />
+              <Feather className="w-5 h-5" />
               {submitLabel}
-              <Sparkles className="w-6 h-6" />
             </motion.button>
           )}
         </div>
