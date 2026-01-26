@@ -47,23 +47,23 @@ export function Header({
               <>
                 <motion.button
                   onClick={onCreateNew}
-                  className="px-4 py-2 btn btn-primary btn-pill text-sm font-ui flex items-center gap-2"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  className="px-5 py-2.5 btn btn-primary btn-pill text-sm flex items-center gap-2"
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
                   type="button"
                 >
-                  <Plus className="w-4 h-4" />
+                  <Plus className="w-4 h-4" strokeWidth={2.5} />
                   <span className="hidden sm:inline">新しいしおり</span>
                   <span className="sm:hidden">新規</span>
                 </motion.button>
                 <motion.button
                   onClick={onViewList}
-                  className="px-4 py-2 btn btn-ghost text-ink text-sm font-ui flex items-center gap-2"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  className="px-5 py-2.5 btn btn-ghost text-ink text-sm flex items-center gap-2"
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
                   type="button"
                 >
-                  <BookOpen className="w-4 h-4" />
+                  <BookOpen className="w-4 h-4" strokeWidth={2} />
                   <span className="hidden sm:inline">しおり一覧</span>
                   <span className="sm:hidden">一覧</span>
                 </motion.button>

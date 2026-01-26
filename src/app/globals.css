@@ -185,8 +185,9 @@ body::before {
 
 .hero-badge {
   background: linear-gradient(135deg, var(--accent-coral), var(--accent-sun));
-  box-shadow: 0 12px 28px rgba(35, 31, 27, 0.25);
-  border: 2px solid rgba(255, 255, 255, 0.4);
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3),
+              0 6px 18px rgba(242, 107, 79, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.35);
 }
 
 .hero-badge-ring {
@@ -390,30 +391,32 @@ body::before {
 }
 
 .action-chip {
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
   border: 1px solid var(--paper-300);
   background: var(--paper-100);
   color: var(--ink-700);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.4);
+  transition: background-color 0.25s ease, box-shadow 0.25s ease, color 0.2s ease, transform 0.2s ease;
 }
 
 .action-chip:hover {
   background: var(--paper-50);
-  box-shadow: 0 8px 16px rgba(35, 31, 27, 0.12);
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.4),
+              0 4px 12px rgba(35, 31, 27, 0.1);
 }
 
 .action-chip.danger {
   color: var(--accent-berry);
-  border-color: rgba(211, 91, 106, 0.35);
+  border-color: rgba(211, 91, 106, 0.3);
 }
 
 .action-chip.danger:hover {
-  background: rgba(211, 91, 106, 0.12);
+  background: rgba(211, 91, 106, 0.08);
 }
 
 .label-float {
@@ -484,16 +487,20 @@ body::before {
 }
 
 .btn {
-  border-radius: var(--btn-radius, 14px);
-  border: 2px solid rgba(35, 31, 27, 0.15);
-  box-shadow: 0 6px 18px rgba(35, 31, 27, 0.12);
-  font-family: var(--font-ui), "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+  border-radius: var(--btn-radius, 20px);
+  border: 1px solid rgba(35, 31, 27, 0.12);
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.3),
+              0 4px 12px rgba(35, 31, 27, 0.08);
+  font-family: var(--font-hand), "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.03em;
   cursor: pointer;
-  transition: box-shadow 0.2s ease, filter 0.2s ease;
+  transition: box-shadow 0.25s ease, transform 0.2s ease, filter 0.2s ease;
 }
 
 .btn:hover {
-  box-shadow: 0 10px 24px rgba(35, 31, 27, 0.16);
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.3),
+              0 8px 20px rgba(35, 31, 27, 0.12);
   filter: saturate(1.04);
 }
 
@@ -502,28 +509,36 @@ body::before {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--accent-coral), var(--accent-sun));
+  background: linear-gradient(135deg, var(--accent-coral) 0%, var(--accent-sun) 100%);
   color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.25),
+              0 4px 14px rgba(242, 107, 79, 0.3);
+  text-shadow: 0 1px 2px rgba(35, 31, 27, 0.15);
 }
 
 .btn-secondary {
-  background: linear-gradient(135deg, var(--accent-sky), #6cc1d7);
-  color: #fff;
+  background: linear-gradient(135deg, var(--accent-sun) 0%, #f5d06a 100%);
+  color: var(--ink-900);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.25),
+              0 4px 14px rgba(244, 196, 77, 0.35);
+  text-shadow: none;
 }
 
 .btn-soft {
   background: var(--paper-100);
   color: var(--ink-900);
-  border-color: var(--paper-300);
-  box-shadow: none;
+  border: 1px solid var(--paper-300);
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.5),
+              0 3px 10px rgba(35, 31, 27, 0.06);
 }
 
 .btn-ghost {
   background: var(--paper-50);
   color: var(--ink-900);
-  border-style: dashed;
-  border-color: var(--paper-300);
-  box-shadow: none;
+  border: 1px solid var(--paper-300);
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.3);
 }
 
 .btn-danger {
@@ -570,8 +585,10 @@ body::before {
 .tag-pill {
   background: var(--paper-100);
   color: var(--ink-900);
-  border: 1px dashed var(--paper-300);
+  border: 1px solid var(--paper-300);
   border-radius: 999px;
+  font-family: var(--font-hand), "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.3);
 }
 
 .tag-count {
@@ -609,25 +626,30 @@ body::before {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-ui), "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
-  font-weight: 600;
-  font-size: 0.95rem;
-  border: 2px solid var(--paper-300);
+  font-family: var(--font-hand), "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+  font-weight: 500;
+  font-size: 1rem;
+  border: 1px solid var(--paper-300);
   color: var(--ink-700);
   background: var(--paper-50);
-  transition: transform 0.2s ease;
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.4);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .step-dot.is-active {
   background: linear-gradient(135deg, var(--accent-coral), var(--accent-sun));
   color: #fff;
-  border-color: rgba(35, 31, 27, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.25),
+              0 5px 14px rgba(242, 107, 79, 0.3);
 }
 
 .step-dot.is-done {
-  background: var(--accent-leaf);
+  background: linear-gradient(135deg, var(--accent-coral), var(--accent-sun));
   color: #fff;
-  border-color: rgba(35, 31, 27, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.25),
+              0 5px 14px rgba(242, 107, 79, 0.3);
 }
 
 .step-line {
@@ -637,13 +659,16 @@ body::before {
 }
 
 .step-line.is-done {
-  background: var(--accent-leaf);
+  background: linear-gradient(90deg, var(--accent-coral), var(--accent-sun));
 }
 
 .list-item {
   background: rgba(255, 255, 255, 0.85);
   border: 1px solid var(--paper-200);
   border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .note-card {
@@ -653,8 +678,8 @@ body::before {
 }
 
 .accent-strip {
-  border-left: 4px solid var(--accent-sky);
-  background: var(--paper-50);
+  border-left: 4px solid var(--accent-coral);
+  background: rgba(242, 107, 79, 0.04);
 }
 
 .dashed-panel {
@@ -699,17 +724,20 @@ body::before {
 }
 
 .choice-pill {
-  border: 2px solid var(--paper-300);
+  border: 1px solid var(--paper-300);
   border-radius: 999px;
   background: var(--paper-50);
-  font-family: var(--font-ui), "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+  font-family: var(--font-hand), "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
   cursor: pointer;
-  transition: border-color 0.2s ease, background 0.2s ease;
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.3);
+  transition: border-color 0.25s ease, background 0.25s ease, box-shadow 0.2s ease;
 }
 
 .choice-pill.is-selected {
   border-color: var(--accent-coral);
   background: rgba(242, 107, 79, 0.12);
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.3),
+              0 3px 10px rgba(242, 107, 79, 0.15);
 }
 
 .accent-panel {

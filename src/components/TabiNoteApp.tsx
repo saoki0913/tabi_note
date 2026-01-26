@@ -11,7 +11,6 @@ import {
   Loader2,
   Map,
   MapPin,
-  Plane,
   Share2,
   Trash2,
 } from "lucide-react";
@@ -527,21 +526,22 @@ export function TabiNoteApp() {
                 <p className="font-body text-base text-ink-soft mt-3 max-w-md">
                   旅のしおりを5分で作れる。AIが旅行の内容に合わせたしおりを簡単に自動生成します。
                 </p>
-                <div className="mt-5 flex flex-wrap gap-2">
+                <div className="mt-5 flex flex-wrap gap-3">
                   <motion.button
                     onClick={handleCreateNew}
-                    className="px-6 py-3 btn btn-primary btn-pill text-sm"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    className="px-7 py-3 btn btn-primary btn-pill text-base flex items-center gap-2"
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
                     type="button"
                   >
+                    <Feather className="w-4 h-4" strokeWidth={2.5} />
                     新しいしおりを作成
                   </motion.button>
                   <motion.button
                     onClick={handleScrollToList}
-                    className="px-5 py-3 btn btn-ghost text-ink text-sm"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    className="px-6 py-3 btn btn-ghost text-ink text-base"
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
                     type="button"
                   >
                     作成したしおりを見る
@@ -555,24 +555,19 @@ export function TabiNoteApp() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5, duration: 0.6 }}
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-ui text-[10px] tracking-widest text-ink-soft uppercase">
-                      Flow
-                    </span>
-                    <Plane className="w-4 h-4 text-accent-coral" />
-                  </div>
+                  <span className="stamp-mark stamp-mini">FLOW</span>
 
-                  <h3 className="font-display text-xl md:text-2xl font-bold text-ink mb-4">
+                  <h3 className="font-display text-xl md:text-2xl font-bold text-ink mb-4 mt-2">
                     3ステップで完成
                   </h3>
 
                   <div className="space-y-3">
                     <div className="flex items-start gap-3">
-                      <div className="w-7 h-7 rounded-full border-[1.5px] border-accent-coral text-accent-coral flex items-center justify-center flex-shrink-0 font-ui text-xs font-semibold">
+                      <div className="w-8 h-8 rounded-full border border-accent-coral text-accent-coral flex items-center justify-center flex-shrink-0 font-hand text-sm shadow-[inset_0_1px_2px_rgba(255,255,255,0.3)]">
                         1
                       </div>
                       <div>
-                        <p className="font-display text-base font-semibold text-ink">
+                        <p className="font-hand text-base text-ink">
                           入力
                         </p>
                         <p className="text-xs text-ink-soft">
@@ -582,11 +577,11 @@ export function TabiNoteApp() {
                     </div>
 
                     <div className="flex items-start gap-3">
-                      <div className="w-7 h-7 rounded-full border-[1.5px] border-accent-coral text-accent-coral flex items-center justify-center flex-shrink-0 font-ui text-xs font-semibold">
+                      <div className="w-8 h-8 rounded-full border border-accent-coral text-accent-coral flex items-center justify-center flex-shrink-0 font-hand text-sm shadow-[inset_0_1px_2px_rgba(255,255,255,0.3)]">
                         2
                       </div>
                       <div>
-                        <p className="font-display text-base font-semibold text-ink">
+                        <p className="font-hand text-base text-ink">
                           デザイン
                         </p>
                         <p className="text-xs text-ink-soft">
@@ -596,11 +591,11 @@ export function TabiNoteApp() {
                     </div>
 
                     <div className="flex items-start gap-3">
-                      <div className="w-7 h-7 rounded-full border-[1.5px] border-accent-coral text-accent-coral flex items-center justify-center flex-shrink-0 font-ui text-xs font-semibold">
+                      <div className="w-8 h-8 rounded-full border border-accent-coral text-accent-coral flex items-center justify-center flex-shrink-0 font-hand text-sm shadow-[inset_0_1px_2px_rgba(255,255,255,0.3)]">
                         3
                       </div>
                       <div>
-                        <p className="font-display text-base font-semibold text-ink">
+                        <p className="font-hand text-base text-ink">
                           共有
                         </p>
                         <p className="text-xs text-ink-soft">
@@ -874,7 +869,7 @@ export function TabiNoteApp() {
                               {trip.title}
                             </h3>
                           </div>
-                          <span className="tag-pill text-xs px-3 py-1 font-ui flex-shrink-0">
+                          <span className="handwritten-label tilt-right is-compact">
                             {templateLabels[trip.templateType]}
                           </span>
                         </div>
@@ -918,9 +913,9 @@ export function TabiNoteApp() {
                         <div className="mt-4 flex items-center justify-between gap-3">
                           <motion.button
                             onClick={() => handleViewTrip(trip)}
-                            className="btn btn-primary px-5 py-2 text-sm"
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
+                            className="btn btn-primary btn-pill px-6 py-2.5 text-sm"
+                            whileHover={{ scale: 1.03 }}
+                            whileTap={{ scale: 0.97 }}
                             type="button"
                           >
                             開く
@@ -1041,9 +1036,9 @@ export function TabiNoteApp() {
             <div className="flex flex-wrap items-center justify-between gap-4">
               <motion.button
                 onClick={handleBackToHome}
-                className="px-6 py-3 btn btn-ghost flex items-center gap-2"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                className="px-6 py-3 btn btn-ghost btn-pill flex items-center gap-2"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
                 type="button"
               >
                 <span>←</span>
@@ -1053,32 +1048,32 @@ export function TabiNoteApp() {
               <div className="flex flex-wrap gap-3">
                 <motion.button
                   onClick={() => handleEditTrip(currentTrip)}
-                  className="flex items-center gap-2 px-6 py-3 btn btn-soft"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  className="flex items-center gap-2 px-6 py-3 btn btn-soft btn-pill"
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
                   type="button"
                 >
-                  <Edit className="w-5 h-5" />
+                  <Edit className="w-5 h-5" strokeWidth={2} />
                   編集
                 </motion.button>
                 <motion.button
                   onClick={() => handleShareTrip(currentTrip)}
-                  className="flex items-center gap-2 px-6 py-3 btn btn-secondary"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  className="flex items-center gap-2 px-6 py-3 btn btn-secondary btn-pill"
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
                   type="button"
                 >
-                  <Share2 className="w-5 h-5" />
+                  <Share2 className="w-5 h-5" strokeWidth={2} />
                   共有
                 </motion.button>
                 <motion.button
                   onClick={() => setShowPdfExport(!showPdfExport)}
-                  className="flex items-center gap-2 px-6 py-3 btn btn-primary"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  className="flex items-center gap-2 px-6 py-3 btn btn-primary btn-pill"
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
                   type="button"
                 >
-                  <Download className="w-5 h-5" />
+                  <Download className="w-5 h-5" strokeWidth={2} />
                   PDF書き出し
                 </motion.button>
               </div>

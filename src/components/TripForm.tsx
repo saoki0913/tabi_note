@@ -3,15 +3,27 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import {
+  BookOpen,
   Calendar,
   Check,
+  Circle,
+  Clock,
+  Compass,
   Feather,
+  Heart,
   Home,
+  Image,
+  Leaf,
   MapPin,
+  Minus,
+  NotebookPen,
   Package,
+  Paperclip,
   Plane,
   Plus,
   Sparkles,
+  Square,
+  Star,
   Users,
   X,
 } from "lucide-react";
@@ -47,22 +59,40 @@ const createBlankTrip = (): Trip => ({
 });
 
 const templateChoices = [
-  { type: "minimal", label: "シンプル", desc: "シンプルで見やすい", icon: "---" },
-  { type: "pop", label: "ポップ", desc: "カラフルで楽しい", icon: "***" },
-  { type: "retro", label: "レトロ", desc: "ヴィンテージ感", icon: "◎◎" },
-  { type: "romantic", label: "ロマンチック", desc: "甘くやさしい", icon: "♡♡" },
-  { type: "photo", label: "写真多め", desc: "アルバム風", icon: "[]" },
-  { type: "modern", label: "モダン", desc: "洗練された印象", icon: "▢▢" },
-  { type: "nature", label: "ナチュラル", desc: "自然で穏やか", icon: "◌◌" },
-  { type: "adventure", label: "アドベンチャー", desc: "旅情あふれる", icon: "✶✶" },
+  { type: "minimal", label: "シンプル", desc: "シンプルで見やすい" },
+  { type: "pop", label: "ポップ", desc: "カラフルで楽しい" },
+  { type: "retro", label: "レトロ", desc: "ヴィンテージ感" },
+  { type: "romantic", label: "ロマンチック", desc: "甘くやさしい" },
+  { type: "photo", label: "写真多め", desc: "アルバム風" },
+  { type: "modern", label: "モダン", desc: "洗練された印象" },
+  { type: "nature", label: "ナチュラル", desc: "自然で穏やか" },
+  { type: "adventure", label: "アドベンチャー", desc: "旅情あふれる" },
 ] as const;
 
+const templateIcons: Record<string, React.ReactNode> = {
+  minimal: <Minus className="w-6 h-6" strokeWidth={2.5} />,
+  pop: <Star className="w-6 h-6" strokeWidth={2} />,
+  retro: <Circle className="w-6 h-6" strokeWidth={2} />,
+  romantic: <Heart className="w-6 h-6" strokeWidth={2} />,
+  photo: <Image className="w-6 h-6" strokeWidth={2} />,
+  modern: <Square className="w-6 h-6" strokeWidth={2} />,
+  nature: <Leaf className="w-6 h-6" strokeWidth={2} />,
+  adventure: <Compass className="w-6 h-6" strokeWidth={2} />,
+};
+
 const formatChoices = [
-  { type: "classic", label: "スタンダード", desc: "情報整理を重視", icon: "📘" },
-  { type: "collage", label: "コラージュ", desc: "写真や素材を重ねる", icon: "🧷" },
-  { type: "notebook", label: "ノート", desc: "手帳風の余白", icon: "📓" },
-  { type: "timeline", label: "タイムライン", desc: "時系列を強調", icon: "🕒" },
+  { type: "classic", label: "スタンダード", desc: "情報整理を重視" },
+  { type: "collage", label: "コラージュ", desc: "写真や素材を重ねる" },
+  { type: "notebook", label: "ノート", desc: "手帳風の余白" },
+  { type: "timeline", label: "タイムライン", desc: "時系列を強調" },
 ] as const;
+
+const formatIcons: Record<string, React.ReactNode> = {
+  classic: <BookOpen className="w-6 h-6" strokeWidth={2} />,
+  collage: <Paperclip className="w-6 h-6" strokeWidth={2} />,
+  notebook: <NotebookPen className="w-6 h-6" strokeWidth={2} />,
+  timeline: <Clock className="w-6 h-6" strokeWidth={2} />,
+};
 
 export function TripForm({
   initialTrip,
@@ -695,8 +725,8 @@ export function TripForm({
                       whileTap={{ scale: 0.98 }}
                       type="button"
                     >
-                      <div className="text-2xl mb-2 font-mono text-accent-coral">
-                        {template.icon}
+                      <div className="mb-3 text-accent-coral">
+                        {templateIcons[template.type]}
                       </div>
                       <h3 className="font-ui font-medium text-ink mb-1">
                         {template.label}
@@ -730,7 +760,9 @@ export function TripForm({
                       whileTap={{ scale: 0.98 }}
                       type="button"
                     >
-                      <div className="text-2xl mb-2">{format.icon}</div>
+                      <div className="mb-3 text-accent-coral">
+                        {formatIcons[format.type]}
+                      </div>
                       <h3 className="font-ui font-medium text-ink mb-1">
                         {format.label}
                       </h3>
@@ -844,7 +876,7 @@ export function TripForm({
           ) : (
             <motion.button
               onClick={handleSubmit}
-              className="px-10 py-3 btn btn-secondary flex items-center gap-2"
+              className="px-10 py-3 btn btn-primary flex items-center gap-2"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               type="button"
