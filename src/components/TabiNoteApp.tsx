@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { AnimatePresence, motion } from "motion/react";
 import {
   BookOpen,
@@ -13,6 +14,7 @@ import {
   MapPin,
   Share2,
   Trash2,
+  Pencil,
 } from "lucide-react";
 import type {
   DesignMode,
@@ -28,7 +30,20 @@ import { ShioriShowcase } from "./ShioriShowcase";
 import { TripForm } from "./TripForm";
 import { TripPreview } from "./TripPreview";
 
-type View = "home" | "create" | "preview";
+// Dynamic import for DesignEditor (no longer needs SSR disable since it doesn't use Konva)
+const DesignEditor = dynamic(
+  () => import("./editor/DesignEditor").then((mod) => mod.DesignEditor),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+      </div>
+    ),
+  }
+);
+
+type View = "home" | "create" | "preview" | "editor";
 type ProgressState = { current: number; total: number } | null;
 
 type BlockState = {
@@ -1057,6 +1072,16 @@ export function TabiNoteApp() {
                   編集
                 </motion.button>
                 <motion.button
+                  onClick={() => setView("editor")}
+                  className="flex items-center gap-2 px-6 py-3 btn btn-soft btn-pill"
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  type="button"
+                >
+                  <Pencil className="w-5 h-5" strokeWidth={2} />
+                  デザイン編集
+                </motion.button>
+                <motion.button
                   onClick={() => handleShareTrip(currentTrip)}
                   className="flex items-center gap-2 px-6 py-3 btn btn-secondary btn-pill"
                   whileHover={{ scale: 1.03 }}
@@ -1095,6 +1120,27 @@ export function TabiNoteApp() {
 
           <TripPreview trip={currentTrip} />
         </div>
+        {renderBlockingOverlay()}
+      </motion.div>
+    );
+  }
+
+  if (view === "editor" && currentTrip) {
+    return (
+      <motion.div
+        className="min-h-screen"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+      >
+        <DesignEditor
+          trip={currentTrip}
+          onSave={async (updatedTrip) => {
+            const saved = await safeSaveTrip(updatedTrip);
+            setCurrentTrip(saved);
+            await refreshTrips();
+          }}
+          onBack={() => setView("preview")}
+        />
         {renderBlockingOverlay()}
       </motion.div>
     );

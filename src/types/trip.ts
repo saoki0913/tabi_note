@@ -64,6 +64,10 @@ export interface TripDesignPage {
   base64: string;
   prompt?: string;
   createdAt: string;
+  // Editor state (JSON stringified CanvasElement[])
+  editorElements?: string;
+  // Whether the page has been edited
+  isEdited?: boolean;
 }
 
 export interface TripDesign {

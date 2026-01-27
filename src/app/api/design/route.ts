@@ -5,6 +5,7 @@ import type {
   TemplateType,
   Trip,
 } from "@/types/trip";
+import { selectVariantForMode, getVariantForMode, LayoutVariant } from "@/lib/templates/variants";
 
 const MODEL_ID = process.env.GEMINI_IMAGE_MODEL ?? "gemini-3-pro-image-preview";
 const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_ID}:generateContent`;
@@ -17,87 +18,104 @@ const styleGuides: Record<
     motifs: string;
     typography: string;
     imagery: string;
+    mustInclude: string;
   }
 > = {
   minimal: {
-    mood: "minimal, clean, airy, editorial, structured, warm ink on paper",
+    mood: "minimal, clean, airy, editorial, structured, ultra-refined",
     palette:
-      "ink deep #1a1a2e, paper cream #faf8f5, paper aged #ede4d4, warm gray accents",
-    motifs: "thin rules, gentle grids, generous whitespace, subtle paper grain",
+      "STRICT: Use ONLY ink deep #1a1a2e and paper cream #faf8f5. Maximum 2 colors. No other colors allowed.",
+    motifs: "ultra-thin hairlines (0.5pt), generous whitespace (70%+ of page), subtle paper grain texture only",
     typography:
-      "Display font: Cormorant Garamond (headings). Body font: Zen Kaku Gothic New (Japanese). UI labels: DM Sans.",
+      "Display font: Cormorant Garamond (elegant serif for headings). Body font: Zen Kaku Gothic New (Japanese). Keep text sparse.",
     imagery:
-      "Use one calm hero photo or line art illustration with thin outlines. No text on stickers.",
+      "Use ONE simple line art illustration OR leave empty. No photos, no patterns, no decorative elements. Embrace negative space.",
+    mustInclude:
+      "MUST: 70% whitespace minimum. MUST: Only 2 colors (ink + paper). MUST: Hairline rules only (no thick borders). MUST: No decorative icons or stickers.",
   },
   pop: {
-    mood: "playful, vibrant, warm, friendly, craft-inspired but refined",
+    mood: "playful, vibrant, energetic, craft-scrapbook, kawaii-inspired",
     palette:
-      "terracotta #c4654a, gold #c9a227, paper warm #f5f0e8, coral #e07b5a",
-    motifs: "stickers, rounded badges, washi tape, confetti accents",
+      "Dominant: pastel pink #ffb6c1, mint #98d8c8, peach #ffcba4. Accent: terracotta #c4654a, gold #c9a227. Background: warm cream #fff5e6.",
+    motifs: "round stickers with icons, washi tape strips, confetti dots, star shapes, heart decorations, speech bubbles",
     typography:
-      "Display font: Cormorant Garamond (headings). Body font: Zen Kaku Gothic New. UI labels: DM Sans.",
+      "Display font: rounded bold for headings. Body font: Zen Kaku Gothic New. Use varied sizes for visual rhythm.",
     imagery:
-      "Use colorful collage blocks and sticker icons only (no sticker text). Keep visuals playful but readable.",
+      "Fill page with colorful decorations. Use 5+ different sticker-style icons. Add washi tape at corners. Scatter confetti elements.",
+    mustInclude:
+      "MUST: At least 5 round sticker decorations. MUST: 2+ washi tape strips. MUST: Confetti/dots scattered on background. MUST: Pastel color scheme (pink, mint, peach).",
   },
   photo: {
-    mood: "photo-forward, cinematic, serene travel journal",
+    mood: "cinematic, film photography, nostalgic travel memories, serene",
     palette:
-      "ocean #4a7c8f, sage #7d9471, paper warm #f5f0e8, muted charcoal",
-    motifs: "photo frames, soft shadows, film grain, caption strips",
+      "Film tones: ocean blue #4a7c8f, sage green #7d9471, warm beige #f5f0e8, soft gray #8b8b8b. Apply film grain overlay.",
+    motifs: "polaroid-style frames with white borders, film sprocket holes, light leaks, vintage camera icons",
     typography:
-      "Display font: Cormorant Garamond. Body font: Zen Kaku Gothic New. UI labels: DM Sans.",
+      "Display font: Cormorant Garamond (classic serif). Body font: Zen Kaku Gothic New. Caption style for photo labels.",
     imagery:
-      "Use 2-4 large photo frames with crisp white borders. Avoid busy textures behind text.",
+      "3-4 polaroid/film frames prominently displayed. Add film grain texture overlay to entire page. Include light leak effects in corners.",
+    mustInclude:
+      "MUST: Film grain texture visible across page. MUST: 2+ polaroid-style frames with thick white borders. MUST: Light leak effect (orange/yellow) in at least one corner. MUST: Muted, desaturated color grading.",
   },
   retro: {
-    mood: "retro, nostalgic, warm, vintage travel poster",
+    mood: "1960s-70s vintage, nostalgic travel poster, aged patina, groovy",
     palette:
-      "paper aged #ede4d4, terracotta #c4654a, ink deep #1a1a2e, gold #c9a227",
-    motifs: "halftone texture, stamps, retro badges, soft grain",
+      "Vintage: burnt orange #cc5500, mustard yellow #e8a435, olive green #6b8e23, aged cream #ede4d4. Sepia undertones throughout.",
+    motifs: "halftone dot patterns, vintage postage stamps, retro badges with stars, rounded rectangle frames, dotted borders",
     typography:
-      "Display font: Cormorant Garamond. Body font: Zen Kaku Gothic New. UI labels: DM Sans.",
+      "Display font: bold retro-style headings. Body font: Zen Kaku Gothic New. Numbers in vintage style.",
     imagery:
-      "Use retro iconography and textures. Any stamps should be icon-only (no words).",
+      "Apply halftone texture to backgrounds. Use 2-3 vintage stamp decorations. Add rounded-corner frames. Include retro sunburst patterns.",
+    mustInclude:
+      "MUST: Visible halftone dot pattern on at least one section. MUST: 3+ vintage stamp-style decorations (icon only). MUST: Sepia/aged paper tone. MUST: Rounded rectangle borders on text boxes.",
   },
   romantic: {
-    mood: "romantic, soft, airy, elegant",
+    mood: "soft, dreamy, elegant, feminine, watercolor-inspired",
     palette:
-      "coral #e07b5a, paper cream #faf8f5, blush beige #f5e9e4, gold #c9a227",
-    motifs: "delicate lines, soft gradients, ribbon shapes, small florals",
+      "Soft blush #f5e9e4, rose pink #e8b4b8, champagne gold #d4af37, sage mist #d4e5d7, cream white #fffaf0.",
+    motifs: "watercolor floral borders, delicate ribbons, gold foil accents, soft gradients, rose illustrations",
     typography:
-      "Display font: Cormorant Garamond. Body font: Zen Kaku Gothic New. UI labels: DM Sans.",
+      "Display font: elegant script or Cormorant Garamond italic. Body font: Zen Kaku Gothic New light weight.",
     imagery:
-      "Use soft floral ornaments and gentle photo frames. Keep text zones clean.",
+      "Watercolor floral borders on edges. Soft pink/gold gradient backgrounds. Ribbon decorations. Rose or peony illustrations.",
+    mustInclude:
+      "MUST: Watercolor-style floral border on at least 2 edges. MUST: Ribbon decoration element. MUST: Pink/gold color dominance. MUST: Soft gradient backgrounds (not flat colors).",
   },
   modern: {
-    mood: "modern, sleek, premium, structured, calm",
+    mood: "sleek, geometric, premium, minimalist-bold, high contrast",
     palette:
-      "ink deep #1a1a2e, paper warm #f5f0e8, ink medium #2d2d44, gold #c9a227",
-    motifs: "clean grids, thin rules, geometric shapes, minimal icons",
+      "High contrast: pure black #000000, pure white #ffffff, one accent color (gold #c9a227 OR coral #e07b5a). No gradients.",
+    motifs: "geometric shapes (circles, triangles, rectangles), grid lines, bold rules, abstract patterns",
     typography:
-      "Display font: Cormorant Garamond. Body font: Zen Kaku Gothic New. UI labels: DM Sans.",
+      "Display font: bold sans-serif or geometric serif. Body font: Zen Kaku Gothic New. Strong hierarchy with size contrast.",
     imagery:
-      "Use geometric blocks and subtle gradients with minimal iconography. No extra words.",
+      "Bold geometric blocks. Asymmetric layouts. One strong accent color against black/white. No organic shapes.",
+    mustInclude:
+      "MUST: Black and white as primary colors. MUST: Geometric shapes (circles, triangles). MUST: Grid-based layout. MUST: Only ONE accent color. MUST: No organic/floral elements.",
   },
   nature: {
-    mood: "natural, calm, organic, warm",
+    mood: "organic, botanical, earthy, japanese washi-paper inspired, calm forest",
     palette:
-      "sage #7d9471, paper warm #f5f0e8, ink deep #1a1a2e, coral #e07b5a",
-    motifs: "paper texture, leaf motifs, hand-drawn lines, gentle curves",
+      "Earth tones: forest green #2d5016, warm brown #8b6914, cream #f5f0e8, terracotta #c4654a, sage #7d9471.",
+    motifs: "botanical leaf illustrations, washi paper texture, hand-drawn branch lines, small plant icons, natural grain patterns",
     typography:
-      "Display font: Cormorant Garamond. Body font: Zen Kaku Gothic New. UI labels: DM Sans.",
+      "Display font: Cormorant Garamond. Body font: Zen Kaku Gothic New. Organic, slightly irregular placement.",
     imagery:
-      "Use organic textures and nature illustrations with soft photo accents.",
+      "Botanical leaf borders. Washi paper texture background. Hand-drawn style plant illustrations. Natural, imperfect edges.",
+    mustInclude:
+      "MUST: Visible paper/washi texture. MUST: Botanical leaf illustrations (at least 3 different plants). MUST: Earth tone palette (greens, browns). MUST: Hand-drawn style elements.",
   },
   adventure: {
-    mood: "adventurous, exploratory, bold travel poster",
+    mood: "explorer, vintage map, expedition journal, bold discovery",
     palette:
-      "ocean #4a7c8f, terracotta #c4654a, paper aged #ede4d4, ink deep #1a1a2e",
-    motifs: "map textures, stamps, compass icons, trail lines",
+      "Explorer: aged parchment #d4c5a9, navy blue #1a3a5c, terracotta #c4654a, forest green #2d4a2d, gold #c9a227.",
+    motifs: "old map textures, compass rose, dotted travel routes, vintage postage stamps, expedition badges, coordinate markers",
     typography:
-      "Display font: Cormorant Garamond. Body font: Zen Kaku Gothic New. UI labels: DM Sans.",
+      "Display font: bold expedition-style. Body font: Zen Kaku Gothic New. Numbers styled like coordinates.",
     imagery:
-      "Use map textures and compass icons. Stamps must be icon-only (no words).",
+      "Aged map texture as background. Large compass rose decoration. Dotted line route paths. Vintage expedition stamps.",
+    mustInclude:
+      "MUST: Map/parchment texture background. MUST: Compass rose illustration. MUST: Dotted travel route line. MUST: 2+ vintage expedition stamps (icon only). MUST: Aged/weathered paper effect.",
   },
 };
 
@@ -228,6 +246,7 @@ const buildBackgroundPrompt = (trip: Trip, mode: DesignMode) => {
     `Style direction: ${guide.mood}. Palette: ${guide.palette}. Motifs: ${guide.motifs}.`,
     guide.typography,
     guide.imagery,
+    `REQUIRED VISUAL ELEMENTS: ${guide.mustInclude}`,
     `Format direction (${formatGuide.name}): ${formatGuide.layout}`,
     "This page is part of a multi-page booklet; keep a consistent design system across pages.",
     "Use collage elements, paper textures, and icon-only stickers. Avoid any sticker text.",
@@ -246,6 +265,7 @@ const buildFullPrompt = (
     pageNumber?: number;
     totalPages?: number;
     day?: number;
+    variant?: LayoutVariant | null;
   },
 ) => {
   const guide = styleGuides[trip.templateType];
@@ -417,11 +437,14 @@ const buildFullPrompt = (
     `Style direction: ${guide.mood}. Palette: ${guide.palette}. Motifs: ${guide.motifs}.`,
     guide.typography,
     guide.imagery,
+    `REQUIRED VISUAL ELEMENTS (must appear in final design): ${guide.mustInclude}`,
     `Format direction (${formatGuide.name}): ${formatGuide.layout}`,
     "This page is part of a multi-page booklet; keep a consistent design system across pages.",
     "Use warm paper textures, subtle grain, and soft shadows for depth. Avoid harsh neon colors.",
     "Layout guidance:",
     modeGuide.layout,
+    // Add variant-specific layout hint if available
+    ...(options.variant ? [`Layout variant (${options.variant.name}):\n${options.variant.promptHint}`] : []),
     ...modeHints,
     "TEXT_LINES_JSON (render only the strings, in order; do not render brackets/quotes/commas):",
     textBlock,
@@ -445,6 +468,8 @@ export async function POST(request: Request) {
     pageNumber?: number;
     totalPages?: number;
     day?: number;
+    variantId?: string;
+    randomVariant?: boolean;
   };
 
   if (!body.trip) {
@@ -457,6 +482,23 @@ export async function POST(request: Request) {
   const mode: DesignMode =
     normalizedMode in modeGuides ? (normalizedMode as DesignMode) : "cover";
   const renderMode = body.renderMode === "background" ? "background" : "full";
+
+  // Get layout variant for cover/schedule pages
+  let variant: LayoutVariant | null = null;
+  if (renderMode === "full" && (mode === "cover" || mode === "schedule")) {
+    if (body.variantId) {
+      // Use specific variant if provided
+      variant = getVariantForMode(mode, body.variantId) ?? null;
+    } else if (body.randomVariant !== false) {
+      // Use random weighted selection (default behavior)
+      // Use trip ID as seed for consistency
+      const seed = body.trip.id
+        ? body.trip.id.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0)
+        : undefined;
+      variant = selectVariantForMode(mode, seed);
+    }
+  }
+
   const prompt =
     renderMode === "background"
       ? buildBackgroundPrompt(body.trip, mode)
@@ -464,8 +506,11 @@ export async function POST(request: Request) {
           pageNumber: body.pageNumber,
           totalPages: body.totalPages,
           day: body.day,
+          variant,
         });
-  const temperature = renderMode === "full" ? 0.1 : 0.6;
+  // Temperature: 0.35 for full mode (balance text accuracy with visual creativity)
+  // 0.7 for background mode (more creative freedom)
+  const temperature = renderMode === "full" ? 0.35 : 0.7;
 
   const response = await fetch(`${GEMINI_ENDPOINT}?key=${apiKey}`, {
     method: "POST",
@@ -538,5 +583,7 @@ export async function POST(request: Request) {
     mimeType,
     prompt,
     mode,
+    variantId: variant?.id,
+    variantName: variant?.name,
   });
 }
