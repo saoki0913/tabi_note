@@ -16,6 +16,20 @@ export const scheduleVariants: LayoutVariant[] = [
 - Summary/highlight block below header
 - Optional small photo frames on far right`,
     weight: 3,
+    zoneOverrides: {
+      "day-header": {
+        position: { x: 40, y: 20, anchor: "topLeft" },
+        defaultStyle: { alignment: "left" },
+      },
+      "activities-list": {
+        position: { x: 60, y: 120, anchor: "topLeft" },
+        size: { width: 480, height: 600 },
+      },
+    },
+    safeZones: [
+      { x: 0.05, y: 0.02, width: 0.90, height: 0.10, label: "header" },
+      { x: 0.08, y: 0.13, width: 0.85, height: 0.75, label: "activities" },
+    ],
   },
   {
     id: "timeline-center",
@@ -29,6 +43,12 @@ export const scheduleVariants: LayoutVariant[] = [
 - Day header centered at top
 - Symmetrical, balanced composition`,
     weight: 2,
+    zoneOverrides: {},
+    safeZones: [
+      { x: 0.10, y: 0.02, width: 0.80, height: 0.10, label: "header" },
+      { x: 0.05, y: 0.13, width: 0.40, height: 0.75, label: "left-activities" },
+      { x: 0.55, y: 0.13, width: 0.40, height: 0.75, label: "right-activities" },
+    ],
   },
   {
     id: "list-cards",
@@ -42,6 +62,11 @@ export const scheduleVariants: LayoutVariant[] = [
 - Numbered badges on cards
 - Clean, modern look with rounded corners`,
     weight: 2,
+    zoneOverrides: {},
+    safeZones: [
+      { x: 0.08, y: 0.02, width: 0.84, height: 0.10, label: "header" },
+      { x: 0.06, y: 0.13, width: 0.88, height: 0.75, label: "activities" },
+    ],
   },
   {
     id: "journal",
@@ -56,6 +81,20 @@ export const scheduleVariants: LayoutVariant[] = [
 - Sticky note accent for highlights
 - Warm, crafted feel`,
     weight: 2,
+    zoneOverrides: {
+      "day-header": {
+        position: { x: 50, y: 30, anchor: "topLeft" },
+        defaultStyle: { alignment: "left" },
+      },
+      "activities-list": {
+        position: { x: 50, y: 110, anchor: "topLeft" },
+        size: { width: 400, height: 600 },
+      },
+    },
+    safeZones: [
+      { x: 0.06, y: 0.02, width: 0.70, height: 0.10, label: "header" },
+      { x: 0.06, y: 0.12, width: 0.70, height: 0.78, label: "activities" },
+    ],
   },
   {
     id: "grid",
@@ -69,6 +108,11 @@ export const scheduleVariants: LayoutVariant[] = [
 - Photo frames integrated into grid
 - Clean lines, structured appearance`,
     weight: 1,
+    zoneOverrides: {},
+    safeZones: [
+      { x: 0.05, y: 0.02, width: 0.90, height: 0.10, label: "header" },
+      { x: 0.05, y: 0.13, width: 0.90, height: 0.75, label: "grid-area" },
+    ],
   },
 ];
 

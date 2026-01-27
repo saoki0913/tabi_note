@@ -51,7 +51,51 @@ export type DesignMode =
   | "memo";
 
 export type FormatType = "classic" | "collage" | "notebook" | "timeline";
-export type DesignRenderMode = "background" | "full";
+export type DesignRenderMode = "background" | "full" | "layered";
+export type PageRenderType = "legacy" | "layered";
+
+// Zone types for text layer classification
+export type ZoneType =
+  | "title"
+  | "subtitle"
+  | "body"
+  | "date"
+  | "members"
+  | "list-item"
+  | "caption"
+  | "label"
+  | "header"
+  | "footer";
+
+// Text layer style definition
+export interface TextLayerStyle {
+  fontSize: number;
+  fontFamily: string;
+  fontWeight: number;
+  color: string;
+  alignment: "left" | "center" | "right";
+  lineHeight: number;
+  backgroundColor?: string;
+  padding?: number;
+  borderRadius?: number;
+  letterSpacing?: number;
+}
+
+// Text layer for layered page rendering
+export interface TextLayer {
+  id: string;
+  zoneType: ZoneType;
+  content: string;
+  // Normalized coordinates (0-1 relative to page size)
+  position: { x: number; y: number };
+  size: { width: number; height: number };
+  style: TextLayerStyle;
+  rotation?: number;
+  opacity?: number;
+  locked?: boolean;
+  // Flag to indicate user-added layers (not from template)
+  isUserAdded?: boolean;
+}
 
 export interface TripDesignPage {
   id: string;
@@ -61,10 +105,19 @@ export interface TripDesignPage {
   pageNumber: number;
   totalPages: number;
   mimeType: string;
+  // For legacy: complete image with text
+  // For layered: background image only (no text)
   base64: string;
   prompt?: string;
   createdAt: string;
-  // Editor state (JSON stringified CanvasElement[])
+
+  // === New fields for layered rendering ===
+  // Page render type: "legacy" (OCR-based) or "layered" (HTML text overlay)
+  renderType?: PageRenderType;
+  // Text layers for layered pages (only when renderType="layered")
+  textLayers?: TextLayer[];
+
+  // Editor state (JSON stringified CanvasElement[]) - legacy support
   editorElements?: string;
   // Whether the page has been edited
   isEdited?: boolean;

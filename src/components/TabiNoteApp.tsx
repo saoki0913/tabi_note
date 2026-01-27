@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import type {
   DesignMode,
+  DesignRenderMode,
   Trip,
   TripDesignImage,
   TripDesignPage,
@@ -112,9 +113,9 @@ export function TabiNoteApp() {
       pageNumber?: number;
       totalPages?: number;
       day?: number;
-      renderMode?: "background" | "full";
+      renderMode?: "background" | "full" | "layered";
     },
-  ): Promise<TripDesignImage> => {
+  ): Promise<TripDesignImage & { renderType?: "legacy" | "layered"; textLayers?: TripDesignPage["textLayers"] }> => {
     const tripPayload: Trip = {
       ...trip,
       design: undefined,
@@ -127,7 +128,7 @@ export function TabiNoteApp() {
       body: JSON.stringify({
         trip: tripPayload,
         mode,
-        renderMode: options?.renderMode ?? "full",
+        renderMode: options?.renderMode ?? "layered",
         pageNumber: options?.pageNumber,
         totalPages: options?.totalPages,
         day: options?.day,
@@ -144,6 +145,8 @@ export function TabiNoteApp() {
       mimeType: string;
       prompt?: string;
       mode: DesignMode;
+      renderType?: "legacy" | "layered";
+      textLayers?: TripDesignPage["textLayers"];
     };
 
     return {
@@ -151,6 +154,8 @@ export function TabiNoteApp() {
       mimeType: payload.mimeType,
       prompt: payload.prompt,
       createdAt: new Date().toISOString(),
+      renderType: payload.renderType,
+      textLayers: payload.textLayers,
     };
   };
 
@@ -166,7 +171,7 @@ export function TabiNoteApp() {
   const generateDesignPages = async (
     trip: Trip,
     onProgress?: (current: number, total: number) => void,
-    renderMode: "background" | "full" = "full",
+    renderMode: "background" | "full" | "layered" = "layered",
   ) => {
     const pageRequests: Array<{
       mode: DesignMode;
@@ -225,6 +230,9 @@ export function TabiNoteApp() {
         base64: asset.base64,
         prompt: asset.prompt,
         createdAt: asset.createdAt,
+        // layeredモードの場合はrenderTypeとtextLayersを保存
+        renderType: asset.renderType,
+        textLayers: asset.textLayers,
       });
     }
 
@@ -233,7 +241,7 @@ export function TabiNoteApp() {
 
   const needsDesignPages = (trip: Trip) => {
     if (!trip.design) return true;
-    if (trip.design.renderMode !== "full") return true;
+    if (trip.design.renderMode !== "layered") return true;
     if (!trip.design.pages || trip.design.pages.length === 0) return true;
     return false;
   };
@@ -248,7 +256,7 @@ export function TabiNoteApp() {
     });
 
     try {
-      const renderMode: "background" | "full" = "full";
+      const renderMode: "background" | "full" | "layered" = "layered";
       const pages = await generateDesignPages(
         trip,
         (current, total) => {
@@ -295,7 +303,8 @@ export function TabiNoteApp() {
     }
   };
 
-  const handleSaveTrip = async (trip: Trip) => {
+  const handleSaveTrip = async (trip: Trip, renderMode?: DesignRenderMode) => {
+    const selectedRenderMode = renderMode ?? "full";
     setBlockState({
       active: true,
       title: "しおりを作成中",
@@ -313,7 +322,6 @@ export function TabiNoteApp() {
     });
     let finalTrip = savedTrip;
     try {
-      const renderMode: "background" | "full" = "full";
       const pages = await generateDesignPages(
         savedTrip,
         (current, total) => {
@@ -324,14 +332,14 @@ export function TabiNoteApp() {
             progress: { current, total },
           });
         },
-        renderMode,
+        selectedRenderMode,
       );
       const withDesign: Trip = {
         ...savedTrip,
         design: {
           style: savedTrip.templateType,
           format: savedTrip.formatType,
-          renderMode,
+          renderMode: selectedRenderMode,
           pages,
           updatedAt: new Date().toISOString(),
         },
@@ -1126,6 +1134,48 @@ export function TabiNoteApp() {
   }
 
   if (view === "editor" && currentTrip) {
+    const handleRegenerateDesign = async (renderMode: DesignRenderMode) => {
+      setBlockState({
+        active: true,
+        title: "デザインを再生成中",
+        message: "レイアウト素材を再作成しています。",
+        progress: { current: 0, total: 6 },
+      });
+
+      try {
+        const pages = await generateDesignPages(
+          currentTrip,
+          (current, total) => {
+            setBlockState({
+              active: true,
+              title: "デザインを再生成中",
+              message: `レイアウト素材を再作成しています。(${current}/${total})`,
+              progress: { current, total },
+            });
+          },
+          renderMode,
+        );
+        const nextTrip: Trip = {
+          ...currentTrip,
+          design: {
+            style: currentTrip.templateType,
+            format: currentTrip.formatType,
+            renderMode,
+            pages,
+            updatedAt: new Date().toISOString(),
+          },
+        };
+        const savedTrip = await safeSaveTrip(nextTrip);
+        setCurrentTrip(savedTrip);
+        await refreshTrips();
+      } catch (error) {
+        console.error(error);
+        alert("デザイン再生成に失敗しました。もう一度お試しください。");
+      } finally {
+        setBlockState({ active: false, title: "" });
+      }
+    };
+
     return (
       <motion.div
         className="min-h-screen"
@@ -1140,6 +1190,7 @@ export function TabiNoteApp() {
             await refreshTrips();
           }}
           onBack={() => setView("preview")}
+          onRegenerate={handleRegenerateDesign}
         />
         {renderBlockingOverlay()}
       </motion.div>

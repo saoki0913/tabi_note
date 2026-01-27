@@ -27,12 +27,13 @@ import {
   Users,
   X,
 } from "lucide-react";
-import type { DayPlan, Lodging, Trip, WantItem } from "../types/trip";
+import type { DayPlan, DesignRenderMode, Lodging, Trip, WantItem } from "../types/trip";
 import { generateId } from "../lib/storage";
+import { Wand2, Layers } from "lucide-react";
 
 interface TripFormProps {
   initialTrip?: Trip;
-  onSave: (trip: Trip) => Promise<void> | void;
+  onSave: (trip: Trip, renderMode?: DesignRenderMode) => Promise<void> | void;
   onCancel: () => void;
   isBusy?: boolean;
   busyLabel?: string;
@@ -111,6 +112,7 @@ export function TripForm({
   const [newWantItem, setNewWantItem] = useState("");
   const [editingLodging, setEditingLodging] = useState<Partial<Lodging>>({});
   const [isSaving, setIsSaving] = useState(false);
+  const [renderMode, setRenderMode] = useState<DesignRenderMode>("full");
   const isBlocked = isSaving || Boolean(isBusy);
 
   const handleAddMember = () => {
@@ -231,7 +233,7 @@ export function TripForm({
     }
     setIsSaving(true);
     try {
-      await onSave({ ...trip, updatedAt: new Date().toISOString() });
+      await onSave({ ...trip, updatedAt: new Date().toISOString() }, renderMode);
     } finally {
       setIsSaving(false);
     }
@@ -833,6 +835,59 @@ export function TripForm({
                   AIが表紙コピー、概要文、見どころ要約などを自動生成します。入力内容は変更されません。
                 </p>
               </motion.div>
+
+              <div>
+                <label className="block font-ui font-medium mb-4 text-ink">
+                  デザイン生成方式
+                </label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <motion.button
+                    onClick={() => setRenderMode("full")}
+                    className={`choice-card p-5 text-left ${
+                      renderMode === "full" ? "is-selected" : ""
+                    }`}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    type="button"
+                  >
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent-coral to-accent-sun flex items-center justify-center">
+                        <Wand2 className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="font-ui font-medium text-ink">
+                          一発生成
+                        </h3>
+                        <span className="text-xs text-accent-coral font-ui">推奨</span>
+                      </div>
+                    </div>
+                    <p className="text-sm text-ink-soft">
+                      AIが文字を含む完全なデザインを生成します。最も美しい仕上がりになります。
+                    </p>
+                  </motion.button>
+                  <motion.button
+                    onClick={() => setRenderMode("layered")}
+                    className={`choice-card p-5 text-left ${
+                      renderMode === "layered" ? "is-selected" : ""
+                    }`}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    type="button"
+                  >
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent-sky to-accent-leaf flex items-center justify-center">
+                        <Layers className="w-5 h-5 text-white" />
+                      </div>
+                      <h3 className="font-ui font-medium text-ink">
+                        編集可能モード
+                      </h3>
+                    </div>
+                    <p className="text-sm text-ink-soft">
+                      背景のみAIが生成し、文字は後から自由に編集できます。
+                    </p>
+                  </motion.button>
+                </div>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

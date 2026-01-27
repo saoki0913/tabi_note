@@ -1,5 +1,16 @@
 // Cover page layout variants for shiori generation
 
+import type { LayoutZone } from "@/types/editor";
+
+// Safe zone for text overlay - tells AI where to leave empty space
+export interface SafeZone {
+  x: number;      // 0-1 normalized coordinate
+  y: number;      // 0-1 normalized coordinate
+  width: number;  // 0-1 normalized size
+  height: number; // 0-1 normalized size
+  label?: string; // optional label for the zone (e.g., "title", "details")
+}
+
 export interface LayoutVariant {
   id: string;
   name: string;
@@ -7,6 +18,10 @@ export interface LayoutVariant {
   description: string;
   promptHint: string;
   weight: number; // Selection probability weight
+  // Variant-specific zone position overrides (partial overrides to base PageLayout)
+  zoneOverrides?: Partial<Record<string, Partial<LayoutZone>>>;
+  // Safe zones for background prompt - areas where AI should leave empty for text
+  safeZones?: SafeZone[];
 }
 
 export const coverVariants: LayoutVariant[] = [
@@ -23,6 +38,12 @@ export const coverVariants: LayoutVariant[] = [
 - Pill-shaped chips for dates, destination, members at bottom
 - Subtle corner ornaments`,
     weight: 3,
+    // No overrides - uses base layout positions
+    zoneOverrides: {},
+    safeZones: [
+      { x: 0.08, y: 0.08, width: 0.84, height: 0.18, label: "title-area" },
+      { x: 0.10, y: 0.62, width: 0.80, height: 0.22, label: "details-area" },
+    ],
   },
   {
     id: "left-aligned",
@@ -37,6 +58,32 @@ export const coverVariants: LayoutVariant[] = [
 - Metadata (dates, members) as left-aligned list
 - Minimal decorations, focus on typography`,
     weight: 2,
+    zoneOverrides: {
+      "main-title": {
+        position: { x: 40, y: 100, anchor: "topLeft" },
+        defaultStyle: { alignment: "left" },
+      },
+      "cover-copy": {
+        position: { x: 40, y: 170, anchor: "topLeft" },
+        defaultStyle: { alignment: "left" },
+      },
+      "destination-pill": {
+        position: { x: 40, y: 550, anchor: "topLeft" },
+        defaultStyle: { alignment: "left" },
+      },
+      "date-range": {
+        position: { x: 40, y: 600, anchor: "topLeft" },
+        defaultStyle: { alignment: "left" },
+      },
+      "members-list": {
+        position: { x: 40, y: 650, anchor: "topLeft" },
+        defaultStyle: { alignment: "left" },
+      },
+    },
+    safeZones: [
+      { x: 0.05, y: 0.08, width: 0.50, height: 0.18, label: "title-area" },
+      { x: 0.05, y: 0.62, width: 0.50, height: 0.22, label: "details-area" },
+    ],
   },
   {
     id: "photo-dominant",
@@ -50,6 +97,26 @@ export const coverVariants: LayoutVariant[] = [
 - Small info chips at bottom
 - Elegant, cinematic composition`,
     weight: 2,
+    zoneOverrides: {
+      "main-title": {
+        position: { x: "center", y: 60, anchor: "topCenter" },
+        size: { width: 500, height: 50 },
+        defaultStyle: { fontSize: 36 },
+      },
+      "cover-copy": {
+        position: { x: "center", y: 120, anchor: "topCenter" },
+        size: { width: 350, height: 30 },
+        defaultStyle: { fontSize: 14 },
+      },
+      "hero-image": {
+        position: { x: "center", y: 180, anchor: "topCenter" },
+        size: { width: 520, height: 380 },
+      },
+    },
+    safeZones: [
+      { x: 0.08, y: 0.04, width: 0.84, height: 0.14, label: "title-area" },
+      { x: 0.10, y: 0.70, width: 0.80, height: 0.18, label: "details-area" },
+    ],
   },
   {
     id: "card-stack",
@@ -64,6 +131,18 @@ export const coverVariants: LayoutVariant[] = [
 - Warm paper texture background
 - Washi tape or sticker accents`,
     weight: 2,
+    zoneOverrides: {
+      "main-title": {
+        position: { x: "center", y: 80, anchor: "topCenter" },
+      },
+      "cover-copy": {
+        position: { x: "center", y: 150, anchor: "topCenter" },
+      },
+    },
+    safeZones: [
+      { x: 0.10, y: 0.06, width: 0.80, height: 0.16, label: "title-area" },
+      { x: 0.08, y: 0.65, width: 0.84, height: 0.20, label: "details-area" },
+    ],
   },
   {
     id: "split",
@@ -77,6 +156,38 @@ export const coverVariants: LayoutVariant[] = [
 - Clean dividing line or gradient fade between sections
 - Balanced visual weight`,
     weight: 1,
+    zoneOverrides: {
+      "main-title": {
+        position: { x: 40, y: 100, anchor: "topLeft" },
+        size: { width: 260, height: 80 },
+        defaultStyle: { alignment: "left", fontSize: 36 },
+      },
+      "cover-copy": {
+        position: { x: 40, y: 190, anchor: "topLeft" },
+        size: { width: 250, height: 60 },
+        defaultStyle: { alignment: "left", fontSize: 14 },
+      },
+      "hero-image": {
+        position: { x: 320, y: 80, anchor: "topLeft" },
+        size: { width: 240, height: 350 },
+      },
+      "destination-pill": {
+        position: { x: 40, y: 500, anchor: "topLeft" },
+        defaultStyle: { alignment: "left" },
+      },
+      "date-range": {
+        position: { x: 40, y: 550, anchor: "topLeft" },
+        defaultStyle: { alignment: "left" },
+      },
+      "members-list": {
+        position: { x: 40, y: 600, anchor: "topLeft" },
+        defaultStyle: { alignment: "left" },
+      },
+    },
+    safeZones: [
+      { x: 0.05, y: 0.08, width: 0.45, height: 0.25, label: "title-area" },
+      { x: 0.05, y: 0.55, width: 0.45, height: 0.25, label: "details-area" },
+    ],
   },
 ];
 

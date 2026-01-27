@@ -169,3 +169,35 @@ export function getTemplateColors(base: BaseTemplate): BaseTemplate["colors"] {
 export function generateElementId(): string {
   return `el_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 }
+
+/**
+ * Merge a base LayoutZone with variant-specific overrides
+ * This allows variants to partially override zone positions/sizes without
+ * having to redefine the entire zone.
+ */
+export function mergeZoneWithOverrides(
+  baseZone: LayoutZone,
+  overrides?: Partial<LayoutZone>
+): LayoutZone {
+  if (!overrides) return baseZone;
+
+  return {
+    ...baseZone,
+    ...overrides,
+    // Deep merge position
+    position: {
+      ...baseZone.position,
+      ...(overrides.position || {}),
+    },
+    // Deep merge size
+    size: {
+      ...baseZone.size,
+      ...(overrides.size || {}),
+    },
+    // Deep merge defaultStyle
+    defaultStyle: {
+      ...baseZone.defaultStyle,
+      ...(overrides.defaultStyle || {}),
+    },
+  };
+}

@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
 import type {
   DesignMode,
+  DesignRenderMode,
   FormatType,
   TemplateType,
   Trip,
+  TextLayer,
 } from "@/types/trip";
 import { selectVariantForMode, getVariantForMode, LayoutVariant } from "@/lib/templates/variants";
+import { generateTextLayers } from "@/lib/layers";
 
 const MODEL_ID = process.env.GEMINI_IMAGE_MODEL ?? "gemini-3-pro-image-preview";
 const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_ID}:generateContent`;
@@ -212,7 +215,26 @@ const joinList = (items: string[], separator = "・") =>
     .filter(Boolean)
     .join(separator);
 
-const buildBackgroundPrompt = (trip: Trip, mode: DesignMode) => {
+/**
+ * Generate SAFE_ZONES instruction for the background prompt
+ * This tells the AI where to leave empty space for text overlay
+ */
+const buildSafeZonesInstruction = (variant?: LayoutVariant | null): string => {
+  if (!variant?.safeZones?.length) return "";
+
+  const zones = variant.safeZones.map((z, i) => {
+    const label = z.label ? ` (${z.label})` : "";
+    return `Zone ${i + 1}${label}: x=${Math.round(z.x * 100)}%, y=${Math.round(z.y * 100)}%, w=${Math.round(z.width * 100)}%, h=${Math.round(z.height * 100)}%`;
+  }).join("; ");
+
+  return `SAFE_ZONES - Leave these areas EMPTY with calm, solid backgrounds for text overlay: ${zones}. No illustrations, patterns, or busy elements in these zones. Use light, uniform colors or subtle gradients only.`;
+};
+
+const buildBackgroundPrompt = (
+  trip: Trip,
+  mode: DesignMode,
+  variant?: LayoutVariant | null,
+) => {
   const guide = styleGuides[trip.templateType];
   const formatGuide = formatGuides[trip.formatType ?? "classic"];
   const modeGuide = modeGuides[mode];
@@ -240,22 +262,31 @@ const buildBackgroundPrompt = (trip: Trip, mode: DesignMode) => {
     .filter(Boolean)
     .join(" ");
 
+  // Use variant's promptHint if available, otherwise use default modeGuide.layout
+  const layoutHint = variant?.promptHint || modeGuide.layout;
+
+  // Build SAFE_ZONES instruction from variant
+  const safeZonesInstruction = buildSafeZonesInstruction(variant);
+
   return [
-    `You are a visual designer creating a printable ${modeGuide.purpose}.`,
+    `You are a visual designer creating a BACKGROUND-ONLY image for a printable ${modeGuide.purpose}.`,
     "Create a single full-bleed A4 portrait image with a clean, print-ready look.",
     `Style direction: ${guide.mood}. Palette: ${guide.palette}. Motifs: ${guide.motifs}.`,
-    guide.typography,
+    // Removed guide.typography - we don't want AI to add any text
     guide.imagery,
     `REQUIRED VISUAL ELEMENTS: ${guide.mustInclude}`,
     `Format direction (${formatGuide.name}): ${formatGuide.layout}`,
     "This page is part of a multi-page booklet; keep a consistent design system across pages.",
     "Use collage elements, paper textures, and icon-only stickers. Avoid any sticker text.",
-    modeGuide.layout,
-    "Do NOT include any words, letters, numbers, logos, UI labels, or readable signage anywhere in the image.",
+    layoutHint,
+    // Add SAFE_ZONES instruction
+    safeZonesInstruction,
+    // Stronger text prohibition
+    "CRITICAL: This is a BACKGROUND ONLY image. Do NOT include any words, letters, numbers, logos, UI labels, titles, dates, names, or readable text of any kind anywhere in the image.",
     "Avoid letter-like shapes in stamps, tickets, maps, badges, and signage.",
-    "Keep text-safe zones calm and readable with light textures.",
+    "Text will be overlaid separately - leave designated safe zones empty with calm, uniform backgrounds.",
     sharedDetails,
-  ].join(" ");
+  ].filter(Boolean).join(" ");
 };
 
 const buildFullPrompt = (
@@ -464,7 +495,7 @@ export async function POST(request: Request) {
   const body = (await request.json()) as {
     trip?: Trip;
     mode?: DesignMode | "page" | string;
-    renderMode?: "background" | "full" | string;
+    renderMode?: DesignRenderMode | string;
     pageNumber?: number;
     totalPages?: number;
     day?: number;
@@ -481,36 +512,56 @@ export async function POST(request: Request) {
     rawMode === "page" ? "overview" : String(rawMode || "cover");
   const mode: DesignMode =
     normalizedMode in modeGuides ? (normalizedMode as DesignMode) : "cover";
-  const renderMode = body.renderMode === "background" ? "background" : "full";
 
-  // Get layout variant for cover/schedule pages
-  let variant: LayoutVariant | null = null;
-  if (renderMode === "full" && (mode === "cover" || mode === "schedule")) {
-    if (body.variantId) {
-      // Use specific variant if provided
-      variant = getVariantForMode(mode, body.variantId) ?? null;
-    } else if (body.randomVariant !== false) {
-      // Use random weighted selection (default behavior)
-      // Use trip ID as seed for consistency
-      const seed = body.trip.id
-        ? body.trip.id.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0)
-        : undefined;
-      variant = selectVariantForMode(mode, seed);
-    }
+  // Determine render mode: "background", "full", or "layered"
+  let renderMode: DesignRenderMode;
+  if (body.renderMode === "background") {
+    renderMode = "background";
+  } else if (body.renderMode === "layered") {
+    renderMode = "layered";
+  } else {
+    renderMode = "full";
   }
 
+  // Get layout variant for all pages (used for both full and layered modes)
+  let variant: LayoutVariant | null = null;
+  if (body.variantId) {
+    // Use specific variant if provided
+    variant = getVariantForMode(mode, body.variantId) ?? null;
+  } else if (body.randomVariant !== false) {
+    // Use random weighted selection (default behavior)
+    // Use trip ID + mode as seed for consistency per page
+    const baseSeed = body.trip.id
+      ? body.trip.id.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0)
+      : 0;
+    const modeSeed = mode.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
+    const seed = baseSeed + modeSeed + (body.day ?? 0);
+    variant = selectVariantForMode(mode, seed);
+  }
+
+  // For layered mode, generate background (no text) + text layers separately
+  // For background mode, generate background only
+  // For full mode, generate complete image with text
   const prompt =
-    renderMode === "background"
-      ? buildBackgroundPrompt(body.trip, mode)
+    renderMode === "layered" || renderMode === "background"
+      ? buildBackgroundPrompt(body.trip, mode, variant)
       : buildFullPrompt(body.trip, mode, {
           pageNumber: body.pageNumber,
           totalPages: body.totalPages,
           day: body.day,
           variant,
         });
+
   // Temperature: 0.35 for full mode (balance text accuracy with visual creativity)
-  // 0.7 for background mode (more creative freedom)
-  const temperature = renderMode === "full" ? 0.35 : 0.7;
+  // 0.3 for background/layered mode (more predictable backgrounds, better safe zone compliance)
+  const temperature = renderMode === "full" ? 0.35 : 0.3;
+
+  // Generate text layers for layered mode (before API call to return early if only layers needed)
+  // Pass the variant to apply zone position overrides
+  let textLayers: TextLayer[] | undefined;
+  if (renderMode === "layered") {
+    textLayers = generateTextLayers(body.trip, mode, body.day, variant);
+  }
 
   const response = await fetch(`${GEMINI_ENDPOINT}?key=${apiKey}`, {
     method: "POST",
@@ -578,11 +629,28 @@ export async function POST(request: Request) {
     );
   }
 
+  // Build response based on render mode
+  if (renderMode === "layered") {
+    // Layered mode: return background image + text layers
+    return NextResponse.json({
+      base64,
+      mimeType,
+      prompt,
+      mode,
+      renderType: "layered" as const,
+      textLayers,
+      variantId: variant?.id,
+      variantName: variant?.name,
+    });
+  }
+
+  // Background or Full mode: return image only
   return NextResponse.json({
     base64,
     mimeType,
     prompt,
     mode,
+    renderType: renderMode === "background" ? "legacy" : "legacy" as const,
     variantId: variant?.id,
     variantName: variant?.name,
   });
