@@ -80,6 +80,8 @@ function buildPageJsx(
         height: `${height}px`,
         backgroundColor: "#ffffff",
         overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
       },
       children: [
         // Background image
