@@ -8,20 +8,19 @@ export const checklistVariants: LayoutVariant[] = [
     name: "Two Column",
     nameJa: "2列",
     description: "Classic two-column layout for packing and want lists",
-    promptHint: `Layout: Two-column checklist design.
-- Header banner with "持ち物チェック" at top
-- Two equal columns below header
-- Left column: Packing list area with checkbox-style lines
-- Right column: "やりたいこと" list area
-- Subtle column divider (dotted line or decorative element)
-- Checkbox or bullet decorations for list items
-- Warm paper or notebook texture background`,
+    promptHint: `Layout: Two-column checklist page frame.
+- Decorative frame around the page edges ONLY
+- All decorative elements (leaves, stamps, stickers, icons) ONLY on page borders/corners
+- Two large empty rectangular areas for text overlay (left and right columns)
+- Top area empty for header text
+- Warm paper or notebook texture as background fill
+- DO NOT draw any checkboxes, lines, bullets, or dividers - text will be overlaid`,
     weight: 3,
     zoneOverrides: {},
     safeZones: [
-      { x: 0.10, y: 0.02, width: 0.80, height: 0.08, label: "header" },
-      { x: 0.05, y: 0.11, width: 0.43, height: 0.52, label: "packing-list" },
-      { x: 0.52, y: 0.11, width: 0.43, height: 0.52, label: "want-list" },
+      { x: 0.08, y: 0.01, width: 0.84, height: 0.10, label: "header" },
+      { x: 0.03, y: 0.09, width: 0.46, height: 0.55, label: "packing-list" },
+      { x: 0.50, y: 0.09, width: 0.46, height: 0.55, label: "want-list" },
     ],
   },
   {
@@ -29,13 +28,13 @@ export const checklistVariants: LayoutVariant[] = [
     name: "Stacked",
     nameJa: "縦並び",
     description: "Vertically stacked lists with decorative elements",
-    promptHint: `Layout: Vertical stacked checklist.
-- Header "持ち物チェック" at top
-- Packing list in upper section (full width)
-- Decorative divider (washi tape, ribbon, or ornament)
-- "やりたいこと" list in lower section
-- Side decorations (travel icons, stamps, stickers)
-- Notebook or journal page aesthetic`,
+    promptHint: `Layout: Vertical stacked checklist page frame.
+- Decorative border/frame around page edges ONLY
+- All decorative elements (travel icons, stamps, stickers) ONLY on page borders/corners
+- Two large empty rectangular areas stacked vertically for text overlay
+- Top area empty for header text
+- Notebook or journal page texture as background
+- DO NOT draw any checkboxes, lines, bullets, or dividers - text will be overlaid`,
     weight: 2,
     zoneOverrides: {
       "packing-list": {
@@ -48,9 +47,9 @@ export const checklistVariants: LayoutVariant[] = [
       },
     },
     safeZones: [
-      { x: 0.10, y: 0.02, width: 0.80, height: 0.08, label: "header" },
-      { x: 0.05, y: 0.11, width: 0.88, height: 0.35, label: "packing-list" },
-      { x: 0.05, y: 0.48, width: 0.88, height: 0.38, label: "want-list" },
+      { x: 0.08, y: 0.01, width: 0.84, height: 0.10, label: "header" },
+      { x: 0.03, y: 0.09, width: 0.92, height: 0.38, label: "packing-list" },
+      { x: 0.03, y: 0.46, width: 0.92, height: 0.42, label: "want-list" },
     ],
   },
 ];

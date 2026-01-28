@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Feather, Layers, Edit3, Plus } from "lucide-react";
+import { Feather, Layers } from "lucide-react";
 import type { TripDesignPage, TextLayer, TextLayerStyle } from "@/types/trip";
 import { TextLayerRenderer } from "./TextLayerRenderer";
 
@@ -11,6 +11,7 @@ interface LayerEdit {
   content?: string;
   style?: Partial<TextLayerStyle>;
   position?: { x: number; y: number };
+  size?: { width: number; height: number };
 }
 
 // All edits for a page - exported for use in PageRenderer
@@ -27,9 +28,50 @@ interface LayeredPageProps {
   onTextLayerUpdate?: (layerId: string, newContent: string) => void;
   onTextLayerStyleUpdate?: (layerId: string, style: Partial<TextLayerStyle>) => void;
   onTextLayerPositionUpdate?: (layerId: string, position: { x: number; y: number }) => void;
+  onTextLayerSizeUpdate?: (layerId: string, size: { width: number; height: number }) => void;
   onLayerSelect?: (layerId: string | null) => void;
-  onAddLayer?: (layer: TextLayer) => void;
   selectedLayerId?: string | null;
+}
+
+// Calculate actual image display area within container (accounting for object-contain)
+interface ImageDisplayArea {
+  width: number;
+  height: number;
+  offsetX: number;
+  offsetY: number;
+}
+
+function calculateImageDisplayArea(
+  containerWidth: number,
+  containerHeight: number,
+  imageNaturalWidth: number,
+  imageNaturalHeight: number
+): ImageDisplayArea {
+  if (containerWidth === 0 || containerHeight === 0 || imageNaturalWidth === 0 || imageNaturalHeight === 0) {
+    return { width: containerWidth, height: containerHeight, offsetX: 0, offsetY: 0 };
+  }
+
+  const containerAspect = containerWidth / containerHeight;
+  const imageAspect = imageNaturalWidth / imageNaturalHeight;
+
+  let displayWidth: number;
+  let displayHeight: number;
+
+  if (imageAspect > containerAspect) {
+    // Image is wider relative to container - fit to width
+    displayWidth = containerWidth;
+    displayHeight = containerWidth / imageAspect;
+  } else {
+    // Image is taller relative to container - fit to height
+    displayHeight = containerHeight;
+    displayWidth = containerHeight * imageAspect;
+  }
+
+  // Calculate offset for centering (object-contain centers the image)
+  const offsetX = (containerWidth - displayWidth) / 2;
+  const offsetY = (containerHeight - displayHeight) / 2;
+
+  return { width: displayWidth, height: displayHeight, offsetX, offsetY };
 }
 
 export function LayeredPage(props: LayeredPageProps) {
@@ -40,16 +82,27 @@ export function LayeredPage(props: LayeredPageProps) {
     edits,
     newLayers,
     onTextLayerUpdate,
-    onTextLayerStyleUpdate,
+    // onTextLayerStyleUpdate - style updates are handled via EditPanel
     onTextLayerPositionUpdate,
+    onTextLayerSizeUpdate,
     onLayerSelect,
-    onAddLayer,
     selectedLayerId,
   } = props;
   const containerRef = useRef<HTMLDivElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
+  const [imageNaturalSize, setImageNaturalSize] = useState({ width: 0, height: 0 });
   const [editingLayerId, setEditingLayerId] = useState<string | null>(null);
-  const [showLayerHints, setShowLayerHints] = useState(true);
+
+  // Calculate actual image display area
+  const imageDisplayArea = useMemo(() => {
+    return calculateImageDisplayArea(
+      containerSize.width,
+      containerSize.height,
+      imageNaturalSize.width,
+      imageNaturalSize.height
+    );
+  }, [containerSize, imageNaturalSize]);
 
   // Get text layers from page including new user-added layers
   const allLayers = useMemo(() => {
@@ -58,7 +111,7 @@ export function LayeredPage(props: LayeredPageProps) {
     return [...baseLayers, ...addedLayers];
   }, [page.textLayers, newLayers]);
 
-  // Get current layer state with all edits applied (content, style, position)
+  // Get current layer state with all edits applied (content, style, position, size)
   const getLayerWithEdits = useCallback((layer: TextLayer): TextLayer => {
     const layerEdit = edits?.layerUpdates.get(layer.id);
     if (!layerEdit) {
@@ -69,6 +122,7 @@ export function LayeredPage(props: LayeredPageProps) {
       ...layer,
       content: layerEdit.content !== undefined ? layerEdit.content : layer.content,
       position: layerEdit.position !== undefined ? layerEdit.position : layer.position,
+      size: layerEdit.size !== undefined ? layerEdit.size : layer.size,
       style: layerEdit.style !== undefined
         ? { ...layer.style, ...layerEdit.style }
         : layer.style,
@@ -123,6 +177,11 @@ export function LayeredPage(props: LayeredPageProps) {
     onTextLayerPositionUpdate?.(layerId, position);
   }, [onTextLayerPositionUpdate]);
 
+  // Handle size update (resize)
+  const handleSizeUpdate = useCallback((layerId: string, size: { width: number; height: number }) => {
+    onTextLayerSizeUpdate?.(layerId, size);
+  }, [onTextLayerSizeUpdate]);
+
   // Handle click on background (deselect)
   const handleBackgroundClick = useCallback((e: React.MouseEvent) => {
     // Only deselect if clicking directly on the container, not on a layer
@@ -130,35 +189,6 @@ export function LayeredPage(props: LayeredPageProps) {
       onLayerSelect?.(null);
     }
   }, [onLayerSelect]);
-
-  // Generate unique ID for new layer
-  const generateLayerId = useCallback(() => {
-    return `layer-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-  }, []);
-
-  // Handle add new text layer
-  const handleAddLayer = useCallback(() => {
-    if (!onAddLayer) return;
-
-    const newLayer: TextLayer = {
-      id: generateLayerId(),
-      zoneType: "body",
-      content: "新しいテキスト",
-      position: { x: 0.1, y: 0.5 },
-      size: { width: 0.8, height: 0.1 },
-      style: {
-        fontSize: 14,
-        fontFamily: "Zen Kaku Gothic New",
-        fontWeight: 400,
-        color: "#333333",
-        alignment: "left",
-        lineHeight: 1.6,
-      },
-      isUserAdded: true,
-    };
-
-    onAddLayer(newLayer);
-  }, [onAddLayer, generateLayerId]);
 
   // Count edits
   const editCount = edits?.layerUpdates.size || 0;
@@ -175,46 +205,14 @@ export function LayeredPage(props: LayeredPageProps) {
     >
       {/* Page header tab */}
       <div className="template-tab px-6 py-3">
-        <div className="flex items-center justify-between">
-          <h2 className="font-body font-medium flex items-center gap-2">
-            <Feather className="w-5 h-5" />
-            {page.label}
-            <span className="ml-2 flex items-center gap-1 text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
-              <Layers className="w-3 h-3" />
-              レイヤー
-            </span>
-          </h2>
-
-          <div className="flex items-center gap-2">
-            {/* Layer hints toggle */}
-            {editable && (
-              <button
-                onClick={() => setShowLayerHints(!showLayerHints)}
-                className={`flex items-center gap-1 px-2 py-1 text-xs rounded transition-colors ${
-                  showLayerHints
-                    ? "text-blue-600 bg-blue-50 hover:bg-blue-100"
-                    : "text-ink-soft hover:bg-paper-100"
-                }`}
-                title={showLayerHints ? "編集ヒントを非表示" : "編集ヒントを表示"}
-              >
-                <Edit3 className="w-3.5 h-3.5" />
-                {showLayerHints ? "ヒント ON" : "ヒント OFF"}
-              </button>
-            )}
-
-            {/* Add text button */}
-            {editable && onAddLayer && (
-              <button
-                onClick={handleAddLayer}
-                className="flex items-center gap-1 px-2 py-1 text-xs rounded transition-colors text-green-600 bg-green-50 hover:bg-green-100"
-                title="テキストを追加"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                テキスト追加
-              </button>
-            )}
-          </div>
-        </div>
+        <h2 className="font-body font-medium flex items-center gap-2">
+          <Feather className="w-5 h-5" />
+          {page.label}
+          <span className="ml-2 flex items-center gap-1 text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
+            <Layers className="w-3 h-3" />
+            レイヤー
+          </span>
+        </h2>
       </div>
 
       {/* Page content */}
@@ -225,19 +223,30 @@ export function LayeredPage(props: LayeredPageProps) {
         >
           {/* Background image (no text) */}
           <img
+            ref={imgRef}
             src={imageSrc}
             alt={`${page.label} 背景`}
             className="w-full h-full object-contain"
             draggable={false}
+            onLoad={(e) => {
+              const img = e.currentTarget;
+              setImageNaturalSize({
+                width: img.naturalWidth,
+                height: img.naturalHeight,
+              });
+            }}
           />
 
-          {/* Text layers overlay */}
-          {containerSize.width > 0 && (
+          {/* Text layers overlay - positioned to match actual image display area */}
+          {imageDisplayArea.width > 0 && (
             <div
-              className="absolute inset-0"
+              className="absolute"
               onClick={handleBackgroundClick}
               style={{
-                // Allow pointer events for deselection
+                left: imageDisplayArea.offsetX,
+                top: imageDisplayArea.offsetY,
+                width: imageDisplayArea.width,
+                height: imageDisplayArea.height,
               }}
             >
               <AnimatePresence>
@@ -254,28 +263,20 @@ export function LayeredPage(props: LayeredPageProps) {
                     >
                       <TextLayerRenderer
                         layer={currentLayer}
-                        containerWidth={containerSize.width}
-                        containerHeight={containerSize.height}
+                        containerWidth={imageDisplayArea.width}
+                        containerHeight={imageDisplayArea.height}
                         isEditing={editingLayerId === layer.id}
                         isSelected={isSelected}
                         onStartEdit={() => handleStartEdit(layer.id)}
                         onEndEdit={(newContent) => handleEditComplete(layer.id, newContent)}
                         onClick={() => handleLayerClick(layer.id)}
                         onPositionChange={(position) => handlePositionUpdate(layer.id, position)}
+                        onSizeChange={(size) => handleSizeUpdate(layer.id, size)}
                       />
                     </motion.div>
                   );
                 })}
               </AnimatePresence>
-
-              {/* Edit mode hint overlay */}
-              {editable && showLayerHints && allLayers.length > 0 && !editingLayerId && !selectedLayerId && (
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 pointer-events-none">
-                  <div className="bg-black/60 text-white text-xs px-3 py-1.5 rounded-full backdrop-blur-sm">
-                    クリックで選択・ドラッグで移動・ダブルクリックで編集
-                  </div>
-                </div>
-              )}
             </div>
           )}
         </div>

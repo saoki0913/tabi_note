@@ -15,14 +15,51 @@ import {
 import type { TextLayer, TextLayerStyle, ZoneType } from "@/types/trip";
 import { generateId } from "@/lib/storage";
 
-// Available font families
+// Available font families (10 fonts)
+// value: CSS variable key, cssVar: actual CSS variable for styling
 const FONT_OPTIONS = [
-  { value: "Zen Kaku Gothic New", label: "ゴシック" },
-  { value: "Zen Old Mincho", label: "明朝" },
-  { value: "Noto Serif JP", label: "セリフ" },
-  { value: "M PLUS Rounded 1c", label: "丸ゴシック" },
-  { value: "Kosugi Maru", label: "小杉丸" },
+  { value: "zen-kaku-gothic", label: "ゴシック", cssVar: "var(--font-zen-kaku-gothic)" },
+  { value: "zen-old-mincho", label: "明朝", cssVar: "var(--font-zen-old-mincho)" },
+  { value: "noto-serif", label: "セリフ", cssVar: "var(--font-noto-serif)" },
+  { value: "m-plus-rounded", label: "丸ゴシック", cssVar: "var(--font-display)" },
+  { value: "kosugi-maru", label: "小杉丸", cssVar: "var(--font-kosugi-maru)" },
+  { value: "sawarabi-gothic", label: "さわらび", cssVar: "var(--font-sawarabi-gothic)" },
+  { value: "klee-one", label: "クレー", cssVar: "var(--font-klee-one)" },
+  { value: "shippori-mincho", label: "しっぽり", cssVar: "var(--font-shippori-mincho)" },
+  { value: "dela-gothic", label: "デラゴシック", cssVar: "var(--font-dela-gothic)" },
+  { value: "kaisei-decol", label: "解星デコール", cssVar: "var(--font-kaisei-decol)" },
 ];
+
+// Map font key to CSS variable for styling (also handles legacy font names)
+export const FONT_CSS_MAP: Record<string, string> = {
+  // New CSS variable keys
+  "zen-kaku-gothic": "var(--font-zen-kaku-gothic)",
+  "zen-old-mincho": "var(--font-zen-old-mincho)",
+  "noto-serif": "var(--font-noto-serif)",
+  "m-plus-rounded": "var(--font-display)",
+  "kosugi-maru": "var(--font-kosugi-maru)",
+  "sawarabi-gothic": "var(--font-sawarabi-gothic)",
+  "klee-one": "var(--font-klee-one)",
+  "shippori-mincho": "var(--font-shippori-mincho)",
+  "dela-gothic": "var(--font-dela-gothic)",
+  "kaisei-decol": "var(--font-kaisei-decol)",
+  // Legacy font names (for backward compatibility)
+  "Zen Kaku Gothic New": "var(--font-zen-kaku-gothic)",
+  "Zen Old Mincho": "var(--font-zen-old-mincho)",
+  "Noto Serif JP": "var(--font-noto-serif)",
+  "M PLUS Rounded 1c": "var(--font-display)",
+  "Kosugi Maru": "var(--font-kosugi-maru)",
+  "Sawarabi Gothic": "var(--font-sawarabi-gothic)",
+  "Klee One": "var(--font-klee-one)",
+  "Shippori Mincho": "var(--font-shippori-mincho)",
+  "Dela Gothic One": "var(--font-dela-gothic)",
+  "Kaisei Decol": "var(--font-kaisei-decol)",
+};
+
+// Helper to get CSS font-family value from font key
+export function getFontCss(fontKey: string): string {
+  return FONT_CSS_MAP[fontKey] || "var(--font-zen-kaku-gothic)";
+}
 
 // Preset colors
 const COLOR_PRESETS = [
@@ -77,7 +114,7 @@ export function EditPanel({
   const effectiveStyle: TextLayerStyle = {
     ...(selectedLayer?.style ?? {
       fontSize: 14,
-      fontFamily: "Zen Kaku Gothic New",
+      fontFamily: "zen-kaku-gothic",
       fontWeight: 400,
       color: "#333333",
       alignment: "left",
@@ -232,7 +269,7 @@ export function EditPanel({
                            transition-all resize-none font-body text-ink"
                 placeholder="テキストを入力..."
                 style={{
-                  fontFamily: effectiveStyle.fontFamily,
+                  fontFamily: getFontCss(effectiveStyle.fontFamily),
                   textAlign: effectiveStyle.alignment,
                 }}
               />
@@ -244,20 +281,25 @@ export function EditPanel({
                 フォント
               </label>
               <div className="flex flex-wrap gap-1.5">
-                {FONT_OPTIONS.map((font) => (
-                  <button
-                    key={font.value}
-                    onClick={() => handleFontChange(font.value)}
-                    className={`px-3 py-1.5 text-xs rounded-lg transition-colors ${
-                      effectiveStyle.fontFamily === font.value
-                        ? "bg-blue-500 text-white"
-                        : "bg-paper-100 hover:bg-paper-200 text-ink"
-                    }`}
-                    style={{ fontFamily: font.value }}
-                  >
-                    {font.label}
-                  </button>
-                ))}
+                {FONT_OPTIONS.map((font) => {
+                  // Check if this font is selected (handles both new and legacy format)
+                  const isSelected = effectiveStyle.fontFamily === font.value ||
+                    getFontCss(effectiveStyle.fontFamily) === font.cssVar;
+                  return (
+                    <button
+                      key={font.value}
+                      onClick={() => handleFontChange(font.value)}
+                      className={`px-3 py-1.5 text-xs rounded-lg transition-colors ${
+                        isSelected
+                          ? "bg-blue-500 text-white"
+                          : "bg-paper-100 hover:bg-paper-200 text-ink"
+                      }`}
+                      style={{ fontFamily: font.cssVar }}
+                    >
+                      {font.label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -279,6 +321,27 @@ export function EditPanel({
               <div className="flex justify-between text-[10px] text-ink-soft mt-1">
                 <span>8px</span>
                 <span>72px</span>
+              </div>
+            </div>
+
+            {/* Line Height */}
+            <div>
+              <label className="text-xs text-ink-soft mb-2 flex items-center justify-between font-ui">
+                <span>行間</span>
+                <span className="font-mono text-ink">{effectiveStyle.lineHeight?.toFixed(1) ?? "1.5"}</span>
+              </label>
+              <input
+                type="range"
+                min="1"
+                max="3"
+                step="0.1"
+                value={effectiveStyle.lineHeight ?? 1.5}
+                onChange={(e) => onStyleChange({ lineHeight: Number(e.target.value) })}
+                className="w-full h-2 bg-paper-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
+              />
+              <div className="flex justify-between text-[10px] text-ink-soft mt-1">
+                <span>1.0</span>
+                <span>3.0</span>
               </div>
             </div>
 

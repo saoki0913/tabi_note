@@ -8,18 +8,18 @@ export const memoVariants: LayoutVariant[] = [
     name: "Lined",
     nameJa: "罫線",
     description: "Classic lined notebook page style",
-    promptHint: `Layout: Lined notebook memo page.
-- Header "メモ" at top with decorative underline
-- Large memo area with subtle horizontal lines
-- Margin area on left for decorations
-- Corner decorations (tape, clips, stamps)
+    promptHint: `Layout: Lined notebook memo page frame.
+- Large empty area at top for header text overlay
+- Large empty memo area (can have very subtle horizontal lines as texture ONLY)
+- Corner decorations (tape, clips, stamps) on page edges/corners ONLY
 - Notebook paper texture background
-- Clean, minimalist writing space`,
+- All decorative elements on page borders and margins ONLY
+- DO NOT draw any text - text will be overlaid`,
     weight: 3,
     zoneOverrides: {},
     safeZones: [
-      { x: 0.10, y: 0.02, width: 0.80, height: 0.08, label: "header" },
-      { x: 0.05, y: 0.11, width: 0.90, height: 0.82, label: "memo-area" },
+      { x: 0.08, y: 0.01, width: 0.84, height: 0.10, label: "header" },
+      { x: 0.03, y: 0.09, width: 0.94, height: 0.86, label: "memo-area" },
     ],
   },
   {
@@ -27,13 +27,13 @@ export const memoVariants: LayoutVariant[] = [
     name: "Decorated",
     nameJa: "装飾付き",
     description: "Memo page with travel-themed decorations",
-    promptHint: `Layout: Decorated memo page.
-- Header "メモ" with travel icon
-- Memo area surrounded by decorative border
-- Travel-themed illustrations in corners (compass, plane, map)
-- Subtle grid or dot pattern in writing area
-- Scrapbook sticker aesthetic
-- Space for creativity while maintaining functionality`,
+    promptHint: `Layout: Decorated memo page frame.
+- Large empty area at top for header text overlay
+- Large empty memo area for writing text overlay
+- Decorative border around page edges ONLY
+- Travel-themed illustrations (compass, plane, map) in corners ONLY
+- Subtle grid or dot pattern as background texture (very faint)
+- DO NOT draw any text - text will be overlaid`,
     weight: 2,
     zoneOverrides: {
       "header": {
@@ -45,8 +45,8 @@ export const memoVariants: LayoutVariant[] = [
       },
     },
     safeZones: [
-      { x: 0.12, y: 0.03, width: 0.76, height: 0.08, label: "header" },
-      { x: 0.08, y: 0.12, width: 0.84, height: 0.80, label: "memo-area" },
+      { x: 0.10, y: 0.02, width: 0.80, height: 0.10, label: "header" },
+      { x: 0.06, y: 0.10, width: 0.88, height: 0.84, label: "memo-area" },
     ],
   },
 ];

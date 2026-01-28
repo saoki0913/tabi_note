@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import type { TextLayer } from "@/types/trip";
+import { getFontCss } from "./EditPanel";
 
 interface TextLayerRendererProps {
   layer: TextLayer;
@@ -13,7 +14,28 @@ interface TextLayerRendererProps {
   onEndEdit: (newContent: string) => void;
   onClick?: () => void;
   onPositionChange?: (position: { x: number; y: number }) => void;
+  onSizeChange?: (size: { width: number; height: number }) => void;
 }
+
+// 8 resize handle positions
+type ResizeDirection = "nw" | "n" | "ne" | "e" | "se" | "s" | "sw" | "w";
+
+interface ResizeHandleConfig {
+  position: ResizeDirection;
+  cursor: string;
+  style: React.CSSProperties;
+}
+
+const RESIZE_HANDLES: ResizeHandleConfig[] = [
+  { position: "nw", cursor: "nwse-resize", style: { top: -4, left: -4 } },
+  { position: "n", cursor: "ns-resize", style: { top: -4, left: "50%", transform: "translateX(-50%)" } },
+  { position: "ne", cursor: "nesw-resize", style: { top: -4, right: -4 } },
+  { position: "e", cursor: "ew-resize", style: { top: "50%", right: -4, transform: "translateY(-50%)" } },
+  { position: "se", cursor: "nwse-resize", style: { bottom: -4, right: -4 } },
+  { position: "s", cursor: "ns-resize", style: { bottom: -4, left: "50%", transform: "translateX(-50%)" } },
+  { position: "sw", cursor: "nesw-resize", style: { bottom: -4, left: -4 } },
+  { position: "w", cursor: "ew-resize", style: { top: "50%", left: -4, transform: "translateY(-50%)" } },
+];
 
 // Zone type to Japanese label mapping
 const ZONE_TYPE_LABELS: Record<string, string> = {
@@ -84,11 +106,22 @@ export function TextLayerRenderer({
   onEndEdit,
   onClick,
   onPositionChange,
+  onSizeChange,
 }: TextLayerRendererProps) {
   const [editValue, setEditValue] = useState(layer.content);
   const [isHovered, setIsHovered] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
+  const [resizeDirection, setResizeDirection] = useState<ResizeDirection | null>(null);
   const [dragStart, setDragStart] = useState<{ x: number; y: number; layerX: number; layerY: number } | null>(null);
+  const [resizeStart, setResizeStart] = useState<{
+    x: number;
+    y: number;
+    layerX: number;
+    layerY: number;
+    layerWidth: number;
+    layerHeight: number;
+  } | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const layerRef = useRef<HTMLDivElement>(null);
 
@@ -228,6 +261,95 @@ export function TextLayerRenderer({
     };
   }, [dragStart, isDragging, containerWidth, containerHeight, onPositionChange]);
 
+  // Handle resize start
+  const handleResizeStart = useCallback((e: React.MouseEvent, direction: ResizeDirection) => {
+    if (layer.locked || isEditing) return;
+    e.preventDefault();
+    e.stopPropagation();
+
+    setResizeDirection(direction);
+    setResizeStart({
+      x: e.clientX,
+      y: e.clientY,
+      layerX: layer.position.x,
+      layerY: layer.position.y,
+      layerWidth: layer.size.width,
+      layerHeight: layer.size.height,
+    });
+  }, [layer.locked, layer.position, layer.size, isEditing]);
+
+  // Handle mouse move for resizing
+  useEffect(() => {
+    if (!resizeStart || !resizeDirection) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const deltaX = e.clientX - resizeStart.x;
+      const deltaY = e.clientY - resizeStart.y;
+
+      // Normalize deltas to container size
+      const normalizedDeltaX = deltaX / containerWidth;
+      const normalizedDeltaY = deltaY / containerHeight;
+
+      // Calculate new size and position based on resize direction
+      let newX = resizeStart.layerX;
+      let newY = resizeStart.layerY;
+      let newWidth = resizeStart.layerWidth;
+      let newHeight = resizeStart.layerHeight;
+
+      // Minimum size constraints (normalized)
+      const minWidth = 50 / containerWidth;
+      const minHeight = 20 / containerHeight;
+
+      // Handle horizontal resizing
+      if (resizeDirection.includes("e")) {
+        newWidth = Math.max(minWidth, resizeStart.layerWidth + normalizedDeltaX);
+      } else if (resizeDirection.includes("w")) {
+        const widthChange = normalizedDeltaX;
+        newWidth = Math.max(minWidth, resizeStart.layerWidth - widthChange);
+        if (newWidth > minWidth) {
+          newX = resizeStart.layerX + widthChange;
+        }
+      }
+
+      // Handle vertical resizing
+      if (resizeDirection.includes("s")) {
+        newHeight = Math.max(minHeight, resizeStart.layerHeight + normalizedDeltaY);
+      } else if (resizeDirection.includes("n")) {
+        const heightChange = normalizedDeltaY;
+        newHeight = Math.max(minHeight, resizeStart.layerHeight - heightChange);
+        if (newHeight > minHeight) {
+          newY = resizeStart.layerY + heightChange;
+        }
+      }
+
+      setIsResizing(true);
+
+      // Update position if it changed (for nw, n, ne, w, sw resizing)
+      if (newX !== layer.position.x || newY !== layer.position.y) {
+        onPositionChange?.({ x: newX, y: newY });
+      }
+
+      // Update size
+      onSizeChange?.({ width: newWidth, height: newHeight });
+    };
+
+    const handleMouseUp = () => {
+      setTimeout(() => {
+        setIsResizing(false);
+      }, 50);
+      setResizeStart(null);
+      setResizeDirection(null);
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [resizeStart, resizeDirection, containerWidth, containerHeight, layer.position, onPositionChange, onSizeChange]);
+
   const baseStyle: React.CSSProperties = {
     position: "absolute",
     left: pixelPosition.x,
@@ -277,7 +399,7 @@ export function TextLayerRenderer({
             fontWeight: layer.style.fontWeight,
             color: layer.style.color,
             textAlign: layer.style.alignment,
-            fontFamily: `'${layer.style.fontFamily}', 'Zen Kaku Gothic New', sans-serif`,
+            fontFamily: getFontCss(layer.style.fontFamily),
             lineHeight: layer.style.lineHeight,
             letterSpacing: layer.style.letterSpacing,
             resize: "vertical",
@@ -290,15 +412,18 @@ export function TextLayerRenderer({
   }
 
   // Determine visual state
-  const showBorder = isSelected || isHovered || isDragging;
+  const showBorder = isSelected || isHovered || isDragging || isResizing;
   const borderColor = isSelected ? "#3b82f6" : colors.border;
-  const bgColor = isDragging
+  const bgColor = isDragging || isResizing
     ? "rgba(59, 130, 246, 0.1)"
     : isSelected
     ? "rgba(59, 130, 246, 0.08)"
     : isHovered
     ? colors.hoverBg
     : "transparent";
+
+  // Determine if this is a newly added layer that needs attention animation
+  const isNewlyAdded = layer.isUserAdded;
 
   // Normal display mode - render text with styling
   return (
@@ -311,18 +436,25 @@ export function TextLayerRenderer({
       onMouseLeave={() => setIsHovered(false)}
       style={{
         ...baseStyle,
-        cursor: isDragging ? "grabbing" : layer.locked ? "default" : isSelected ? "grab" : "pointer",
+        cursor: isDragging ? "grabbing" : isResizing ? (resizeDirection ? RESIZE_HANDLES.find(h => h.position === resizeDirection)?.cursor : "default") : layer.locked ? "default" : isSelected ? "grab" : "pointer",
         borderRadius: layer.style.borderRadius || 0,
         border: showBorder
           ? isSelected
             ? `2px solid ${borderColor}`
             : `1px dashed ${borderColor}`
+          : isNewlyAdded
+          ? "2px dashed #10b981"
           : "1px solid transparent",
-        backgroundColor: bgColor,
-        transition: isDragging ? "none" : "background-color 0.15s ease, border 0.15s ease",
+        backgroundColor: isNewlyAdded && !isSelected ? "rgba(16, 185, 129, 0.08)" : bgColor,
+        transition: (isDragging || isResizing) ? "none" : "background-color 0.15s ease, border 0.15s ease",
         padding: layer.style.padding || 0,
-        boxShadow: isSelected ? "0 2px 8px rgba(59, 130, 246, 0.25)" : undefined,
+        boxShadow: isSelected
+          ? "0 2px 8px rgba(59, 130, 246, 0.25)"
+          : isNewlyAdded
+          ? "0 0 0 3px rgba(16, 185, 129, 0.15)"
+          : undefined,
         userSelect: "none",
+        animation: isNewlyAdded && !isSelected ? "pulse-glow 2s ease-in-out 3" : undefined,
       }}
       title={layer.locked ? "ロックされています" : isSelected ? "ドラッグで移動・ダブルクリックで編集" : "クリックで選択"}
     >
@@ -351,18 +483,13 @@ export function TextLayerRenderer({
         </div>
       )}
 
-      {/* Selection handles - only when selected */}
-      {isSelected && !isDragging && (
+      {/* 8-direction resize handles - only when selected */}
+      {isSelected && !isDragging && !layer.locked && (
         <>
-          {/* Corner handles */}
-          {[
-            { top: -4, left: -4 },
-            { top: -4, right: -4 },
-            { bottom: -4, left: -4 },
-            { bottom: -4, right: -4 },
-          ].map((pos, i) => (
+          {RESIZE_HANDLES.map((handle) => (
             <div
-              key={i}
+              key={handle.position}
+              onMouseDown={(e) => handleResizeStart(e, handle.position)}
               style={{
                 position: "absolute",
                 width: 8,
@@ -371,9 +498,12 @@ export function TextLayerRenderer({
                 borderRadius: "50%",
                 border: "2px solid white",
                 boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
-                pointerEvents: "none",
-                ...pos,
+                cursor: handle.cursor,
+                pointerEvents: "auto",
+                zIndex: 10,
+                ...handle.style,
               }}
+              title="リサイズ"
             />
           ))}
         </>
@@ -383,7 +513,7 @@ export function TextLayerRenderer({
       <div
         style={{
           fontSize: scaledFontSize,
-          fontFamily: `'${layer.style.fontFamily}', 'Zen Kaku Gothic New', sans-serif`,
+          fontFamily: getFontCss(layer.style.fontFamily),
           fontWeight: layer.style.fontWeight,
           color: layer.style.color,
           textAlign: layer.style.alignment,

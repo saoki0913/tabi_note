@@ -206,27 +206,33 @@ export function ExportDialog({ trip, isOpen, onClose }: ExportDialogProps) {
             onClick={handleClose}
           />
 
-          {/* Dialog */}
+          {/* Dialog Container - Flexboxでセンタリング */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-2xl shadow-xl z-50"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="fixed inset-0 flex items-center justify-center z-50 p-4"
+            onClick={handleClose}
           >
-            {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-paper-200">
-              <h2 className="font-display text-xl text-ink">書き出し設定</h2>
-              <button
-                onClick={handleClose}
-                disabled={isExporting}
-                className="p-2 text-ink-soft hover:text-ink hover:bg-paper-100 rounded-lg transition-colors disabled:opacity-50"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+            {/* Modal Content */}
+            <div
+              className="relative w-full max-w-md max-h-[calc(100vh-2rem)] bg-white rounded-2xl shadow-xl flex flex-col overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between px-6 py-4 border-b border-paper-200 flex-shrink-0">
+                <h2 className="font-display text-xl text-ink">書き出し設定</h2>
+                <button
+                  onClick={handleClose}
+                  disabled={isExporting}
+                  className="p-2 text-ink-soft hover:text-ink hover:bg-paper-100 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
 
-            {/* Content */}
-            <div className="px-6 py-6 space-y-6">
+              {/* Content */}
+              <div className="px-6 py-6 space-y-6 overflow-y-auto flex-1">
               {/* Format selection */}
               <div>
                 <label className="block text-sm font-medium text-ink mb-3">
@@ -359,34 +365,35 @@ export function ExportDialog({ trip, isOpen, onClose }: ExportDialogProps) {
               )}
             </div>
 
-            {/* Footer */}
-            <div className="flex items-center justify-between px-6 py-4 border-t border-paper-200 bg-paper-50 rounded-b-2xl">
-              <button
-                onClick={handleClose}
-                disabled={isExporting}
-                className="px-4 py-2 text-ink-soft hover:text-ink transition-colors disabled:opacity-50"
-              >
-                キャンセル
-              </button>
-              <motion.button
-                onClick={handleExport}
-                disabled={isExporting || sortedPages.length === 0}
-                className="flex items-center gap-2 px-6 py-2 bg-blue-500 text-white rounded-full font-medium hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                {isExporting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    {exportProgress}
-                  </>
-                ) : (
-                  <>
-                    <Download className="w-4 h-4" />
-                    書き出す
-                  </>
-                )}
-              </motion.button>
+              {/* Footer */}
+              <div className="flex items-center justify-between px-6 py-4 border-t border-paper-200 bg-paper-50 rounded-b-2xl flex-shrink-0">
+                <button
+                  onClick={handleClose}
+                  disabled={isExporting}
+                  className="px-4 py-2 text-ink-soft hover:text-ink transition-colors disabled:opacity-50"
+                >
+                  キャンセル
+                </button>
+                <motion.button
+                  onClick={handleExport}
+                  disabled={isExporting || sortedPages.length === 0}
+                  className="flex items-center gap-2 px-6 py-2 bg-blue-500 text-white rounded-full font-medium hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  {isExporting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      {exportProgress}
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-4 h-4" />
+                      書き出す
+                    </>
+                  )}
+                </motion.button>
+              </div>
             </div>
           </motion.div>
         </>

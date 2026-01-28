@@ -9,12 +9,16 @@ import {
   Download,
   Edit,
   Feather,
+  Layers,
   Loader2,
   Map,
   MapPin,
+  RefreshCw,
   Share2,
   Trash2,
   Pencil,
+  Wand2,
+  X,
 } from "lucide-react";
 import type {
   DesignMode,
@@ -54,6 +58,18 @@ type BlockState = {
   progress?: ProgressState;
 };
 
+// Template choices for regeneration dialog
+const templateChoices = [
+  { type: "minimal", label: "シンプル" },
+  { type: "pop", label: "ポップ" },
+  { type: "retro", label: "レトロ" },
+  { type: "romantic", label: "ロマンチック" },
+  { type: "photo", label: "写真多め" },
+  { type: "modern", label: "モダン" },
+  { type: "nature", label: "ナチュラル" },
+  { type: "adventure", label: "アドベンチャー" },
+] as const;
+
 const CircleDecoration = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 100 100" fill="none">
     <circle
@@ -81,6 +97,9 @@ export function TabiNoteApp() {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [currentTrip, setCurrentTrip] = useState<Trip | null>(null);
   const [showPdfExport, setShowPdfExport] = useState(false);
+  const [isRegenerateDialogOpen, setIsRegenerateDialogOpen] = useState(false);
+  const [regenerateMode, setRegenerateMode] = useState<DesignRenderMode>("full");
+  const [regenerateTemplateType, setRegenerateTemplateType] = useState<Trip["templateType"]>("pop");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOrder, setSortOrder] = useState<"recent" | "oldest">("recent");
   const [blockState, setBlockState] = useState<BlockState>({
@@ -241,7 +260,7 @@ export function TabiNoteApp() {
 
   const needsDesignPages = (trip: Trip) => {
     if (!trip.design) return true;
-    if (trip.design.renderMode !== "layered") return true;
+    // renderMode に関係なく、pagesが存在すれば再生成不要
     if (!trip.design.pages || trip.design.pages.length === 0) return true;
     return false;
   };
@@ -1044,6 +1063,67 @@ export function TabiNoteApp() {
   }
 
   if (view === "preview" && currentTrip) {
+    const handleRegenerateDesign = async (
+      renderMode: DesignRenderMode,
+      templateType: Trip["templateType"]
+    ) => {
+      setBlockState({
+        active: true,
+        title: "デザインを再生成中",
+        message: "レイアウト素材を再作成しています。",
+        progress: { current: 0, total: 6 },
+      });
+
+      try {
+        // テンプレートタイプを更新したtripで生成
+        const tripWithNewTemplate: Trip = {
+          ...currentTrip,
+          templateType,
+        };
+        const pages = await generateDesignPages(
+          tripWithNewTemplate,
+          (current, total) => {
+            setBlockState({
+              active: true,
+              title: "デザインを再生成中",
+              message: `レイアウト素材を再作成しています。(${current}/${total})`,
+              progress: { current, total },
+            });
+          },
+          renderMode,
+        );
+        const nextTrip: Trip = {
+          ...tripWithNewTemplate,
+          design: {
+            style: templateType,
+            format: currentTrip.formatType,
+            renderMode,
+            pages,
+            updatedAt: new Date().toISOString(),
+          },
+        };
+        const savedTrip = await safeSaveTrip(nextTrip);
+        setCurrentTrip(savedTrip);
+        await refreshTrips();
+      } catch (error) {
+        console.error(error);
+        alert("デザイン再生成に失敗しました。もう一度お試しください。");
+      } finally {
+        setBlockState({ active: false, title: "" });
+      }
+    };
+
+    const handleOpenRegenerateDialog = () => {
+      setRegenerateMode(currentTrip.design?.renderMode ?? "full");
+      setRegenerateTemplateType(currentTrip.templateType);
+      setIsRegenerateDialogOpen(true);
+    };
+
+    const handleConfirmRegenerate = async () => {
+      setIsRegenerateDialogOpen(false);
+      await handleRegenerateDesign(regenerateMode, regenerateTemplateType);
+    };
+
     return (
       <motion.div
         className="min-h-screen ink-wash py-8"
@@ -1080,15 +1160,27 @@ export function TabiNoteApp() {
                   編集
                 </motion.button>
                 <motion.button
-                  onClick={() => setView("editor")}
+                  onClick={handleOpenRegenerateDialog}
                   className="flex items-center gap-2 px-6 py-3 btn btn-soft btn-pill"
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
                   type="button"
                 >
-                  <Pencil className="w-5 h-5" strokeWidth={2} />
-                  デザイン編集
+                  <RefreshCw className="w-5 h-5" strokeWidth={2} />
+                  再生成
                 </motion.button>
+                {currentTrip?.design?.renderMode === "layered" && (
+                  <motion.button
+                    onClick={() => setView("editor")}
+                    className="flex items-center gap-2 px-6 py-3 btn btn-soft btn-pill"
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    type="button"
+                  >
+                    <Pencil className="w-5 h-5" strokeWidth={2} />
+                    デザイン編集
+                  </motion.button>
+                )}
                 <motion.button
                   onClick={() => handleShareTrip(currentTrip)}
                   className="flex items-center gap-2 px-6 py-3 btn btn-secondary btn-pill"
@@ -1128,54 +1220,143 @@ export function TabiNoteApp() {
 
           <TripPreview trip={currentTrip} />
         </div>
+
+        {/* Regenerate Dialog */}
+        <AnimatePresence>
+          {isRegenerateDialogOpen && (
+            <motion.div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsRegenerateDialogOpen(false)}
+            >
+              <motion.div
+                className="paper-card rounded-2xl p-6 max-w-md w-full mx-4"
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-display text-xl text-ink">デザイン再生成</h3>
+                  <button
+                    onClick={() => setIsRegenerateDialogOpen(false)}
+                    className="p-1 rounded-full hover:bg-paper-200 transition-colors"
+                  >
+                    <X className="w-5 h-5 text-ink-soft" />
+                  </button>
+                </div>
+
+                <p className="text-sm text-ink-soft mb-4">
+                  現在のデザインを破棄して、新しく生成します。
+                </p>
+
+                {/* テンプレート選択 */}
+                <div className="mb-4">
+                  <label className="block font-ui text-sm font-medium mb-2 text-ink">
+                    テンプレート
+                  </label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {templateChoices.map((template) => (
+                      <button
+                        key={template.type}
+                        onClick={() => setRegenerateTemplateType(template.type as Trip["templateType"])}
+                        className={`p-2 rounded-lg border-2 text-center text-xs transition-all ${
+                          regenerateTemplateType === template.type
+                            ? "border-accent-coral bg-accent-coral/5 text-ink font-medium"
+                            : "border-paper-200 hover:border-paper-300 text-ink-soft"
+                        }`}
+                      >
+                        {template.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 生成方式選択 */}
+                <div className="mb-6">
+                  <label className="block font-ui text-sm font-medium mb-2 text-ink">
+                    生成方式
+                  </label>
+                  <div className="space-y-3">
+                  <button
+                    onClick={() => setRegenerateMode("full")}
+                    className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
+                      regenerateMode === "full"
+                        ? "border-accent-coral bg-accent-coral/5"
+                        : "border-paper-200 hover:border-paper-300"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                        regenerateMode === "full"
+                          ? "bg-gradient-to-br from-accent-coral to-accent-sun"
+                          : "bg-paper-200"
+                      }`}>
+                        <Wand2 className={`w-5 h-5 ${regenerateMode === "full" ? "text-white" : "text-ink-soft"}`} />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-ui font-medium text-ink">一発生成</span>
+                          <span className="text-xs text-accent-coral font-ui">推奨</span>
+                        </div>
+                        <p className="text-xs text-ink-soft">AIが文字を含む完全な画像を生成</p>
+                      </div>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => setRegenerateMode("layered")}
+                    className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
+                      regenerateMode === "layered"
+                        ? "border-accent-sky bg-accent-sky/5"
+                        : "border-paper-200 hover:border-paper-300"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                        regenerateMode === "layered"
+                          ? "bg-gradient-to-br from-accent-sky to-accent-leaf"
+                          : "bg-paper-200"
+                      }`}>
+                        <Layers className={`w-5 h-5 ${regenerateMode === "layered" ? "text-white" : "text-ink-soft"}`} />
+                      </div>
+                      <div>
+                        <span className="font-ui font-medium text-ink">編集可能モード</span>
+                        <p className="text-xs text-ink-soft">背景のみ生成、文字は編集可能</p>
+                      </div>
+                    </div>
+                  </button>
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setIsRegenerateDialogOpen(false)}
+                    className="flex-1 px-4 py-2.5 btn btn-ghost text-sm"
+                  >
+                    キャンセル
+                  </button>
+                  <button
+                    onClick={handleConfirmRegenerate}
+                    className="flex-1 px-4 py-2.5 btn btn-primary text-sm flex items-center justify-center gap-2"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    再生成する
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {renderBlockingOverlay()}
       </motion.div>
     );
   }
 
   if (view === "editor" && currentTrip) {
-    const handleRegenerateDesign = async (renderMode: DesignRenderMode) => {
-      setBlockState({
-        active: true,
-        title: "デザインを再生成中",
-        message: "レイアウト素材を再作成しています。",
-        progress: { current: 0, total: 6 },
-      });
-
-      try {
-        const pages = await generateDesignPages(
-          currentTrip,
-          (current, total) => {
-            setBlockState({
-              active: true,
-              title: "デザインを再生成中",
-              message: `レイアウト素材を再作成しています。(${current}/${total})`,
-              progress: { current, total },
-            });
-          },
-          renderMode,
-        );
-        const nextTrip: Trip = {
-          ...currentTrip,
-          design: {
-            style: currentTrip.templateType,
-            format: currentTrip.formatType,
-            renderMode,
-            pages,
-            updatedAt: new Date().toISOString(),
-          },
-        };
-        const savedTrip = await safeSaveTrip(nextTrip);
-        setCurrentTrip(savedTrip);
-        await refreshTrips();
-      } catch (error) {
-        console.error(error);
-        alert("デザイン再生成に失敗しました。もう一度お試しください。");
-      } finally {
-        setBlockState({ active: false, title: "" });
-      }
-    };
-
     return (
       <motion.div
         className="min-h-screen"
@@ -1190,7 +1371,6 @@ export function TabiNoteApp() {
             await refreshTrips();
           }}
           onBack={() => setView("preview")}
-          onRegenerate={handleRegenerateDesign}
         />
         {renderBlockingOverlay()}
       </motion.div>

@@ -8,13 +8,12 @@ export const scheduleVariants: LayoutVariant[] = [
     name: "Timeline Left",
     nameJa: "タイムライン左",
     description: "Vertical timeline on left with content on right",
-    promptHint: `Layout: Left-rail timeline.
-- Thin vertical timeline line on left margin
-- Numbered or dotted step markers along timeline
-- Activity text aligned to right of timeline
-- Day header at top with date
-- Summary/highlight block below header
-- Optional small photo frames on far right`,
+    promptHint: `Layout: Left-rail timeline page frame.
+- Thin vertical decorative timeline line on left margin ONLY
+- Large empty rectangular area at top for day header text overlay
+- Large empty rectangular area on right for activities text overlay
+- All decorative elements (markers, photo frames) on page edges/corners ONLY
+- DO NOT draw any text, numbers, or bullet points - text will be overlaid`,
     weight: 3,
     zoneOverrides: {
       "day-header": {
@@ -27,8 +26,8 @@ export const scheduleVariants: LayoutVariant[] = [
       },
     },
     safeZones: [
-      { x: 0.05, y: 0.02, width: 0.90, height: 0.10, label: "header" },
-      { x: 0.08, y: 0.13, width: 0.85, height: 0.75, label: "activities" },
+      { x: 0.03, y: 0.01, width: 0.94, height: 0.12, label: "header" },
+      { x: 0.06, y: 0.11, width: 0.90, height: 0.80, label: "activities" },
     ],
   },
   {
@@ -36,18 +35,18 @@ export const scheduleVariants: LayoutVariant[] = [
     name: "Timeline Center",
     nameJa: "タイムライン中央",
     description: "Centered timeline with alternating left-right content",
-    promptHint: `Layout: Centered timeline with alternating sides.
-- Vertical timeline in center of page
-- Activities alternate between left and right of timeline
-- Numbered circles as markers
-- Day header centered at top
-- Symmetrical, balanced composition`,
+    promptHint: `Layout: Centered timeline page frame.
+- Thin vertical decorative line in center of page as frame element
+- Large empty rectangular area at top for day header text overlay
+- Large empty areas on left and right of timeline for activities text overlay
+- All decorative elements (circles, markers) on page borders/corners ONLY
+- DO NOT draw any text or numbers - text will be overlaid`,
     weight: 2,
     zoneOverrides: {},
     safeZones: [
-      { x: 0.10, y: 0.02, width: 0.80, height: 0.10, label: "header" },
-      { x: 0.05, y: 0.13, width: 0.40, height: 0.75, label: "left-activities" },
-      { x: 0.55, y: 0.13, width: 0.40, height: 0.75, label: "right-activities" },
+      { x: 0.08, y: 0.01, width: 0.84, height: 0.12, label: "header" },
+      { x: 0.03, y: 0.11, width: 0.44, height: 0.80, label: "left-activities" },
+      { x: 0.53, y: 0.11, width: 0.44, height: 0.80, label: "right-activities" },
     ],
   },
   {
@@ -55,17 +54,17 @@ export const scheduleVariants: LayoutVariant[] = [
     name: "List Cards",
     nameJa: "リストカード",
     description: "Activities as individual cards in a vertical list",
-    promptHint: `Layout: Card-based activity list.
-- Day header with decorative banner
-- Each activity in its own card with subtle shadow
-- Cards stacked vertically with small gaps
-- Numbered badges on cards
-- Clean, modern look with rounded corners`,
+    promptHint: `Layout: Card-based schedule page frame.
+- Decorative banner frame at top for day header text overlay
+- Large empty rectangular area for activities text overlay
+- Card shapes and shadows as subtle background frame elements ONLY
+- All decorative elements (badges, icons) on page edges/corners ONLY
+- DO NOT draw any text or numbers - text will be overlaid`,
     weight: 2,
     zoneOverrides: {},
     safeZones: [
-      { x: 0.08, y: 0.02, width: 0.84, height: 0.10, label: "header" },
-      { x: 0.06, y: 0.13, width: 0.88, height: 0.75, label: "activities" },
+      { x: 0.06, y: 0.01, width: 0.88, height: 0.12, label: "header" },
+      { x: 0.04, y: 0.11, width: 0.92, height: 0.80, label: "activities" },
     ],
   },
   {
@@ -73,13 +72,12 @@ export const scheduleVariants: LayoutVariant[] = [
     name: "Journal",
     nameJa: "ジャーナル",
     description: "Handwritten journal style with notes area",
-    promptHint: `Layout: Journal/diary style.
-- Lined or dotted paper background
-- Day header as handwritten-style text
-- Activities as bullet points with checkbox style
-- Margin area for small photo frames
-- Sticky note accent for highlights
-- Warm, crafted feel`,
+    promptHint: `Layout: Journal/diary style page frame.
+- Paper texture background (can have subtle grid/dots)
+- Large empty area at top for day header text overlay
+- Large empty area for activities text overlay
+- Decorative elements (sticky notes, photo frames) on right margin/edges ONLY
+- DO NOT draw any text, checkboxes, or bullet points - text will be overlaid`,
     weight: 2,
     zoneOverrides: {
       "day-header": {
@@ -92,8 +90,8 @@ export const scheduleVariants: LayoutVariant[] = [
       },
     },
     safeZones: [
-      { x: 0.06, y: 0.02, width: 0.70, height: 0.10, label: "header" },
-      { x: 0.06, y: 0.12, width: 0.70, height: 0.78, label: "activities" },
+      { x: 0.04, y: 0.01, width: 0.74, height: 0.12, label: "header" },
+      { x: 0.04, y: 0.10, width: 0.74, height: 0.82, label: "activities" },
     ],
   },
   {
@@ -101,17 +99,17 @@ export const scheduleVariants: LayoutVariant[] = [
     name: "Grid",
     nameJa: "グリッド",
     description: "Grid layout with activities in cells",
-    promptHint: `Layout: Grid-based schedule.
-- Day header spanning full width
-- 2-3 column grid for activities
-- Each cell with number and activity text
-- Photo frames integrated into grid
-- Clean lines, structured appearance`,
+    promptHint: `Layout: Grid-based schedule page frame.
+- Large empty area at top for day header text overlay
+- Large empty grid area for activities text overlay
+- Grid lines as subtle background frame elements ONLY
+- Photo frames on page edges/corners ONLY
+- DO NOT draw any text or numbers - text will be overlaid`,
     weight: 1,
     zoneOverrides: {},
     safeZones: [
-      { x: 0.05, y: 0.02, width: 0.90, height: 0.10, label: "header" },
-      { x: 0.05, y: 0.13, width: 0.90, height: 0.75, label: "grid-area" },
+      { x: 0.03, y: 0.01, width: 0.94, height: 0.12, label: "header" },
+      { x: 0.03, y: 0.11, width: 0.94, height: 0.80, label: "grid-area" },
     ],
   },
 ];

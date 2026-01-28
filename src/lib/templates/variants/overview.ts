@@ -8,18 +8,18 @@ export const overviewVariants: LayoutVariant[] = [
     name: "Centered",
     nameJa: "中央配置",
     description: "Classic centered layout with header and overview text in the middle",
-    promptHint: `Layout: Center-aligned overview page.
-- Small decorative header banner at top with "旅のプラン" text area
-- Main overview text area centered in upper-middle section
-- Large open space below for decorative illustrations
-- Corner ornaments or travel-themed decorations
+    promptHint: `Layout: Center-aligned overview page frame.
+- Large empty area at top for header text overlay
+- Large empty area in upper-middle for overview text overlay
+- Decorative illustrations in lower section and page corners ONLY
+- Corner ornaments and travel-themed decorations on page edges ONLY
 - Soft background texture (paper, watercolor wash)
-- Keep text areas clear and readable`,
+- DO NOT draw any text - text will be overlaid`,
     weight: 3,
     zoneOverrides: {},
     safeZones: [
-      { x: 0.10, y: 0.02, width: 0.80, height: 0.08, label: "header" },
-      { x: 0.08, y: 0.11, width: 0.84, height: 0.18, label: "overview-text" },
+      { x: 0.08, y: 0.01, width: 0.84, height: 0.10, label: "header" },
+      { x: 0.06, y: 0.09, width: 0.88, height: 0.22, label: "overview-text" },
     ],
   },
   {
@@ -27,13 +27,13 @@ export const overviewVariants: LayoutVariant[] = [
     name: "Left Panel",
     nameJa: "左パネル",
     description: "Text content aligned to left with decorative right side",
-    promptHint: `Layout: Left-aligned editorial overview.
-- Header text "旅のプラン" on left side
-- Overview text area as left-aligned block (60% width)
+    promptHint: `Layout: Left-aligned editorial overview page frame.
+- Large empty area on left for header text overlay
+- Large empty area on left (60% width) for overview text overlay
 - Right side (40%) reserved for decorative illustration
 - Vertical accent line separating text and illustration areas
-- Travel-themed sketches or icons on right
-- Clean, magazine-style composition`,
+- Travel-themed sketches or icons on right side ONLY
+- DO NOT draw any text - text will be overlaid`,
     weight: 2,
     zoneOverrides: {
       "header": {
@@ -47,8 +47,8 @@ export const overviewVariants: LayoutVariant[] = [
       },
     },
     safeZones: [
-      { x: 0.05, y: 0.02, width: 0.55, height: 0.08, label: "header" },
-      { x: 0.05, y: 0.11, width: 0.55, height: 0.22, label: "overview-text" },
+      { x: 0.03, y: 0.01, width: 0.58, height: 0.10, label: "header" },
+      { x: 0.03, y: 0.09, width: 0.58, height: 0.26, label: "overview-text" },
     ],
   },
   {
@@ -56,13 +56,13 @@ export const overviewVariants: LayoutVariant[] = [
     name: "Bottom Heavy",
     nameJa: "下部集約",
     description: "Large illustration at top with text content at bottom",
-    promptHint: `Layout: Top illustration, bottom text.
-- Large decorative illustration or photo frame in upper 60%
-- Header "旅のプラン" below illustration
-- Overview text area at bottom third
-- Creates postcard-like composition
-- Decorative border or frame around illustration area
-- Warm, inviting travel atmosphere`,
+    promptHint: `Layout: Top illustration, bottom text page frame.
+- Large decorative illustration or photo frame in upper 55%
+- Large empty area below illustration for header text overlay
+- Large empty area at bottom for overview text overlay
+- Decorative border or frame around illustration area at top
+- All text areas in bottom section must be completely empty
+- DO NOT draw any text - text will be overlaid`,
     weight: 2,
     zoneOverrides: {
       "header": {
@@ -74,8 +74,8 @@ export const overviewVariants: LayoutVariant[] = [
       },
     },
     safeZones: [
-      { x: 0.10, y: 0.60, width: 0.80, height: 0.08, label: "header" },
-      { x: 0.08, y: 0.68, width: 0.84, height: 0.25, label: "overview-text" },
+      { x: 0.08, y: 0.58, width: 0.84, height: 0.10, label: "header" },
+      { x: 0.06, y: 0.66, width: 0.88, height: 0.28, label: "overview-text" },
     ],
   },
 ];

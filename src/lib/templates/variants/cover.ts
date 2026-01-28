@@ -30,19 +30,19 @@ export const coverVariants: LayoutVariant[] = [
     name: "Centered",
     nameJa: "中央配置",
     description: "Classic centered layout with title at top, hero image in middle",
-    promptHint: `Layout: Center-aligned composition.
-- Header band with small decorative icon at top
-- Main title centered in upper third with generous whitespace
-- Cover copy or tagline below title
-- Hero illustration or photo frame in center (300-400px tall)
-- Pill-shaped chips for dates, destination, members at bottom
-- Subtle corner ornaments`,
+    promptHint: `Layout: Center-aligned cover page frame.
+- Decorative frame and corner ornaments around page edges ONLY
+- Large empty rectangular area at top for title text overlay
+- Hero illustration or photo frame in center (decorative area)
+- Large empty rectangular area at bottom for trip details text overlay
+- All decorative elements (stamps, stickers, icons) ONLY on page borders/corners
+- DO NOT draw any text - text will be overlaid separately`,
     weight: 3,
     // No overrides - uses base layout positions
     zoneOverrides: {},
     safeZones: [
-      { x: 0.08, y: 0.08, width: 0.84, height: 0.18, label: "title-area" },
-      { x: 0.10, y: 0.62, width: 0.80, height: 0.22, label: "details-area" },
+      { x: 0.06, y: 0.06, width: 0.88, height: 0.20, label: "title-area" },
+      { x: 0.08, y: 0.60, width: 0.84, height: 0.26, label: "details-area" },
     ],
   },
   {
@@ -50,13 +50,13 @@ export const coverVariants: LayoutVariant[] = [
     name: "Left Aligned",
     nameJa: "左寄せ",
     description: "Editorial style with left-aligned text and asymmetric composition",
-    promptHint: `Layout: Left-aligned editorial style.
-- Thin vertical accent line on left margin
-- Title aligned to left with large display font
-- Cover copy as left-aligned paragraph
+    promptHint: `Layout: Left-aligned editorial cover frame.
+- Thin vertical accent line on left margin as decoration
+- Large empty area on left side for title text overlay
 - Asymmetric photo or illustration on right side
-- Metadata (dates, members) as left-aligned list
-- Minimal decorations, focus on typography`,
+- Large empty area at bottom left for metadata text overlay
+- All decorative elements on page edges and right side ONLY
+- DO NOT draw any text - text will be overlaid separately`,
     weight: 2,
     zoneOverrides: {
       "main-title": {
@@ -81,8 +81,8 @@ export const coverVariants: LayoutVariant[] = [
       },
     },
     safeZones: [
-      { x: 0.05, y: 0.08, width: 0.50, height: 0.18, label: "title-area" },
-      { x: 0.05, y: 0.62, width: 0.50, height: 0.22, label: "details-area" },
+      { x: 0.03, y: 0.06, width: 0.54, height: 0.22, label: "title-area" },
+      { x: 0.03, y: 0.60, width: 0.54, height: 0.26, label: "details-area" },
     ],
   },
   {
@@ -90,12 +90,13 @@ export const coverVariants: LayoutVariant[] = [
     name: "Photo Dominant",
     nameJa: "写真主体",
     description: "Large hero photo with minimal text overlay",
-    promptHint: `Layout: Photo-forward design.
-- Full or near-full bleed hero photo frame (occupying 60% of page)
-- Title overlaid on photo with text shadow or banner
-- Minimal text outside photo area
-- Small info chips at bottom
-- Elegant, cinematic composition`,
+    promptHint: `Layout: Photo-forward cover frame.
+- Large empty area at top for title text overlay
+- Hero photo frame in center (decorative focal area)
+- Large empty area at bottom for trip info text overlay
+- Elegant, cinematic composition with minimal decorations
+- All decorative elements on page borders/corners ONLY
+- DO NOT draw any text - text will be overlaid separately`,
     weight: 2,
     zoneOverrides: {
       "main-title": {
@@ -114,8 +115,8 @@ export const coverVariants: LayoutVariant[] = [
       },
     },
     safeZones: [
-      { x: 0.08, y: 0.04, width: 0.84, height: 0.14, label: "title-area" },
-      { x: 0.10, y: 0.70, width: 0.80, height: 0.18, label: "details-area" },
+      { x: 0.06, y: 0.02, width: 0.88, height: 0.18, label: "title-area" },
+      { x: 0.08, y: 0.68, width: 0.84, height: 0.22, label: "details-area" },
     ],
   },
   {
@@ -123,13 +124,13 @@ export const coverVariants: LayoutVariant[] = [
     name: "Card Stack",
     nameJa: "カード重ね",
     description: "Layered cards with depth effect",
-    promptHint: `Layout: Stacked card composition.
-- Multiple overlapping card shapes with soft shadows
-- Title on top card
-- Photo frame on middle card (slightly rotated)
-- Trip details on bottom cards
-- Warm paper texture background
-- Washi tape or sticker accents`,
+    promptHint: `Layout: Stacked card cover frame.
+- Multiple overlapping card shapes with soft shadows as frame
+- Large empty area on top card for title text overlay
+- Photo frame on middle card (decorative, can be slightly rotated)
+- Large empty area on bottom cards for trip details text overlay
+- Warm paper texture background with washi tape accents on edges
+- DO NOT draw any text - text will be overlaid separately`,
     weight: 2,
     zoneOverrides: {
       "main-title": {
@@ -140,8 +141,8 @@ export const coverVariants: LayoutVariant[] = [
       },
     },
     safeZones: [
-      { x: 0.10, y: 0.06, width: 0.80, height: 0.16, label: "title-area" },
-      { x: 0.08, y: 0.65, width: 0.84, height: 0.20, label: "details-area" },
+      { x: 0.08, y: 0.04, width: 0.84, height: 0.18, label: "title-area" },
+      { x: 0.06, y: 0.63, width: 0.88, height: 0.24, label: "details-area" },
     ],
   },
   {
@@ -149,12 +150,13 @@ export const coverVariants: LayoutVariant[] = [
     name: "Split",
     nameJa: "分割",
     description: "Vertical split with text on one side, image on other",
-    promptHint: `Layout: Vertical split composition.
+    promptHint: `Layout: Vertical split cover frame.
 - Page divided into two vertical sections
-- Left side: Title, cover copy, and metadata
-- Right side: Hero photo or illustration
+- Left side: Large empty areas for title and metadata text overlay
+- Right side: Hero photo or illustration (decorative area)
 - Clean dividing line or gradient fade between sections
-- Balanced visual weight`,
+- All decorative elements on page borders and right half ONLY
+- DO NOT draw any text - text will be overlaid separately`,
     weight: 1,
     zoneOverrides: {
       "main-title": {
@@ -185,8 +187,8 @@ export const coverVariants: LayoutVariant[] = [
       },
     },
     safeZones: [
-      { x: 0.05, y: 0.08, width: 0.45, height: 0.25, label: "title-area" },
-      { x: 0.05, y: 0.55, width: 0.45, height: 0.25, label: "details-area" },
+      { x: 0.03, y: 0.06, width: 0.48, height: 0.28, label: "title-area" },
+      { x: 0.03, y: 0.53, width: 0.48, height: 0.30, label: "details-area" },
     ],
   },
 ];

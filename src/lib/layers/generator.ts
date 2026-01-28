@@ -35,6 +35,43 @@ export function generateTextLayers(
 
     // Find data binding for this zone
     const binding = layout.dataBindings.find(b => b.zoneId === zone.id);
+
+    // For list zones, check if we should create individual layers
+    if (zone.type === "list" && binding) {
+      const rawValue = getValueByPath(trip, binding.tripPath, day);
+      if (Array.isArray(rawValue) && rawValue.length > 0) {
+        // Create individual TextLayer for each list item
+        const position = resolveZonePosition(zone, NORM_WIDTH, NORM_HEIGHT);
+        const size = resolveZoneSize(zone, NORM_WIDTH, NORM_HEIGHT);
+        const style = createLayerStyle(zone, trip);
+        const fontSize = style.fontSize || 14;
+        const lineSpacing = fontSize * (style.lineHeight || 1.8);
+
+        rawValue.forEach((item, index) => {
+          const itemContent = formatListItem(item, index, binding.tripPath);
+          if (!itemContent) return;
+
+          const itemLayer: TextLayer = {
+            id: `${zone.id}-item-${index}`,
+            zoneType: "list-item",
+            content: itemContent,
+            position: {
+              x: position.x / NORM_WIDTH,
+              y: (position.y + index * lineSpacing) / NORM_HEIGHT,
+            },
+            size: {
+              width: size.width / NORM_WIDTH,
+              height: lineSpacing / NORM_HEIGHT,
+            },
+            style,
+            locked: zone.locked,
+          };
+          layers.push(itemLayer);
+        });
+        continue; // Skip the normal processing for this zone
+      }
+    }
+
     const content = binding
       ? resolveDataBinding(binding, trip, mode, day)
       : getDefaultContent(zone, mode, day);
@@ -138,19 +175,49 @@ function getValueByPath(obj: unknown, path: string, day?: number): unknown {
 }
 
 /**
- * Format array values for display
+ * Format a single list item for individual TextLayer
+ */
+function formatListItem(item: unknown, index: number, path: string): string {
+  // Handle wantItems array
+  if (path.includes("wantItems")) {
+    const wantItem = item as { text: string };
+    return wantItem.text ? `☐ ${wantItem.text}` : "";
+  }
+
+  // Handle activities array
+  if (path.includes("activities")) {
+    return typeof item === "string" ? `${index + 1}. ${item}` : "";
+  }
+
+  // Handle packing suggestions
+  if (path.includes("packingSuggestions")) {
+    return typeof item === "string" ? `☐ ${item}` : "";
+  }
+
+  // Handle lodgings array
+  if (path.includes("lodgings")) {
+    const lodging = item as { name: string; address?: string; phone?: string };
+    return lodging.name || "";
+  }
+
+  // Default: convert to string
+  return String(item);
+}
+
+/**
+ * Format array values for display (legacy - used when individual layers are not needed)
  */
 function formatArrayValue(arr: unknown[], path: string): string {
   if (arr.length === 0) return "";
 
-  // Handle members array
+  // Handle members array (keep as single text since it's a comma-separated list)
   if (path.includes("members")) {
     return (arr as { name: string }[]).map(m => m.name).join(", ");
   }
 
   // Handle wantItems array
   if (path.includes("wantItems")) {
-    return (arr as { text: string }[]).map(item => `- ${item.text}`).join("\n");
+    return (arr as { text: string }[]).map(item => `☐ ${item.text}`).join("\n");
   }
 
   // Handle activities array
@@ -160,7 +227,7 @@ function formatArrayValue(arr: unknown[], path: string): string {
 
   // Handle packing suggestions
   if (path.includes("packingSuggestions")) {
-    return (arr as string[]).map(item => `- ${item}`).join("\n");
+    return (arr as string[]).map(item => `☐ ${item}`).join("\n");
   }
 
   // Handle lodgings array

@@ -57,6 +57,7 @@ function getFontCacheKey(family: string, weight: FontWeight): string {
 
 /**
  * Parse CSS @font-face rules to extract font URLs
+ * Satori/opentype.js only supports TTF/OTF formats, not WOFF2
  */
 function parseFontUrls(css: string): Map<number, string> {
   const urls = new Map<number, string>();
@@ -72,8 +73,19 @@ function parseFontUrls(css: string): Map<number, string> {
     const weightMatch = content.match(/font-weight:\s*(\d+)/);
     const weight = weightMatch ? parseInt(weightMatch[1], 10) : 400;
 
-    // Extract URL (prefer woff2)
-    const urlMatch = content.match(/url\(([^)]+\.woff2[^)]*)\)/);
+    // Extract URL - prefer TTF format (required by Satori/opentype.js)
+    let urlMatch = content.match(/url\(([^)]+\.ttf[^)]*)\)/);
+
+    // Fallback to OTF if TTF not found
+    if (!urlMatch) {
+      urlMatch = content.match(/url\(([^)]+\.otf[^)]*)\)/);
+    }
+
+    // Last resort: try any font URL
+    if (!urlMatch) {
+      urlMatch = content.match(/url\(([^)]+)\)/);
+    }
+
     if (urlMatch) {
       // Clean up the URL
       const url = urlMatch[1].replace(/['"]/g, "");
@@ -96,9 +108,10 @@ async function fetchGoogleFontCSS(
 
   const response = await fetch(url, {
     headers: {
-      // Request woff2 format
+      // Use old browser User-Agent to get TTF format (not WOFF2)
+      // Satori/opentype.js only supports TTF/OTF, not WOFF2
       "User-Agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Mozilla/5.0 (Windows NT 6.1; Trident/7.0; rv:11.0) like Gecko",
     },
   });
 

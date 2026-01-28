@@ -69,7 +69,9 @@ const scheduleLayout: PageLayout = {
       defaultSize: { width: 150, height: 150 },
     },
   ],
-  dataBindings: [],
+  dataBindings: [
+    { zoneId: "activities-list", tripPath: "dayPlan.activities" },
+  ],
 };
 
 const checklistLayout: PageLayout = {

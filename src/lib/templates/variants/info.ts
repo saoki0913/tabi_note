@@ -8,19 +8,19 @@ export const infoVariants: LayoutVariant[] = [
     name: "Card Sections",
     nameJa: "カード型",
     description: "Information organized in card-like sections",
-    promptHint: `Layout: Card-based information page.
-- Header "旅の情報" at top
-- Lodging info in card/box area (upper section)
-- Cautions/notes in separate card below
-- Each card has subtle shadow or border
-- Travel-themed icons (bed, warning, etc.) as section markers
-- Clean, organized look with clear visual hierarchy`,
+    promptHint: `Layout: Card-based information page frame.
+- Large empty area at top for header text overlay
+- Large empty rectangular area for lodging info text overlay
+- Large empty rectangular area below for cautions text overlay
+- Card shapes with subtle shadows as background frame elements ONLY
+- Travel-themed icons on page edges/corners ONLY
+- DO NOT draw any text or icons inside content areas - text will be overlaid`,
     weight: 3,
     zoneOverrides: {},
     safeZones: [
-      { x: 0.10, y: 0.02, width: 0.80, height: 0.08, label: "header" },
-      { x: 0.05, y: 0.11, width: 0.90, height: 0.38, label: "lodging-info" },
-      { x: 0.05, y: 0.50, width: 0.90, height: 0.26, label: "cautions" },
+      { x: 0.08, y: 0.01, width: 0.84, height: 0.10, label: "header" },
+      { x: 0.03, y: 0.09, width: 0.94, height: 0.42, label: "lodging-info" },
+      { x: 0.03, y: 0.48, width: 0.94, height: 0.30, label: "cautions" },
     ],
   },
   {
@@ -28,13 +28,13 @@ export const infoVariants: LayoutVariant[] = [
     name: "Sidebar Notes",
     nameJa: "サイドバー",
     description: "Main content with decorative sidebar",
-    promptHint: `Layout: Main content with decorative sidebar.
-- Narrow decorative sidebar on left (travel stamps, icons)
-- Main content area on right (80% width)
-- Header "旅の情報" in main area
-- Lodging and caution sections stacked
-- Sticky note or tag decorations
-- Warm, scrapbook-inspired aesthetic`,
+    promptHint: `Layout: Sidebar-style information page frame.
+- Narrow decorative sidebar on left (travel stamps, icons) - decorations here ONLY
+- Large empty main content area on right (80% width) for text overlay
+- Large empty area for header text overlay
+- Large empty areas for lodging and caution text overlays
+- All decorative elements on left sidebar and page borders ONLY
+- DO NOT draw any text - text will be overlaid`,
     weight: 2,
     zoneOverrides: {
       "header": {
@@ -51,9 +51,9 @@ export const infoVariants: LayoutVariant[] = [
       },
     },
     safeZones: [
-      { x: 0.15, y: 0.02, width: 0.80, height: 0.08, label: "header" },
-      { x: 0.15, y: 0.11, width: 0.80, height: 0.38, label: "lodging-info" },
-      { x: 0.15, y: 0.50, width: 0.80, height: 0.26, label: "cautions" },
+      { x: 0.13, y: 0.01, width: 0.84, height: 0.10, label: "header" },
+      { x: 0.13, y: 0.09, width: 0.84, height: 0.42, label: "lodging-info" },
+      { x: 0.13, y: 0.48, width: 0.84, height: 0.30, label: "cautions" },
     ],
   },
 ];

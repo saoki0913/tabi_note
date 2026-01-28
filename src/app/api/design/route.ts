@@ -218,6 +218,7 @@ const joinList = (items: string[], separator = "・") =>
 /**
  * Generate SAFE_ZONES instruction for the background prompt
  * This tells the AI where to leave empty space for text overlay
+ * CRITICAL: This instruction must be strong and placed early in the prompt
  */
 const buildSafeZonesInstruction = (variant?: LayoutVariant | null): string => {
   if (!variant?.safeZones?.length) return "";
@@ -227,7 +228,7 @@ const buildSafeZonesInstruction = (variant?: LayoutVariant | null): string => {
     return `Zone ${i + 1}${label}: x=${Math.round(z.x * 100)}%, y=${Math.round(z.y * 100)}%, w=${Math.round(z.width * 100)}%, h=${Math.round(z.height * 100)}%`;
   }).join("; ");
 
-  return `SAFE_ZONES - Leave these areas EMPTY with calm, solid backgrounds for text overlay: ${zones}. No illustrations, patterns, or busy elements in these zones. Use light, uniform colors or subtle gradients only.`;
+  return `**MANDATORY SAFE ZONES** - These areas MUST be completely empty with NO decorations whatsoever. Fill them ONLY with a plain, solid, light-colored background (white, cream, or very pale color matching the page theme). ABSOLUTELY NO illustrations, NO patterns, NO lines, NO borders, NO decorative elements inside these zones: ${zones}. All decorative elements (leaves, stamps, stickers, borders, etc.) must be placed OUTSIDE these safe zones, only around the page edges.`;
 };
 
 const buildBackgroundPrompt = (
@@ -270,21 +271,21 @@ const buildBackgroundPrompt = (
 
   return [
     `You are a visual designer creating a BACKGROUND-ONLY image for a printable ${modeGuide.purpose}.`,
-    "Create a single full-bleed A4 portrait image with a clean, print-ready look.",
+    "Create a single full-bleed A4 portrait image (aspect ratio 210:297, portrait orientation) with a clean, print-ready look.",
+    // SAFE ZONES instruction - placed early for priority
+    safeZonesInstruction,
+    // Style directions come after safe zones
     `Style direction: ${guide.mood}. Palette: ${guide.palette}. Motifs: ${guide.motifs}.`,
-    // Removed guide.typography - we don't want AI to add any text
     guide.imagery,
-    `REQUIRED VISUAL ELEMENTS: ${guide.mustInclude}`,
+    `REQUIRED VISUAL ELEMENTS (place ONLY on page edges/borders, OUTSIDE safe zones): ${guide.mustInclude}`,
     `Format direction (${formatGuide.name}): ${formatGuide.layout}`,
     "This page is part of a multi-page booklet; keep a consistent design system across pages.",
-    "Use collage elements, paper textures, and icon-only stickers. Avoid any sticker text.",
+    "Use collage elements, paper textures, and icon-only stickers. Avoid any sticker text. All decorative elements must stay on page borders/edges.",
     layoutHint,
-    // Add SAFE_ZONES instruction
-    safeZonesInstruction,
     // Stronger text prohibition
     "CRITICAL: This is a BACKGROUND ONLY image. Do NOT include any words, letters, numbers, logos, UI labels, titles, dates, names, or readable text of any kind anywhere in the image.",
     "Avoid letter-like shapes in stamps, tickets, maps, badges, and signage.",
-    "Text will be overlaid separately - leave designated safe zones empty with calm, uniform backgrounds.",
+    "REMINDER: Safe zones MUST remain completely empty with plain, solid backgrounds - NO decorations inside them.",
     sharedDetails,
   ].filter(Boolean).join(" ");
 };
