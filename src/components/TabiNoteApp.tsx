@@ -29,6 +29,8 @@ import type {
 } from "../types/trip";
 import { generateAiContent } from "../lib/ai";
 import { generateId, generateShareToken, storage } from "../lib/storage";
+import type { QuickEditLayer } from "@/lib/overlays/quickEdit";
+import { applyQuickEditChanges, generateQuickEditLayers } from "@/lib/overlays/quickEdit";
 import { Header } from "./Header";
 import { PdfExport } from "./PdfExport";
 import { ShioriShowcase } from "./ShioriShowcase";
@@ -106,10 +108,19 @@ export function TabiNoteApp() {
     active: false,
     title: "",
   });
+  const [quickEditPageId, setQuickEditPageId] = useState<string | null>(null);
+  const [quickEditLayers, setQuickEditLayers] = useState<QuickEditLayer[]>([]);
+  const [quickEditRegeneratingPageId, setQuickEditRegeneratingPageId] = useState<string | null>(null);
 
   const refreshTrips = async () => {
     const nextTrips = await storage.getTrips();
     setTrips(nextTrips);
+  };
+
+  const resetQuickEdit = () => {
+    setQuickEditPageId(null);
+    setQuickEditLayers([]);
+    setQuickEditRegeneratingPageId(null);
   };
 
   useEffect(() => {
@@ -133,8 +144,16 @@ export function TabiNoteApp() {
       totalPages?: number;
       day?: number;
       renderMode?: "background" | "full" | "layered";
+      variantId?: string;
     },
-  ): Promise<TripDesignImage & { renderType?: "legacy" | "layered"; textLayers?: TripDesignPage["textLayers"] }> => {
+  ): Promise<
+    TripDesignImage & {
+      renderType?: "legacy" | "layered";
+      textLayers?: TripDesignPage["textLayers"];
+      variantId?: string;
+      variantName?: string;
+    }
+  > => {
     const tripPayload: Trip = {
       ...trip,
       design: undefined,
@@ -151,6 +170,7 @@ export function TabiNoteApp() {
         pageNumber: options?.pageNumber,
         totalPages: options?.totalPages,
         day: options?.day,
+        variantId: options?.variantId,
       }),
     });
 
@@ -166,6 +186,8 @@ export function TabiNoteApp() {
       mode: DesignMode;
       renderType?: "legacy" | "layered";
       textLayers?: TripDesignPage["textLayers"];
+      variantId?: string;
+      variantName?: string;
     };
 
     return {
@@ -175,6 +197,8 @@ export function TabiNoteApp() {
       createdAt: new Date().toISOString(),
       renderType: payload.renderType,
       textLayers: payload.textLayers,
+      variantId: payload.variantId,
+      variantName: payload.variantName,
     };
   };
 
@@ -245,6 +269,8 @@ export function TabiNoteApp() {
         day: request.day,
         pageNumber: current,
         totalPages,
+        variantId: asset.variantId,
+        variantName: asset.variantName,
         mimeType: asset.mimeType,
         base64: asset.base64,
         prompt: asset.prompt,
@@ -310,9 +336,90 @@ export function TabiNoteApp() {
     }
   };
 
+  const handleStartQuickEdit = (pageId: string) => {
+    if (!currentTrip?.design?.pages?.length) return;
+    const page = currentTrip.design.pages.find((item) => item.id === pageId);
+    if (!page) return;
+    const layers = generateQuickEditLayers(currentTrip, page);
+    setQuickEditPageId(pageId);
+    setQuickEditLayers(layers);
+  };
+
+  const handleUpdateQuickEditLayer = (layerId: string, text: string) => {
+    setQuickEditLayers((prev) =>
+      prev.map((layer) =>
+        layer.id === layerId ? { ...layer, editedText: text } : layer,
+      ),
+    );
+  };
+
+  const handleCancelQuickEdit = () => {
+    resetQuickEdit();
+  };
+
+  const handleConfirmQuickEdit = async () => {
+    if (!currentTrip || !quickEditPageId) return;
+    const page = currentTrip.design?.pages?.find((item) => item.id === quickEditPageId);
+    if (!page || !currentTrip.design) return;
+    const hasChanges = quickEditLayers.some((layer) => layer.editedText !== layer.originalText);
+    if (!hasChanges) {
+      resetQuickEdit();
+      return;
+    }
+
+    const updatedTrip = applyQuickEditChanges(currentTrip, quickEditLayers);
+    setQuickEditRegeneratingPageId(page.id);
+
+    try {
+      const asset = await requestDesign(updatedTrip, page.mode, {
+        pageNumber: page.pageNumber,
+        totalPages: page.totalPages,
+        day: page.day,
+        renderMode: "full",
+        variantId: page.variantId,
+      });
+
+      const updatedPages = updatedTrip.design.pages?.map((item) => {
+        if (item.id !== page.id) return item;
+        return {
+          ...item,
+          base64: asset.base64,
+          mimeType: asset.mimeType,
+          prompt: asset.prompt,
+          createdAt: asset.createdAt,
+          renderType: asset.renderType,
+          textLayers: asset.textLayers,
+          variantId: asset.variantId ?? item.variantId,
+          variantName: asset.variantName ?? item.variantName,
+        } satisfies TripDesignPage;
+      }) ?? updatedTrip.design.pages;
+
+      const nextTrip: Trip = {
+        ...updatedTrip,
+        design: {
+          ...updatedTrip.design,
+          pages: updatedPages,
+          updatedAt: new Date().toISOString(),
+        },
+        updatedAt: new Date().toISOString(),
+      };
+
+      const savedTrip = await safeSaveTrip(nextTrip);
+      setCurrentTrip(savedTrip);
+      await refreshTrips();
+      resetQuickEdit();
+    } catch (error) {
+      console.error(error);
+      alert("ページの再生成に失敗しました。もう一度お試しください。");
+    } finally {
+      setQuickEditRegeneratingPageId(null);
+    }
+  };
+
   const handleCreateNew = () => {
     setCurrentTrip(null);
     setView("create");
+    resetQuickEdit();
   };
 
   const handleScrollToList = () => {
@@ -374,11 +481,13 @@ export function TabiNoteApp() {
     setCurrentTrip(finalTrip);
     setShowPdfExport(false);
     setView("preview");
+    resetQuickEdit();
   };
 
   const handleEditTrip = (trip: Trip) => {
     setCurrentTrip(trip);
     setView("create");
+    resetQuickEdit();
   };
 
   const handleDeleteTrip = async (id: string) => {
@@ -393,6 +502,7 @@ export function TabiNoteApp() {
     const ensuredTrip = await ensureDesignPages(trip);
     setCurrentTrip(ensuredTrip);
     setView("preview");
+    resetQuickEdit();
   };
 
   const handleShareTrip = async (trip: Trip) => {
@@ -424,6 +534,7 @@ export function TabiNoteApp() {
     setView("home");
     setCurrentTrip(null);
     setShowPdfExport(false);
+    resetQuickEdit();
   };
 
   const formatDate = (date: string) => {
@@ -1117,6 +1228,7 @@ export function TabiNoteApp() {
       setRegenerateMode(currentTrip.design?.renderMode ?? "full");
       setRegenerateTemplateType(currentTrip.templateType);
       setIsRegenerateDialogOpen(true);
+      resetQuickEdit();
     };
 
     const handleConfirmRegenerate = async () => {
@@ -1171,7 +1283,10 @@ export function TabiNoteApp() {
                 </motion.button>
                 {currentTrip?.design?.renderMode === "layered" && (
                   <motion.button
-                    onClick={() => setView("editor")}
+                    onClick={() => {
+                      resetQuickEdit();
+                      setView("editor");
+                    }}
                     className="flex items-center gap-2 px-6 py-3 btn btn-soft btn-pill"
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
@@ -1218,7 +1333,18 @@ export function TabiNoteApp() {
             )}
           </AnimatePresence>
 
-          <TripPreview trip={currentTrip} />
+          <TripPreview
+            trip={currentTrip}
+            quickEdit={{
+              activePageId: quickEditPageId,
+              layers: quickEditLayers,
+              regeneratingPageId: quickEditRegeneratingPageId,
+              onStartEdit: handleStartQuickEdit,
+              onUpdateLayer: handleUpdateQuickEditLayer,
+              onCancel: handleCancelQuickEdit,
+              onConfirm: handleConfirmQuickEdit,
+            }}
+          />
         </div>
 
         {/* Regenerate Dialog */}

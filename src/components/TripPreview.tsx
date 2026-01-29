@@ -7,9 +7,20 @@ import { Feather, Layers } from "lucide-react";
 import type { Trip, TripDesignPage, TextLayer } from "../types/trip";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { getFontCss } from "./editor/EditPanel";
+import type { QuickEditLayer } from "@/lib/overlays/quickEdit";
+import { QuickEditOverlay } from "./preview/QuickEditOverlay";
 
 interface PreviewProps {
   trip: Trip;
+  quickEdit?: {
+    activePageId: string | null;
+    layers: QuickEditLayer[];
+    regeneratingPageId: string | null;
+    onStartEdit: (pageId: string) => void;
+    onUpdateLayer: (layerId: string, text: string) => void;
+    onCancel: () => void;
+    onConfirm: () => void;
+  };
 }
 
 // Read-only text layer display component for preview
@@ -81,11 +92,15 @@ function PreviewPage({
   trip,
   index,
   coverClass,
+  showQuickEdit,
+  onQuickEdit,
 }: {
   page: TripDesignPage;
   trip: Trip;
   index: number;
   coverClass: string;
+  showQuickEdit?: boolean;
+  onQuickEdit?: () => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
@@ -116,7 +131,7 @@ function PreviewPage({
 
   return (
     <motion.section
-      className={`paper-card template-card rounded-xl overflow-hidden ${
+      className={`paper-card template-card rounded-xl overflow-hidden group ${
         index === 0 ? "template-cover" : ""
       } ${index === 0 ? coverClass : ""}`}
       initial={{ opacity: 0, y: 30 }}
@@ -176,13 +191,23 @@ function PreviewPage({
               </div>
             </div>
           )}
+
+          {showQuickEdit && onQuickEdit && (
+            <button
+              type="button"
+              onClick={onQuickEdit}
+              className="absolute bottom-4 right-4 bg-white/90 hover:bg-white text-ink px-3 py-1.5 rounded-lg shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              ✏️ 編集
+            </button>
+          )}
         </div>
       </div>
     </motion.section>
   );
 }
 
-export function TripPreview({ trip }: PreviewProps) {
+export function TripPreview({ trip, quickEdit }: PreviewProps) {
   const getTemplateStyles = () => {
     switch (trip.templateType) {
       case "minimal":
@@ -243,6 +268,12 @@ export function TripPreview({ trip }: PreviewProps) {
     : null;
   const fullPages = sortedPages?.length ? sortedPages : null;
 
+  const quickEditEnabled = Boolean(quickEdit) && trip.design?.renderMode === "full";
+  const canStartQuickEdit =
+    quickEditEnabled &&
+    !quickEdit?.activePageId &&
+    !quickEdit?.regeneratingPageId;
+
   return (
     <div
       className="space-y-6 template-root"
@@ -254,15 +285,42 @@ export function TripPreview({ trip }: PreviewProps) {
       }
     >
       {fullPages ? (
-        fullPages.map((page, index) => (
-          <PreviewPage
-            key={page.id}
-            page={page}
-            trip={trip}
-            index={index}
-            coverClass={styles.coverClass}
-          />
-        ))
+        fullPages.map((page, index) => {
+          const isQuickEditing =
+            quickEditEnabled && quickEdit?.activePageId === page.id;
+          if (isQuickEditing && quickEdit) {
+            return (
+              <QuickEditOverlay
+                key={page.id}
+                page={page}
+                tripTitle={trip.title}
+                index={index}
+                coverClass={styles.coverClass}
+                layers={quickEdit.layers}
+                isRegenerating={quickEdit.regeneratingPageId === page.id}
+                onUpdateLayer={quickEdit.onUpdateLayer}
+                onCancel={quickEdit.onCancel}
+                onConfirm={quickEdit.onConfirm}
+              />
+            );
+          }
+
+          return (
+            <PreviewPage
+              key={page.id}
+              page={page}
+              trip={trip}
+              index={index}
+              coverClass={styles.coverClass}
+              showQuickEdit={canStartQuickEdit}
+              onQuickEdit={
+                quickEditEnabled
+                  ? () => quickEdit?.onStartEdit(page.id)
+                  : undefined
+              }
+            />
+          );
+        })
       ) : (
         <motion.section
           className="paper-card template-card rounded-xl overflow-hidden"

@@ -104,6 +104,8 @@ export interface TripDesignPage {
   day?: number;
   pageNumber: number;
   totalPages: number;
+  variantId?: string;
+  variantName?: string;
   mimeType: string;
   // For legacy: complete image with text
   // For layered: background image only (no text)
