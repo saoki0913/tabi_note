@@ -368,6 +368,10 @@ export function TabiNoteApp() {
     }
 
     const updatedTrip = applyQuickEditChanges(currentTrip, quickEditLayers);
+    const updatedDesign = updatedTrip.design;
+    if (!updatedDesign) {
+      throw new Error("Design state is missing after quick edit");
+    }
     setQuickEditRegeneratingPageId(page.id);
 
     try {
@@ -379,7 +383,7 @@ export function TabiNoteApp() {
         variantId: page.variantId,
       });
 
-      const updatedPages = updatedTrip.design.pages?.map((item) => {
+      const updatedPages = updatedDesign.pages?.map((item) => {
         if (item.id !== page.id) return item;
         return {
           ...item,
@@ -392,12 +396,12 @@ export function TabiNoteApp() {
           variantId: asset.variantId ?? item.variantId,
           variantName: asset.variantName ?? item.variantName,
         } satisfies TripDesignPage;
-      }) ?? updatedTrip.design.pages;
+      }) ?? updatedDesign.pages;
 
       const nextTrip: Trip = {
         ...updatedTrip,
         design: {
-          ...updatedTrip.design,
+          ...updatedDesign,
           pages: updatedPages,
           updatedAt: new Date().toISOString(),
         },
