@@ -1,107 +1,77 @@
 # たびNote
 
-旅のしおりを5分で作れるWebアプリ。入力 → 生成 → プレビュー → 共有/PDF出力の流れで使います。
+国内旅行の幹事向けに、旅のしおりを最短5分で作る Next.js アプリです。入力 → AI補完 → ページ生成 → プレビュー → ページ修正 → 共有/PDF までを一つの導線にまとめています。
 
-## 環境構成
+## 現在の構成
 
-### 開発環境（ローカル）
-- フロントエンド: Next.js 14 (App Router)
-- DB/API/認証: Supabase local stack (Docker)
-- クライアント: `@supabase/supabase-js`
-- Supabase Studio: `http://127.0.0.1:54323`
+- App: Next.js 14 / App Router / Vercel 想定
+- Auth: Better Auth + Google ログイン
+- DB: Turso + Drizzle
+- Asset storage: Cloudflare R2
+- Billing: Stripe Checkout / Billing Portal / Webhook
+- Analytics: PostHog
 
-ローカルは Supabase のローカルスタックを起動するため、同じ Supabase クライアントコードで開発できます。
+## 料金設計
 
-### 本番環境
-- フロントエンド: Vercel などでホスティング
-- DB/API/認証: Supabase (hosted)
-- クライアント: `@supabase/supabase-js` (環境変数のみ切り替え)
+- Free: 月3件まで生成、ログイン後に保存可能
+- Premium: 月額480円 / 年額3,900円
+- Premium 特典: PDF、共有リンク、ページごとの再生成、高解像度出力
 
-## 開発環境の立ち上げ
+## ローカル起動
 
-前提:
-- Node.js / npm
-- Docker Desktop
+1. 依存関係をインストール
 
-手順:
-1) 依存関係のインストール
 ```bash
 npm install
 ```
 
-2) Supabase local stack を起動
+2. `.env.local` を `.env.example` から作成し、最低限以下を設定
+
+- `NEXT_PUBLIC_APP_URL`
+- `BETTER_AUTH_URL`
+- `BETTER_AUTH_SECRET`
+- `TURSO_DATABASE_URL`
+- `GEMINI_API_KEY`
+
+3. スキーマをローカルDBに反映
+
 ```bash
-npm run supabase:start
+npm run db:migrate
 ```
 
-3) ローカルの接続情報を取得
-```bash
-npm run supabase:status -- --output env
-```
+4. 開発サーバーを起動
 
-4) `tabi_note/.env.local` を作成/更新（`.env.example` を参考）
-```env
-NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
-NEXT_PUBLIC_SUPABASE_ANON_KEY=<ANON_KEYを貼る>
-SUPABASE_SERVICE_ROLE_KEY=<SERVICE_ROLE_KEYを貼る>
-DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres
-GEMINI_API_KEY=<GEMINI_API_KEYを貼る>
-GEMINI_IMAGE_MODEL=gemini-3-pro-image-preview
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-```
-
-5) 起動
 ```bash
 npm run dev
 ```
 
-停止:
+## よく使うコマンド
+
 ```bash
-npm run supabase:stop
+npm run lint
+npm run build
+npm run db:generate
+npm run db:migrate
 ```
 
-## 開発再開の手順
+## 主要ルート
 
-1) 最新の状態を取得（必要な場合）
-```bash
-git pull
-```
+- `/`: LP
+- `/app`: しおり作成
+- `/account`: 保存済みしおりと契約状況
+- `/pricing`: 料金
+- `/share/[token]`: 閲覧専用共有ページ
+- `/compare/tabiori`, `/compare/canva`: 比較導線
 
-2) 変更状態を確認
-```bash
-git status -sb
-```
+## 運用メモ
 
-3) Supabase local stack の状態確認（止まっていれば起動）
-```bash
-npm run supabase:status -- --output env
-# もし止まっていたら
-npm run supabase:start
-```
+- ゲスト下書きは `localStorage`
+- ログイン後の保存先は Turso
+- ページ画像と PDF は R2 保存を優先し、未設定時は fallback base64 を使う
+- `npm run lint` と `npm run build` が通る状態を PR の最低条件にする
 
-4) `.env.local` が未設定/古い場合は更新（`.env.example` と `supabase:status` を参照）
+## 関連ドキュメント
 
-5) アプリ起動
-```bash
-npm run dev
-```
-
-### Codex で再開する場合
-以下を Codex に指示してください（自律再開テンプレ）:
-```
-`tabi_note/.codex/commands/dev-continue.md` に従ってください。
-docs/SPEC.md・docs/WORKFLOW.md・README.md・TODO/FIXME・UI/UXの完成形(/Users/saoki/work/figma/tabi_note)を確認し、必要な機能を自律的に洗い出して実装してください。
-`.codex/skills` に追加したスキルの `SKILL.md` を確認し、該当するものは必ず適用してください。
-1タスクずつ小さく進め、完了/未完了の更新を継続してください。
-仕様・デザイン・運用ルールと矛盾がある場合は修正方針を提案し、判断が必要なときだけ質問してください。
-実行したコマンド（lint/build等）と未実行理由を明記してください。
-作業がすべて完了したら、最後に「次にやるとよいこと」を出力してください。
-```
-
-## 開発フロー / ブランチ / PR
-詳細は `docs/WORKFLOW.md` を参照してください（Worktree運用も含む）。
-
-## 補足
-- `.env.local` はコミットしません。必要なキーは `.env.example` に記載します。
-- `docker-compose.yml` は従来の Postgres 単体構成用です。現在は Supabase local stack を推奨します。
-- UX 改善の参考: https://www.shokasonjuku.com/ux-psychology
+- `docs/SPEC.md`
+- `docs/WORKFLOW.md`
+- `docs/shiori-generation-flow.md`

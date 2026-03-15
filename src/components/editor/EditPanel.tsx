@@ -12,12 +12,13 @@ import {
   Layers,
   MousePointer2,
 } from "lucide-react";
-import type { TextLayer, TextLayerStyle, ZoneType } from "@/types/trip";
+import type { TextLayer, TextLayerStyle, ZoneType, EditableTextLine, FullModePageStyle } from "@/types/trip";
 import { generateId } from "@/lib/storage";
+import { FullModeLineEditor } from "./FullModeLineEditor";
 
 // Available font families (10 fonts)
 // value: CSS variable key, cssVar: actual CSS variable for styling
-const FONT_OPTIONS = [
+export const FONT_OPTIONS = [
   { value: "zen-kaku-gothic", label: "ゴシック", cssVar: "var(--font-zen-kaku-gothic)" },
   { value: "zen-old-mincho", label: "明朝", cssVar: "var(--font-zen-old-mincho)" },
   { value: "noto-serif", label: "セリフ", cssVar: "var(--font-noto-serif)" },
@@ -62,7 +63,7 @@ export function getFontCss(fontKey: string): string {
 }
 
 // Preset colors
-const COLOR_PRESETS = [
+export const COLOR_PRESETS = [
   { value: "#333333", label: "黒" },
   { value: "#ffffff", label: "白" },
   { value: "#1a1a1a", label: "墨" },
@@ -99,6 +100,15 @@ interface EditPanelProps {
   onTextChange: (content: string) => void;
   onStyleChange: (style: Partial<TextLayerStyle>) => void;
   onAddLayer: (layer: TextLayer) => void;
+  // FULL mode editing props
+  fullModeEditActive?: boolean;
+  fullModeLines?: EditableTextLine[];
+  fullModeStyle?: FullModePageStyle;
+  fullModePageName?: string;
+  onFullModeLinesChange?: (lines: EditableTextLine[]) => void;
+  onFullModeStyleChange?: (style: FullModePageStyle) => void;
+  onFullModeSave?: () => void;
+  isFullModeSaving?: boolean;
 }
 
 export function EditPanel({
@@ -108,6 +118,15 @@ export function EditPanel({
   onTextChange,
   onStyleChange,
   onAddLayer,
+  // FULL mode props
+  fullModeEditActive,
+  fullModeLines,
+  fullModeStyle,
+  fullModePageName,
+  onFullModeLinesChange,
+  onFullModeStyleChange,
+  onFullModeSave,
+  isFullModeSaving,
 }: EditPanelProps) {
   // Get effective content and style (with edits applied)
   const effectiveContent = layerEdits?.content ?? selectedLayer?.content ?? "";
@@ -193,6 +212,23 @@ export function EditPanel({
     };
     onAddLayer(newLayer);
   }, [onAddLayer]);
+
+  // FULL mode editing view
+  if (fullModeEditActive && fullModeLines && onFullModeLinesChange && onFullModeStyleChange && onFullModeSave) {
+    return (
+      <div className="h-full flex flex-col bg-white border-l border-paper-200">
+        <FullModeLineEditor
+          lines={fullModeLines}
+          style={fullModeStyle || {}}
+          pageName={fullModePageName || ""}
+          onLinesChange={onFullModeLinesChange}
+          onStyleChange={onFullModeStyleChange}
+          onSave={onFullModeSave}
+          isSaving={isFullModeSaving || false}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="h-full flex flex-col bg-white border-l border-paper-200">
