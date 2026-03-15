@@ -1,9 +1,9 @@
 import type { AiContent, Trip, TripDesignPage, TextLayer } from "@/types/trip";
 import type { DataBinding } from "@/types/editor";
+import { generateId } from "@/lib/ids";
 import { getPageLayout } from "@/lib/templates";
 import { getVariantForMode } from "@/lib/templates/variants";
 import { generateTextLayers } from "@/lib/layers";
-import { generateId } from "@/lib/storage";
 
 export type QuickEditBinding = {
   tripPath: string;
@@ -84,16 +84,18 @@ export function generateQuickEditLayers(
         itemIndex,
       };
 
-      return {
+      const quickEditLayer: QuickEditLayer = {
         id: layer.id,
         textLayer: layer,
         originalText: layer.content,
         editedText: layer.content,
-        editable: true,
+        editable,
         binding: bindingInfo,
-      } satisfies QuickEditLayer;
+      };
+
+      return quickEditLayer;
     })
-    .filter((layer): layer is QuickEditLayer => Boolean(layer));
+    .filter((layer): layer is QuickEditLayer => layer !== null);
 }
 
 function ensureAiContent(trip: Trip): AiContent {

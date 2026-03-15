@@ -30,7 +30,7 @@ const styleGuides: Record<
       "STRICT: Use ONLY ink deep #1a1a2e and paper cream #faf8f5. Maximum 2 colors. No other colors allowed.",
     motifs: "ultra-thin hairlines (0.5pt), generous whitespace (70%+ of page), subtle paper grain texture only",
     typography:
-      "Display font: Cormorant Garamond (elegant serif for headings). Body font: Zen Kaku Gothic New (Japanese). Keep text sparse.",
+      "HEADINGS: Use elegant thin serif font (like Cormorant Garamond, weight 300-400). Large letter spacing (0.1em+), refined uppercase or small caps. Clean, sophisticated, magazine-editorial feel. BODY: Clean Japanese sans-serif (Zen Kaku Gothic New, regular weight). Generous line height (1.6+). Keep text minimal and sparse with ample breathing room. TEXT COLOR: Use deep ink #1a1a2e for all text - this dark blue-black creates sophistication without harsh pure black. MOOD: Typography should feel refined, understated, and luxuriously minimal. Avoid bold weights or decorative flourishes.",
     imagery:
       "Use ONE simple line art illustration OR leave empty. No photos, no patterns, no decorative elements. Embrace negative space.",
     mustInclude:
@@ -42,7 +42,7 @@ const styleGuides: Record<
       "Dominant: pastel pink #ffb6c1, mint #98d8c8, peach #ffcba4. Accent: terracotta #c4654a, gold #c9a227. Background: warm cream #fff5e6.",
     motifs: "round stickers with icons, washi tape strips, confetti dots, star shapes, heart decorations, speech bubbles",
     typography:
-      "Display font: rounded bold for headings. Body font: Zen Kaku Gothic New. Use varied sizes for visual rhythm.",
+      "HEADINGS: Use rounded, bubbly bold font (like Rounded Mplus 1c Bold or similar kawaii-style). Playful, bouncy letterforms with soft curves. Can use varied colors for headings. BODY: Friendly rounded Japanese font (Zen Maru Gothic or rounded gothic). Medium weight for warmth. TEXT COLOR: Use terracotta #c4654a, dusty pink, or coral from the palette - warm, friendly colors that pop against the pastel background. MOOD: Typography should feel cheerful, fun, approachable, and youthful. Use varied font sizes to create visual rhythm and energy. Small decorative elements around text welcome.",
     imagery:
       "Fill page with colorful decorations. Use 5+ different sticker-style icons. Add washi tape at corners. Scatter confetti elements.",
     mustInclude:
@@ -54,7 +54,7 @@ const styleGuides: Record<
       "Film tones: ocean blue #4a7c8f, sage green #7d9471, warm beige #f5f0e8, soft gray #8b8b8b. Apply film grain overlay.",
     motifs: "polaroid-style frames with white borders, film sprocket holes, light leaks, vintage camera icons",
     typography:
-      "Display font: Cormorant Garamond (classic serif). Body font: Zen Kaku Gothic New. Caption style for photo labels.",
+      "HEADINGS: Classic elegant serif (Cormorant Garamond, medium weight). Cinematic, timeless feel like film credits. Can use subtle shadows. BODY: Clean Japanese sans-serif (Zen Kaku Gothic New). Caption-style for labels under photos. TEXT COLOR: Use warm sepia brown, muted gray #5a5a5a, or ocean blue #4a7c8f - desaturated, film-like tones that blend with the nostalgic aesthetic. MOOD: Typography should feel nostalgic, cinematic, and quietly sophisticated. Like handwritten notes on the back of photographs.",
     imagery:
       "3-4 polaroid/film frames prominently displayed. Add film grain texture overlay to entire page. Include light leak effects in corners.",
     mustInclude:
@@ -66,7 +66,7 @@ const styleGuides: Record<
       "Vintage: burnt orange #cc5500, mustard yellow #e8a435, olive green #6b8e23, aged cream #ede4d4. Sepia undertones throughout.",
     motifs: "halftone dot patterns, vintage postage stamps, retro badges with stars, rounded rectangle frames, dotted borders",
     typography:
-      "Display font: bold retro-style headings. Body font: Zen Kaku Gothic New. Numbers in vintage style.",
+      "HEADINGS: Bold condensed retro font (like Impact, Bebas Neue, or vintage poster style). Strong, punchy, 1960s-70s advertising feel. Can use slight rotation or perspective. BODY: Sturdy Japanese gothic (Zen Kaku Gothic New, medium-bold). Slightly condensed. TEXT COLOR: Use burnt orange #cc5500, mustard yellow #e8a435, or olive green #6b8e23 - vibrant vintage colors that evoke 1960s-70s posters. Can use color blocks behind text. MOOD: Typography should feel groovy, bold, and nostalgic. Like vintage travel posters and old advertisements. Numbers should have retro, slightly decorative styling.",
     imagery:
       "Apply halftone texture to backgrounds. Use 2-3 vintage stamp decorations. Add rounded-corner frames. Include retro sunburst patterns.",
     mustInclude:
@@ -78,7 +78,7 @@ const styleGuides: Record<
       "Soft blush #f5e9e4, rose pink #e8b4b8, champagne gold #d4af37, sage mist #d4e5d7, cream white #fffaf0.",
     motifs: "watercolor floral borders, delicate ribbons, gold foil accents, soft gradients, rose illustrations",
     typography:
-      "Display font: elegant script or Cormorant Garamond italic. Body font: Zen Kaku Gothic New light weight.",
+      "HEADINGS: Elegant flowing script or beautiful italic serif (like Cormorant Garamond Italic, Dancing Script, or calligraphy style). Delicate, graceful curves. Light to regular weight. BODY: Delicate Japanese font with refined thin strokes (Zen Kaku Gothic New Light or Shippori Mincho Light). Generous letter spacing. TEXT COLOR: Use rose brown #8b6b61, dusty rose #c4a4a4, or champagne gold #d4af37 - soft, warm colors that harmonize with the blush pink background. All text should feel like it belongs to the same romantic color world as the background. MOOD: Typography should feel dreamy, romantic, and softly feminine. Like wedding invitations or love letters. Gentle, flowing, never harsh or bold.",
     imagery:
       "Watercolor floral borders on edges. Soft pink/gold gradient backgrounds. Ribbon decorations. Rose or peony illustrations.",
     mustInclude:
@@ -90,7 +90,7 @@ const styleGuides: Record<
       "High contrast: pure black #000000, pure white #ffffff, one accent color (gold #c9a227 OR coral #e07b5a). No gradients.",
     motifs: "geometric shapes (circles, triangles, rectangles), grid lines, bold rules, abstract patterns",
     typography:
-      "Display font: bold sans-serif or geometric serif. Body font: Zen Kaku Gothic New. Strong hierarchy with size contrast.",
+      "HEADINGS: Bold geometric sans-serif (like Montserrat Bold, Helvetica Bold, or Noto Sans JP Bold). Strong, confident, architectural. Very high contrast between large and small text. Uppercase with tight tracking for impact. BODY: Clean modern Japanese sans-serif (Noto Sans JP or Zen Kaku Gothic New). Regular to medium weight. TEXT COLOR: Pure black #000000 is the primary text color for this template - high contrast is the defining characteristic. Can use white text on black backgrounds for dramatic effect. MOOD: Typography should feel premium, sharp, and confident. Like luxury brand design or architectural presentations. Strong hierarchy with dramatic size differences. Text as graphic element.",
     imagery:
       "Bold geometric blocks. Asymmetric layouts. One strong accent color against black/white. No organic shapes.",
     mustInclude:
@@ -102,7 +102,7 @@ const styleGuides: Record<
       "Earth tones: forest green #2d5016, warm brown #8b6914, cream #f5f0e8, terracotta #c4654a, sage #7d9471.",
     motifs: "botanical leaf illustrations, washi paper texture, hand-drawn branch lines, small plant icons, natural grain patterns",
     typography:
-      "Display font: Cormorant Garamond. Body font: Zen Kaku Gothic New. Organic, slightly irregular placement.",
+      "HEADINGS: Organic elegant serif (Cormorant Garamond or similar) with natural, slightly hand-crafted feel. Can have subtle hand-drawn quality or ink brush influence. BODY: Warm Japanese font with natural character (Zen Kaku Gothic New). Slightly irregular spacing acceptable for organic feel. TEXT COLOR: Use forest green #2d5016, warm brown #8b6914, or terracotta #c4654a - earthy, natural tones that feel like they grew from the same soil as the botanical elements. MOOD: Typography should feel natural, calm, and grounded. Like botanical garden labels or nature journal entries. Slightly imperfect, hand-crafted quality. Text can flow around botanical elements organically.",
     imagery:
       "Botanical leaf borders. Washi paper texture background. Hand-drawn style plant illustrations. Natural, imperfect edges.",
     mustInclude:
@@ -114,7 +114,7 @@ const styleGuides: Record<
       "Explorer: aged parchment #d4c5a9, navy blue #1a3a5c, terracotta #c4654a, forest green #2d4a2d, gold #c9a227.",
     motifs: "old map textures, compass rose, dotted travel routes, vintage postage stamps, expedition badges, coordinate markers",
     typography:
-      "Display font: bold expedition-style. Body font: Zen Kaku Gothic New. Numbers styled like coordinates.",
+      "HEADINGS: Bold expedition-style serif or slab serif (like bold Playfair Display, or vintage explorer poster style). Strong, adventurous, commanding. Can include decorative elements like underlines or small ornaments. BODY: Sturdy Japanese gothic (Zen Kaku Gothic New, medium weight). Journal-entry feel. TEXT COLOR: Use navy blue #1a3a5c, terracotta #c4654a, or forest green #2d4a2d - rich, adventurous colors that evoke old maps and explorer journals. Gold #c9a227 can accent important text. MOOD: Typography should feel bold, adventurous, and exciting. Like expedition journals, vintage maps, and explorer logbooks. Numbers can be styled like coordinates or vintage stamps. Headings should command attention like expedition titles.",
     imagery:
       "Aged map texture as background. Large compass rose decoration. Dotted line route paths. Vintage expedition stamps.",
     mustInclude:
@@ -298,6 +298,12 @@ const buildFullPrompt = (
     totalPages?: number;
     day?: number;
     variant?: LayoutVariant | null;
+    textLines?: string[];
+    appendPageLabel?: boolean;
+    styleOverride?: {
+      fontFamily?: string;
+      primaryColor?: string;
+    };
   },
 ) => {
   const guide = styleGuides[trip.templateType];
@@ -305,6 +311,7 @@ const buildFullPrompt = (
   const modeGuide = modeGuides[mode];
   const pageNumber = options.pageNumber ?? 1;
   const totalPages = options.totalPages ?? 1;
+  const appendPageLabel = options.appendPageLabel !== false;
   const destination = trip.destination ? normalizeText(trip.destination) : "";
   const title = trip.title ? normalizeText(trip.title) : "";
   const dates =
@@ -333,108 +340,138 @@ const buildFullPrompt = (
   const planSummary = plan ? trip.aiContent?.daySummaries[plan.day] : "";
   const activities = plan?.activities ?? [];
   const lodgingList = trip.lodgings;
+  const wants = formatList(trip.wantItems.map((item) => item.text), 6);
+  const highlights = formatList(
+    trip.dayPlans.flatMap((entry) => entry.activities.slice(0, 2)),
+    6,
+  );
+  const transport = trip.transportText ? normalizeText(trip.transportText) : "";
+  const lodgingNames = lodgingList.map((lodging) => normalizeText(lodging.name)).filter(Boolean);
 
-  const textLines: string[] = [];
+  const sharedDetails = [
+    destination ? `Destination: ${destination}.` : "",
+    title ? `Trip title: ${title}.` : "",
+    dates ? `Travel dates: ${dates}.` : "",
+    members ? `Members: ${members}.` : "",
+    wants ? `Interests: ${wants}.` : "",
+    highlights ? `Highlights: ${highlights}.` : "",
+    transport ? `Transport: ${transport}.` : "",
+    lodgingNames.length > 0 ? `Lodging: ${lodgingNames.join(", ")}.` : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
-  if (mode === "cover") {
-    if (title) textLines.push(title);
-    if (coverCopy) textLines.push(coverCopy);
-    if (destination) textLines.push(`目的地：${destination}`);
-    if (dates) textLines.push(`日程：${dates}`);
-    if (members) textLines.push(`メンバー：${members}`);
-  }
+  const overrideLines = options.textLines
+    ? options.textLines.map((line) => normalizeText(line)).filter(Boolean)
+    : [];
+  const useOverride = overrideLines.length > 0;
+  const textLines: string[] = useOverride ? [...overrideLines] : [];
 
-  if (mode === "overview") {
-    textLines.push("旅のプラン");
-    if (overviewText) textLines.push(`概要：${overviewText}`);
-    if (trip.transportText) {
-      textLines.push(`移動：${normalizeText(trip.transportText)}`);
+  if (!useOverride) {
+    if (mode === "cover") {
+      if (title) textLines.push(title);
+      if (coverCopy) textLines.push(coverCopy);
+      if (destination) textLines.push(`目的地：${destination}`);
+      if (dates) textLines.push(`日程：${dates}`);
+      if (members) textLines.push(`メンバー：${members}`);
     }
-    if (lodgingList.length > 0) {
-      textLines.push("宿泊先:");
-      lodgingList.forEach((lodging) => {
-        textLines.push(
-          `・${normalizeText(lodging.name)}${
-            lodging.address ? ` / ${normalizeText(lodging.address)}` : ""
-          }${
-            lodging.checkin || lodging.checkout
-              ? ` / IN ${lodging.checkin || "-"} / OUT ${lodging.checkout || "-"}`
-              : ""
-          }`,
-        );
-      });
-    }
-  }
 
-  if (mode === "schedule") {
-    textLines.push(`${planTitle} ${planDate}`.trim());
-    if (planSummary) {
-      textLines.push(`見どころ：${normalizeText(planSummary)}`);
+    if (mode === "overview") {
+      textLines.push("旅のプラン");
+      if (overviewText) textLines.push(`概要：${overviewText}`);
+      if (trip.transportText) {
+        textLines.push(`移動：${normalizeText(trip.transportText)}`);
+      }
+      if (lodgingList.length > 0) {
+        textLines.push("宿泊先:");
+        lodgingList.forEach((lodging) => {
+          textLines.push(
+            `・${normalizeText(lodging.name)}${
+              lodging.address ? ` / ${normalizeText(lodging.address)}` : ""
+            }${
+              lodging.checkin || lodging.checkout
+                ? ` / IN ${lodging.checkin || "-"} / OUT ${lodging.checkout || "-"}`
+                : ""
+            }`,
+          );
+        });
+      }
     }
-    if (activities.length > 0) {
-      activities.forEach((activity, index) => {
-        textLines.push(`${index + 1}. ${normalizeText(activity)}`);
-      });
-    }
-  }
 
-  if (mode === "checklist") {
-    textLines.push("持ち物リスト");
-    if (packingList.length > 0) {
-      textLines.push("持ち物:");
-      packingList.forEach((item) => {
-        textLines.push(`□ ${normalizeText(item)}`);
-      });
+    if (mode === "schedule") {
+      textLines.push(`${planTitle} ${planDate}`.trim());
+      if (planSummary) {
+        textLines.push(`見どころ：${normalizeText(planSummary)}`);
+      }
+      if (activities.length > 0) {
+        activities.forEach((activity, index) => {
+          textLines.push(`${index + 1}. ${normalizeText(activity)}`);
+        });
+      }
     }
-    if (wantList.length > 0) {
-      textLines.push("やりたいこと:");
-      wantList.forEach((item) => {
-        textLines.push(`□ ${normalizeText(item)}`);
-      });
-    }
-  }
 
-  if (mode === "info") {
-    textLines.push("インフォメーション");
-    if (lodgingList.length > 0) {
-      textLines.push("宿泊先:");
-      lodgingList.forEach((lodging) => {
-        textLines.push(
-          `・${normalizeText(lodging.name)}${
-            lodging.address ? ` / ${normalizeText(lodging.address)}` : ""
-          }${
-            lodging.checkin || lodging.checkout
-              ? ` / IN ${lodging.checkin || "-"} / OUT ${lodging.checkout || "-"}`
-              : ""
-          }`,
-        );
-      });
+    if (mode === "checklist") {
+      textLines.push("持ち物リスト");
+      if (packingList.length > 0) {
+        textLines.push("持ち物:");
+        packingList.forEach((item) => {
+          textLines.push(`□ ${normalizeText(item)}`);
+        });
+      }
+      if (wantList.length > 0) {
+        textLines.push("やりたいこと:");
+        wantList.forEach((item) => {
+          textLines.push(`□ ${normalizeText(item)}`);
+        });
+      }
     }
-    if (cautionsText) {
-      textLines.push("注意事項:");
-      cautionsText.split("\n").forEach((line) => {
-        if (line.trim()) {
-          textLines.push(`・${normalizeText(line)}`);
-        }
-      });
-    }
-    if (trip.notes) {
-      textLines.push("メモ:");
-      trip.notes.split("\n").forEach((line) => {
-        if (line.trim()) {
-          textLines.push(`・${normalizeText(line)}`);
-        }
-      });
-    }
-  }
 
-  if (mode === "memo") {
-    textLines.push("メモ");
-    textLines.push("自由記入スペース");
+    if (mode === "info") {
+      textLines.push("インフォメーション");
+      if (lodgingList.length > 0) {
+        textLines.push("宿泊先:");
+        lodgingList.forEach((lodging) => {
+          textLines.push(
+            `・${normalizeText(lodging.name)}${
+              lodging.address ? ` / ${normalizeText(lodging.address)}` : ""
+            }${
+              lodging.checkin || lodging.checkout
+                ? ` / IN ${lodging.checkin || "-"} / OUT ${lodging.checkout || "-"}`
+                : ""
+            }`,
+          );
+        });
+      }
+      if (cautionsText) {
+        textLines.push("注意事項:");
+        cautionsText.split("\n").forEach((line) => {
+          const trimmed = normalizeText(line);
+          if (trimmed) {
+            // cautionsText already contains bullet points, don't add another
+            textLines.push(trimmed);
+          }
+        });
+      }
+      if (trip.notes) {
+        textLines.push("メモ:");
+        trip.notes.split("\n").forEach((line) => {
+          if (line.trim()) {
+            textLines.push(`・${normalizeText(line)}`);
+          }
+        });
+      }
+    }
+
+    if (mode === "memo") {
+      textLines.push("メモ");
+      textLines.push("自由記入スペース");
+    }
   }
 
   const pageLabel = `${pageNumber}/${totalPages}`;
-  textLines.push(pageLabel);
+  if (appendPageLabel && textLines[textLines.length - 1] !== pageLabel) {
+    textLines.push(pageLabel);
+  }
 
   const textBlock = JSON.stringify(textLines, null, 2);
   const modeHints: string[] = [];
@@ -468,6 +505,28 @@ const buildFullPrompt = (
     "The last text line is the page number; place it at the bottom center as a small label.",
     `Style direction: ${guide.mood}. Palette: ${guide.palette}. Motifs: ${guide.motifs}.`,
     guide.typography,
+    // Add tone-based typography adjustment
+    trip.aiTone === "polite"
+      ? "TONE ADJUSTMENT: Typography should lean toward refined, elegant, and formal. Use graceful letterforms, lighter weights where appropriate, and sophisticated spacing."
+      : "TONE ADJUSTMENT: Typography should feel friendly, warm, and approachable. Use softer curves, comfortable weights, and inviting character spacing.",
+    // Add trip context for better style matching
+    `TRIP CONTEXT: This is a trip to ${destination || "a destination"}${trip.members.length > 0 ? ` with ${trip.members.length} ${trip.members.length === 1 ? "person" : "people"}` : ""}. Adjust typography warmth and formality to match the trip's character.`,
+    // Add text color harmony instruction
+    "TEXT COLOR HARMONY: All text colors MUST be selected from the page's color palette to create visual harmony. " +
+    "Headings should use a deeper, richer tone from the palette (like rose brown, dusty pink, forest green, or navy - NOT pure black). " +
+    "Body text should use a slightly muted version of the same color family. " +
+    "NEVER use pure black (#000000) for text unless the template specifically requires high contrast (like 'modern'). " +
+    "Text should feel naturally integrated with the design, as if it belongs to the same world as the background - not overlaid on top.",
+    // Add style overrides from user customization
+    ...(options.styleOverride ? [
+      "USER STYLE OVERRIDE (MUST FOLLOW):",
+      options.styleOverride.fontFamily
+        ? `FONT: Use "${options.styleOverride.fontFamily}" font family for all text on this page. This overrides the default template typography.`
+        : "",
+      options.styleOverride.primaryColor
+        ? `TEXT COLOR: Use "${options.styleOverride.primaryColor}" as the primary text color for all headings and body text. Adjust shades slightly for hierarchy but stay within this color family.`
+        : "",
+    ].filter(Boolean) : []),
     guide.imagery,
     `REQUIRED VISUAL ELEMENTS (must appear in final design): ${guide.mustInclude}`,
     `Format direction (${formatGuide.name}): ${formatGuide.layout}`,
@@ -478,6 +537,7 @@ const buildFullPrompt = (
     // Add variant-specific layout hint if available
     ...(options.variant ? [`Layout variant (${options.variant.name}):\n${options.variant.promptHint}`] : []),
     ...modeHints,
+    sharedDetails,
     "TEXT_LINES_JSON (render only the strings, in order; do not render brackets/quotes/commas):",
     textBlock,
   ].join("\n");
@@ -502,6 +562,11 @@ export async function POST(request: Request) {
     day?: number;
     variantId?: string;
     randomVariant?: boolean;
+    textLines?: string[];
+    styleOverride?: {
+      fontFamily?: string;
+      primaryColor?: string;
+    };
   };
 
   if (!body.trip) {
@@ -514,11 +579,9 @@ export async function POST(request: Request) {
   const mode: DesignMode =
     normalizedMode in modeGuides ? (normalizedMode as DesignMode) : "cover";
 
-  // Determine render mode: "background", "full", or "layered"
+  // Determine render mode: "full" or "layered"
   let renderMode: DesignRenderMode;
-  if (body.renderMode === "background") {
-    renderMode = "background";
-  } else if (body.renderMode === "layered") {
+  if (body.renderMode === "layered") {
     renderMode = "layered";
   } else {
     renderMode = "full";
@@ -541,20 +604,21 @@ export async function POST(request: Request) {
   }
 
   // For layered mode, generate background (no text) + text layers separately
-  // For background mode, generate background only
   // For full mode, generate complete image with text
   const prompt =
-    renderMode === "layered" || renderMode === "background"
+    renderMode === "layered"
       ? buildBackgroundPrompt(body.trip, mode, variant)
       : buildFullPrompt(body.trip, mode, {
           pageNumber: body.pageNumber,
           totalPages: body.totalPages,
           day: body.day,
           variant,
+          textLines: body.textLines,
+          styleOverride: body.styleOverride,
         });
 
   // Temperature: 0.35 for full mode (balance text accuracy with visual creativity)
-  // 0.3 for background/layered mode (more predictable backgrounds, better safe zone compliance)
+  // 0.3 for layered mode (more predictable backgrounds, better safe zone compliance)
   const temperature = renderMode === "full" ? 0.35 : 0.3;
 
   // Generate text layers for layered mode (before API call to return early if only layers needed)
@@ -645,13 +709,13 @@ export async function POST(request: Request) {
     });
   }
 
-  // Background or Full mode: return image only
+  // Full mode: return image only
   return NextResponse.json({
     base64,
     mimeType,
     prompt,
     mode,
-    renderType: renderMode === "background" ? "legacy" : "legacy" as const,
+    renderType: "legacy" as const,
     variantId: variant?.id,
     variantName: variant?.name,
   });

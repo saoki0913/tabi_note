@@ -51,7 +51,7 @@ export type DesignMode =
   | "memo";
 
 export type FormatType = "classic" | "collage" | "notebook" | "timeline";
-export type DesignRenderMode = "background" | "full" | "layered";
+export type DesignRenderMode = "full" | "layered";
 export type PageRenderType = "legacy" | "layered";
 
 // Zone types for text layer classification
@@ -79,6 +79,19 @@ export interface TextLayerStyle {
   padding?: number;
   borderRadius?: number;
   letterSpacing?: number;
+}
+
+// Editable text line for FULL mode editing
+export interface EditableTextLine {
+  id: string;
+  content: string;
+  order: number;
+}
+
+// Page-wide style for FULL mode
+export interface FullModePageStyle {
+  fontFamily?: string;
+  primaryColor?: string;
 }
 
 // Text layer for layered page rendering
@@ -123,6 +136,17 @@ export interface TripDesignPage {
   editorElements?: string;
   // Whether the page has been edited
   isEdited?: boolean;
+
+  // === Fields for FULL mode editing ===
+  // Editable text lines for FULL mode pages
+  editableTextLines?: EditableTextLine[];
+  // Page-wide style settings for FULL mode
+  fullModeStyle?: FullModePageStyle;
+  // Persistent storage references
+  assetKey?: string;
+  previewKey?: string;
+  originalAssetKey?: string;
+  revision?: number;
 }
 
 export interface TripDesign {
@@ -163,6 +187,9 @@ export interface Trip {
   aiContent?: AiContent;
   design?: TripDesign;
   shareToken?: string;
+  ownerId?: string | null;
+  coverPreviewDataUrl?: string;
+  status?: "draft" | "ready" | "shared";
   createdAt: string;
   updatedAt: string;
 }
