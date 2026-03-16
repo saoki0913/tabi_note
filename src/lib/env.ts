@@ -6,20 +6,22 @@ const stringOrUndefined = (value?: string) => {
 
 const vercelUrl = stringOrUndefined(process.env.VERCEL_URL);
 const deploymentUrl = vercelUrl ? `https://${vercelUrl}` : undefined;
+const configuredAppUrl =
+  stringOrUndefined(process.env.NEXT_PUBLIC_APP_URL) ??
+  stringOrUndefined(process.env.BETTER_AUTH_URL);
 
 export const env = {
   appUrl:
+    configuredAppUrl ??
     deploymentUrl ??
-    stringOrUndefined(process.env.NEXT_PUBLIC_APP_URL) ??
-    stringOrUndefined(process.env.BETTER_AUTH_URL) ??
     "http://localhost:3000",
   betterAuthSecret:
     stringOrUndefined(process.env.BETTER_AUTH_SECRET) ??
     "tabi-note-dev-secret-please-change-me-32chars",
   betterAuthUrl:
-    deploymentUrl ??
     stringOrUndefined(process.env.BETTER_AUTH_URL) ??
-    stringOrUndefined(process.env.NEXT_PUBLIC_APP_URL) ??
+    configuredAppUrl ??
+    deploymentUrl ??
     "http://localhost:3000",
   googleClientId: stringOrUndefined(process.env.GOOGLE_CLIENT_ID),
   googleClientSecret: stringOrUndefined(process.env.GOOGLE_CLIENT_SECRET),

@@ -1,8 +1,8 @@
 import { expect, test } from "@playwright/test";
-import { hasGoogleTestCredentials, signInWithGoogle } from "./google-auth";
+import { hasGoogleAuthState, signInWithGoogle } from "./google-auth";
 
 test.describe("tabi_note Google major flow", () => {
-  test.skip(!hasGoogleTestCredentials, "Google test account credentials are not configured");
+  test.skip(!hasGoogleAuthState, "Google auth storage state is not configured");
 
   test("Google login後に主要画面と主要APIが使える", async ({ page }) => {
     const request = page.context().request;
